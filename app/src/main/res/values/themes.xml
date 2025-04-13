@@ -1,23 +1,43 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.AsforceTKF2" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Aydınlık mod renkleri -->
+        <!-- Koyu tema ana renkleri -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
-        <item name="colorAccent">@color/secondary</item>
+        <item name="colorAccent">@color/tab_selected</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSurface">@color/dark_surface</item>
+        <item name="colorOnSurface">@color/text_primary_dark</item>
         
-        <!-- Yazı renkleri -->
-        <item name="android:textColorPrimary">@color/black</item>
-        <item name="android:textColorSecondary">@color/grey_700</item>
+        <!-- Sistem çubukları renkleri -->
+        <item name="android:statusBarColor">@color/status_bar_color</item>
+        <item name="android:navigationBarColor">@color/nav_bar_color</item>
         
-        <!-- Arka plan renkleri -->
-        <item name="android:colorBackground">@color/white</item>
-        <item name="backgroundColor">@color/white</item>
+        <!-- Metin renkleri -->
+        <item name="android:textColorPrimary">@color/text_primary_dark</item>
+        <item name="android:textColorSecondary">@color/text_secondary_dark</item>
+        <item name="android:textColorHint">@color/text_disabled_dark</item>
+        
+        <!-- Arka plan renkleri - Koyu Tema -->
+        <item name="android:colorBackground">@color/dark_background</item>
+        <item name="backgroundColor">@color/dark_background</item>
+        <item name="android:windowBackground">@color/dark_background</item>
+        
+        <!-- Widget renkleri -->
+        <item name="android:colorControlNormal">@color/white</item>
+        <item name="colorControlActivated">@color/primary</item>
+        
+        <!-- Eğerli efektler -->
+        <item name="android:colorEdgeEffect">@color/primary</item>
+        <item name="android:colorControlHighlight">@color/ripple_color</item>
+        
+        <!-- Genel Tema Ayarları -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
     </style>
 
     <style name="Theme.AsforceTKF2" parent="Base.Theme.AsforceTKF2" />

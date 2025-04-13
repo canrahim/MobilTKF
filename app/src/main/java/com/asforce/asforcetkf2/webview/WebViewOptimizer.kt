@@ -2,6 +2,7 @@ package com.asforce.asforcetkf2.webview
 
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.webkit.WebSettings
 import android.webkit.WebView
 import com.asforce.asforcetkf2.model.Tab
@@ -96,27 +97,48 @@ class WebViewOptimizer(webView: WebView) {
         if (!isOptimizationEnabled) return
         
         if (isActive) {
-            // Tab aktifleştirildiğinde
-            // WebView yükleme performansını iyileştir
+            // Tab aktifleştirildiğinde - YILDIZ TURBO Hız!
             webView.settings.apply {
-                // Performans için önce metinleri, sonra resimleri yükle
+                // Ultra hızlı görüntüleme için önce yükleyin, sonra optimize edin
                 blockNetworkImage = false
                 setRenderPriority(WebSettings.RenderPriority.HIGH)
+                
+                // Hızlı önbellek yükleme stratejisi - ağdan yükleme öncesinde önbelleğe bakar
                 cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+                
+                // Görüntüleme optimizasyonları - hızlı görüntüleme
+                useWideViewPort = true 
+                loadWithOverviewMode = true
+                
+                // Metin ölçekleme optimizasyonu
+                textZoom = 100
+                
+                // JavaScript performansı
+                javaScriptCanOpenWindowsAutomatically = true
             }
             
-            // JavaScript'i varsayılan haline geri döndür
+            // JavaScript'i etkinleştir
             webView.settings.javaScriptEnabled = true
             
             // Süreölçerleri devam ettir
             webView.resumeTimers()
+            
+            // GC tetikle - daha temiz başlangıç
+            webView.freeMemory()
+            
+            // Donanım hızlandırma - GPU'yu aktifleştir
+            webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+            
+            // Ekstra performans için ipuçlarını tetikle
+            webView.evaluateJavascript("document.body.style.overscrollBehavior = 'none';", null)
         } else {
-            // Tab arka plana alındığında
-            // Ağ görüntü yüklemesini engelle
+            // Tab arka plana alındığında - MAKSIMUM bellek tasarrufu!
+            
+            // Ağ yükleme işlemlerini durdur
             webView.settings.blockNetworkImage = true
             
-            // Arka plandaki tablar için önbellek önceliği
-            webView.settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+            // Minimum önbellek ayarları - sadece lokalden yükle
+            webView.settings.cacheMode = WebSettings.LOAD_CACHE_ONLY
             
             // Yüklemeyi durdur ve süreölçerleri duraklat
             if (webView.isShown && !tab.isHibernated) {
@@ -124,9 +146,24 @@ class WebViewOptimizer(webView: WebView) {
                 webView.pauseTimers()
             }
             
-            // JavaScript'i devre dışı bırakarak işlemciyi rahatlatabilir, 
-            // ancak bu bazı sayfaların durumunu bozabilir, bu yüzden dikkatli kullanın
-            // webView.settings.javaScriptEnabled = false
+            // Bellek kullanımını azaltmak için yazılım render moduna geç
+            webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+            
+            // JavaScript motoru durdur - sekme arka plandayken gereksiz işlemci kullanımını önler
+            webView.settings.javaScriptEnabled = false
+            
+            // GC tetikle
+            webView.freeMemory()
+            
+            // Agresif bellek azaltma - DOM kapat
+            webView.evaluateJavascript(
+                """
+                try {
+                    document.body.style.zoom = '0.1';
+                    document.body.innerHTML = '';
+                } catch(e) {}
+                """.trimIndent(), null
+            )
         }
     }
     

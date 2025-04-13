@@ -4,29 +4,29 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/tab_container"
     android:layout_width="wrap_content"
-    android:layout_height="36dp"
+    android:layout_height="match_parent"
     android:background="@drawable/bg_tab_inactive"
     android:elevation="1dp"
     android:layout_marginEnd="4dp"
-    android:paddingStart="4dp"
-    android:paddingEnd="4dp"
-    android:minWidth="100dp"
-    android:maxWidth="160dp">
+    android:paddingStart="6dp"
+    android:paddingEnd="6dp"
+    android:minWidth="120dp"
+    android:maxWidth="180dp">
 
-    <!-- Removed drag handle (= symbol) for a cleaner look -->
-
+    <!-- Favicon icon - Dark Theme color -->
     <ImageView
         android:id="@+id/tab_favicon"
         android:layout_width="16dp"
         android:layout_height="16dp"
         android:layout_marginStart="8dp"
         android:contentDescription="@string/favicon"
-        android:tint="?attr/colorOnPrimary"
+        android:tint="@color/tab_title_active"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:src="@drawable/ic_globe" />
 
+    <!-- Tab title - Dark Theme color -->
     <TextView
         android:id="@+id/tab_title"
         android:layout_width="0dp"
@@ -35,37 +35,41 @@
         android:layout_marginEnd="8dp"
         android:ellipsize="end"
         android:maxLines="1"
-        android:textSize="12sp"
-        android:textColor="?attr/colorOnPrimary"
+        android:textSize="13sp"
+        android:textColor="@color/tab_title_active"
         app:layout_constraintStart_toEndOf="@id/tab_favicon"
         app:layout_constraintEnd_toStartOf="@id/hibernation_indicator"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:text="Google" />
 
+    <!-- Hibernation indicator - Dark Theme color -->
     <ImageView
         android:id="@+id/hibernation_indicator"
         android:layout_width="16dp"
         android:layout_height="16dp"
         android:src="@drawable/ic_sleep"
         android:contentDescription="@string/hibernated"
-        android:tint="?attr/colorOnPrimary"
+        android:tint="@color/tab_title_active"
         android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@id/close_button"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:visibility="visible" />
 
+    <!-- Loading indicator - Dark Theme color -->
     <ProgressBar
         android:id="@+id/loading_indicator"
         android:layout_width="16dp"
         android:layout_height="16dp"
         android:visibility="gone"
+        android:indeterminateTint="@color/primary"
         app:layout_constraintEnd_toStartOf="@id/close_button"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:visibility="visible" />
 
+    <!-- Close button - Dark Theme color -->
     <ImageButton
         android:id="@+id/close_button"
         android:layout_width="24dp"
@@ -73,7 +77,7 @@
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/close_tab"
         android:src="@drawable/ic_close"
-        android:tint="?attr/colorOnPrimary"
+        android:tint="@color/tab_title_active"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />

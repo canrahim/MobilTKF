@@ -43,6 +43,7 @@ class TabWebView @JvmOverloads constructor(
     var onJsConfirm: ((String, String, JsResult) -> Boolean)? = null
     var onFileChooser: ((ValueCallback<Array<Uri>>) -> Boolean)? = null
     var onDownloadRequested: ((String, String, String, String, Long) -> Unit)? = null
+    var onLongPress: ((String, String) -> Unit)? = null
     
     init {
         setupWebView()
@@ -100,41 +101,66 @@ class TabWebView @JvmOverloads constructor(
      * WebView'i performans için optimize et
      */
     private fun optimizeForPerformance() {
-        // Donanım hızlandırma
+        // Donanım hızlandırma - maksimum performans için
         setLayerType(View.LAYER_TYPE_HARDWARE, null)
         
-        // Yükleme performansını artır
-        settings.blockNetworkImage = true // Önce sayfa yüklensin, sonra resimler
+        // Sayfa önce yapı olarak yüklensin, resimler daha sonra gelsin
+        settings.blockNetworkImage = true
         settings.loadsImagesAutomatically = true
         
         // JavaScript yürütme optimizasyonu
-        settings.setGeolocationEnabled(false) // Konum için izin istemesini önler
-        settings.mediaPlaybackRequiresUserGesture = true // Otomatik video oynatmaları engeller
+        settings.setGeolocationEnabled(false) // Konum izinlerini devre dışı bırak
+        settings.mediaPlaybackRequiresUserGesture = true // Kullanıcı etkileşimi olmadan medya oynatma
         
-        // Önbellek ayarları
-        settings.cacheMode = WebSettings.LOAD_DEFAULT
-        // settings.setAppCacheEnabled(true) // API level 33'te kaldırıldı
+        // Gelişmiş önbellek stratejisi
+        settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
         
         // Kaydırma performansını iyileştir
         overScrollMode = OVER_SCROLL_NEVER
         scrollBarStyle = SCROLLBARS_INSIDE_OVERLAY
         isVerticalScrollBarEnabled = false
+        isHorizontalScrollBarEnabled = false
         
-        // DOM Storage yönetimi
+        // DOM Storage ve veritabanı desteği
         settings.domStorageEnabled = true
         settings.databaseEnabled = true
         
-        // Sayfa içeriği performansı
+        // Hızlı sayfa görüntüleme
         settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.NORMAL
         
-        // Kayan ve animasyonlu öğeleri optimize et
-        // settings.enableSmoothTransition = false // API level 33'te kaldırıldı
+        // Görüntü ölçekleme optimizasyonu
+        settings.useWideViewPort = true
+        settings.loadWithOverviewMode = true
+        
+        // Maksimum performans için ek ayarlar
+        settings.setRenderPriority(WebSettings.RenderPriority.HIGH)
+        
+        // Text rendering optimizasyonu
+        settings.textZoom = 100
     }
     
     /**
      * Configure the WebView with optimal settings
      */
     private fun setupWebView() {
+        // Uzun basma olayını tanımla
+        setOnLongClickListener {
+            // Basılan link'i al
+            val result = hitTestResult
+            
+            // Link URL'sini kontrol et
+            if (result.type == WebView.HitTestResult.SRC_ANCHOR_TYPE ||
+                result.type == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+                val url = result.extra
+                if (url != null) {
+                    // Link URL'sini ve sekme ID'sini callback'e gönder
+                    onLongPress?.invoke(tab?.id ?: "", url)
+                    return@setOnLongClickListener true
+                }
+            }
+            false
+        }
+        
         // WebView performans ayarları
         setWillNotDraw(false)
         setLayerType(View.LAYER_TYPE_HARDWARE, null)
@@ -425,7 +451,7 @@ class TabWebView @JvmOverloads constructor(
     }
 
     /**
-     * Load a URL in this WebView - Hızlandırılmış performans optimizasyonu
+     * Load a URL in this WebView - Ultra hızlı yükleme optimizasyonu
      */
     override fun loadUrl(url: String) {
         // Ensure URL has schema
@@ -435,44 +461,43 @@ class TabWebView @JvmOverloads constructor(
             url
         }
         
-        // Sayfa yüklenmeden önce temel performans ayarları
+        // Hızlı yükleme için görüntüleri engelle
         settings.blockNetworkImage = true
-        settings.cacheMode = WebSettings.LOAD_DEFAULT // Varsayılan önbellek stratejisini kullan
         
-        // Temel çerez yönetimi - gerekli minimum ayarlar
-        val cookieManager = CookieManager.getInstance()
-        cookieManager.setAcceptCookie(true)
-        cookieManager.setAcceptThirdPartyCookies(this, true)
+        // Hızlı önbellek için optimum strateji
+        settings.cacheMode = if (isNetworkAvailable(context)) {
+            WebSettings.LOAD_CACHE_ELSE_NETWORK
+        } else {
+            WebSettings.LOAD_CACHE_ONLY
+        }
         
-        // JavaScripti aktifleştir ve depolama izinlerini etkinleştir
+        // Kritik JavaScript ve depolama ayarları
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.databaseEnabled = true
         
-        // Login sayfaları için özel ayarlar - kısa ve özlü
-        if (isLoginPage(formattedUrl)) {
-            // Özel durum için haber ver
-            Timber.d("Detected login/auth page: $formattedUrl")
-            
-            // Form kaydı - minimal gereksinimler
-            settings.saveFormData = true
-        }
-        
-        // URL bilgisini logla ve çerezleri güncelleyip yükle
-        tab?.let {
-            Timber.d("Loading URL: $formattedUrl in tab ${it.id}")
-        }
-
-        // Direkt yükleme yap - asenkron post kaldırıldı
+        // URL'i yükle
+        Timber.d("Yüksek performans modunda yükleniyor: $formattedUrl")
         super.loadUrl(formattedUrl)
         
-        // Oturum sayfaları için form handlerı enjekte et - diğer sayfalar için yapma
-        if (isLoginPage(formattedUrl) && formattedUrl.contains("szutest.com.tr", ignoreCase = true)) {
-            // Gecikme süresini kısalttık
-            postDelayed({
-                injectFormHandlers()
-            }, 200)
-        }
+        // Sayfa yüklendikten 300ms sonra resimlere izin ver
+        postDelayed({
+            settings.blockNetworkImage = false
+        }, 300)
+    }
+    
+    /**
+     * Ağ bağlantısının mevcut olup olmadığını kontrol et
+     */
+    private fun isNetworkAvailable(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        val network = connectivityManager.activeNetwork
+        val capabilities = connectivityManager.getNetworkCapabilities(network)
+        return capabilities != null && (
+            capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) ||
+            capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) ||
+            capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET)
+        )
     }
     
     /**

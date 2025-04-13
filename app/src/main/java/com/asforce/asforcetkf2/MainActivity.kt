@@ -557,6 +557,11 @@ class MainActivity : AppCompatActivity() {
                 ).show()
             }
         }
+        
+        // Uzun basma için callback'i ayarla
+        webView.onLongPress = { tabId, url ->
+            showLongPressMenu(url)
+        }
     }
     
     private fun loadUrl(url: String) {
@@ -839,5 +844,50 @@ class MainActivity : AppCompatActivity() {
         activeWebViews.clear()
         
         super.onDestroy()
+    }
+    
+    /**
+     * Uzun basma menüsünü gösterir - link için seçenekler
+     */
+    private fun showLongPressMenu(url: String) {
+        // Menü seçenekleri
+        val options = arrayOf(
+            "Yeni sekmede aç",
+            "Linki kopyala",
+            "Dosyayı indir"
+        )
+        
+        // Dialog menüsünü göster
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Link seçenekleri")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> {
+                        // Yeni sekmede aç
+                        addNewTab(url)
+                        Toast.makeText(this, "Link yeni sekmede açılıyor", Toast.LENGTH_SHORT).show()
+                    }
+                    1 -> {
+                        // Linki kopyala
+                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        val clip = android.content.ClipData.newPlainText("URL", url)
+                        clipboard.setPrimaryClip(clip)
+                        Toast.makeText(this, "Link kopyalandı", Toast.LENGTH_SHORT).show()
+                    }
+                    2 -> {
+                        // Linkteki dosyayı indir
+                        val downloadId = downloadManager.downloadFile(
+                            url, "Mozilla/5.0", "", "*/*", 0
+                        )
+                        
+                        if (downloadId > 0) {
+                            Toast.makeText(this, "İndirme başlatıldı", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this, "İndirme başlatılamadı", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            .show()
     }
 }

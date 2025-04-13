@@ -3,7 +3,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- Gri tonları -->
+    <!-- Koyu gri tonları - Dark Mode Optimizasyonu -->
     <color name="grey_50">#FAFAFA</color>
     <color name="grey_100">#F5F5F5</color>
     <color name="grey_200">#EEEEEE</color>
@@ -15,30 +15,49 @@
     <color name="grey_800">#424242</color>
     <color name="grey_900">#212121</color>
     
-    <!-- Aydınlık mod ana renkler -->
-    <color name="primary">#2196F3</color>
-    <color name="primary_variant">#1976D2</color>
-    <color name="primary_dark">#0D47A1</color>
-    <color name="secondary">#FF5722</color>
-    <color name="secondary_variant">#E64A19</color>
+    <!-- Aydınlık mod ana renkler - Artık kullanılmayacak -->
+    <color name="primary_light">#2196F3</color>
+    <color name="primary_variant_light">#1976D2</color>
+    <color name="primary_dark_light">#0D47A1</color>
+    <color name="secondary_light">#FF5722</color>
+    <color name="secondary_variant_light">#E64A19</color>
     
-    <!-- Karanlık mod ana renkler -->
-    <color name="primary_dark_mode">#90CAF9</color>
-    <color name="primary_variant_dark_mode">#64B5F6</color>
-    <color name="primary_dark_dark_mode">#42A5F5</color>
-    <color name="secondary_dark_mode">#FFAB91</color>
-    <color name="secondary_variant_dark_mode">#FF8A65</color>
+    <!-- Yeni Koyu Tema Ana Renkler -->
+    <color name="primary">#3D5AFE</color> <!-- Parlak mavi -->
+    <color name="primary_variant">#1A237E</color> <!-- Koyu mavi -->
+    <color name="primary_dark">#0D1B66</color> <!-- Çok koyu mavi -->
+    <color name="secondary">#536DFE</color> <!-- Indigo mavi -->
+    <color name="secondary_variant">#304FFE</color> <!-- Koyu indigo -->
     
-    <!-- Karanlık arka plan renkleri -->
-    <color name="dark_background">#121212</color>
-    <color name="dark_surface">#1E1E1E</color>
+    <!-- Koyu Tema Arka Plan Renkleri -->
+    <color name="dark_background">#121212</color> <!-- Gerçek siyah -->
+    <color name="dark_surface">#1D1D1D</color> <!-- Çok koyu gri -->
+    <color name="dark_card">#252525</color> <!-- Koyu kart rengi -->
+    <color name="dark_divider">#2D2D2D</color> <!-- Koyu ayırıcı -->
     
-    <!-- Sekme renkleri -->
-    <color name="tab_title_active">#FFFFFF</color>
-    <color name="tab_title_inactive">#E0E0E0</color>
+    <!-- Metin Renkleri -->
+    <color name="text_primary_dark">#FFFFFF</color> <!-- Beyaz metin -->
+    <color name="text_secondary_dark">#B3FFFFFF</color> <!-- %70 beyaz -->
+    <color name="text_disabled_dark">#66FFFFFF</color> <!-- %40 beyaz -->
+    
+    <!-- Sekme Renkleri - Koyu Mod İçin -->
+    <color name="tab_background">#252525</color> <!-- Koyu sekme arka planı -->
+    <color name="tab_selected">#3D5AFE</color> <!-- Parlak mavi seçili -->
+    <color name="tab_inactive">#505050</color> <!-- Devre dışı sekme -->
+    <color name="tab_title_active">#FFFFFF</color> <!-- Beyaz metin -->
+    <color name="tab_title_inactive">#B3FFFFFF</color> <!-- %70 beyaz -->
+    
+    <!-- Toolbar Renkleri -->
+    <color name="toolbar_background">#1A1A1A</color> <!-- Koyu toolbar -->
+    <color name="toolbar_icon">#FFFFFF</color> <!-- Beyaz ikonlar -->
+    <color name="status_bar_color">#000000</color> <!-- Siyah durum çubuğu -->
     
     <!-- Durum renkleri -->
-    <color name="error">#F44336</color>
-    <color name="success">#4CAF50</color>
-    <color name="warning">#FFC107</color>
+    <color name="error">#CF6679</color> <!-- Koyu kırmızı -->
+    <color name="success">#4CAF50</color> <!-- Yeşil -->
+    <color name="warning">#FFAB00</color> <!-- Turuncu -->
+    
+    <!-- Nav Bar ve Diğer Sistem Elementleri -->
+    <color name="nav_bar_color">#000000</color> <!-- Siyah navigasyon çubuğu -->
+    <color name="ripple_color">#404040</color> <!-- Dokun efekti -->
 </resources>

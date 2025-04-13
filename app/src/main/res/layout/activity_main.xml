@@ -5,17 +5,18 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/dark_background"
     tools:context=".MainActivity">
 
-    <!-- Toolbar with navigation controls -->
+    <!-- Toolbar with navigation controls - Dark Theme -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
+        android:background="@color/toolbar_background"
         android:elevation="4dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Dark">
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
@@ -29,7 +30,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/main_menu"
                 android:src="@drawable/ic_menu"
-                android:tint="?attr/colorOnPrimary"
+                android:tint="@color/toolbar_icon"
                 android:layout_gravity="center_vertical" />
                 
             <ImageButton
@@ -39,7 +40,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/go_back"
                 android:src="@drawable/ic_back"
-                android:tint="?attr/colorOnPrimary"
+                android:tint="@color/toolbar_icon"
                 android:layout_gravity="center_vertical" />
 
             <ImageButton
@@ -49,7 +50,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/go_forward"
                 android:src="@drawable/ic_forward"
-                android:tint="?attr/colorOnPrimary"
+                android:tint="@color/toolbar_icon"
                 android:layout_gravity="center_vertical" />
 
             <ImageButton
@@ -59,7 +60,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/refresh"
                 android:src="@drawable/ic_refresh"
-                android:tint="?attr/colorOnPrimary"
+                android:tint="@color/toolbar_icon"
                 android:layout_gravity="center_vertical" />
 
             <com.google.android.material.textfield.TextInputLayout
@@ -70,11 +71,12 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
                 android:layout_gravity="center_vertical"
-                app:boxBackgroundColor="?attr/colorPrimaryVariant"
+                app:boxBackgroundColor="@color/dark_surface"
                 app:endIconMode="custom"
                 app:endIconDrawable="@drawable/ic_copy"
-                app:endIconTint="?attr/colorOnPrimary"
-                app:boxStrokeColor="?attr/colorOnPrimary"
+                app:endIconTint="@color/toolbar_icon"
+                app:boxStrokeColor="@color/primary"
+                app:boxStrokeWidth="1dp"
                 app:endIconContentDescription="@string/copy_url">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -83,13 +85,13 @@
                     android:layout_height="match_parent"
                     android:background="@null"
                     android:hint="@string/search_or_type_url"
-                    android:textColorHint="?attr/colorOnPrimary"
-                    android:textColor="?attr/colorOnPrimary"
+                    android:textColorHint="@color/text_secondary_dark"
+                    android:textColor="@color/text_primary_dark"
                     android:imeOptions="actionGo"
                     android:inputType="textUri"
                     android:paddingTop="4dp"
                     android:paddingBottom="4dp"
-                    android:textSize="12sp"
+                    android:textSize="13sp"
                     android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -100,17 +102,17 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/menu"
                 android:src="@drawable/ic_menu"
-                android:tint="?attr/colorOnPrimary"
+                android:tint="@color/toolbar_icon"
                 android:layout_gravity="center_vertical" />
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- Tab strip container -->
+    <!-- Tab strip container - Dark Theme -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/tabs_container"
         android:layout_width="match_parent"
-        android:layout_height="36dp"
-        android:background="?attr/colorPrimaryDark"
+        android:layout_height="40dp"
+        android:background="@color/tab_background"
         android:elevation="2dp"
         app:layout_constraintTop_toBottomOf="@id/toolbar">
 
@@ -135,7 +137,8 @@
             android:layout_marginEnd="4dp"
             android:contentDescription="@string/new_tab"
             android:src="@drawable/ic_add"
-            android:tint="?attr/colorOnPrimary"
+            android:tint="@color/toolbar_icon"
+            app:backgroundTint="@color/secondary"
             app:elevation="1dp"
             app:fabCustomSize="32dp"
             app:maxImageSize="16dp"
@@ -150,16 +153,19 @@
         android:id="@+id/webview_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:background="@color/dark_background"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tabs_container" />
 
-    <!-- Loading progress bar -->
+    <!-- Loading progress bar - Dark Theme colors -->
     <ProgressBar
         android:id="@+id/progress_bar"
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="3dp"
         android:visibility="gone"
+        android:progressTint="@color/primary"
+        android:progressBackgroundTint="@color/dark_surface"
         app:layout_constraintTop_toBottomOf="@id/tabs_container"
         tools:progress="50"
         tools:visibility="visible" />
