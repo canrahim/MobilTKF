@@ -418,29 +418,65 @@ class MainActivity : AppCompatActivity() {
                 v.requestFocus()
                 
                 // Her zaman input alanını kontrol et, suggestionsı göster
-                val script = "(function() {" +
-                           "var element = document.elementFromPoint(${event.x}, ${event.y});" +
-                           "if (element) {" +
-                           "  if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {" +
-                           "    element.focus();" +
-                           "    var key = element.getAttribute('data-tkf-key');" +
-                           "    if (!key) {" +
-                           "      key = (element.name || element.id || element.placeholder || 'input_' + Math.random().toString(36).substr(2, 9));" +
-                           "      key = key.replace(/[^a-zA-Z0-9_]/g, '_');" +
-                           "      element.setAttribute('data-tkf-key', key);" +
-                           "    }" +
-                           "    if (window.SuggestionHandler) {" +
-                           "      window.SuggestionHandler.onInputFocused(key);" +
-                           "    }" +
-                           "    return true;" +
-                           "  }" +
-                           "}" +
-                           "return false;" +
-                           "})();"
+                val script = """
+                (function() {
+                    // Get the element at the touch point
+                    var element = document.elementFromPoint(${event.x}, ${event.y});
+                    if (!element) return false;
+                    
+                    // Check if touched element is an input field
+                    var isInput = element.tagName === 'INPUT' || element.tagName === 'TEXTAREA';
+                    
+                    // If it's an input field, focus it and prepare for suggestions
+                    if (isInput) {
+                        console.log('TKF Browser: Touch detected on input field: ' + element.tagName);
+                        
+                        // Force focus on element
+                        element.focus();
+                        
+                        // Get or create key
+                        var key = element.getAttribute('data-tkf-key');
+                        if (!key) {
+                            key = (element.name || element.id || element.placeholder || 'input_' + Math.random().toString(36).substr(2, 9));
+                            key = key.replace(/[^a-zA-Z0-9_]/g, '_');
+                            element.setAttribute('data-tkf-key', key);
+                        }
+                        
+                        // Make sure the element is visible in viewport
+                        if (element.scrollIntoViewIfNeeded) {
+                            element.scrollIntoViewIfNeeded();
+                        } else if (element.scrollIntoView) {
+                            element.scrollIntoView();
+                        }
+                        
+                        // Reset the focus and blur to ensure keyboard shows
+                        setTimeout(function() {
+                            // Blur and focus to ensure keyboard and suggestions show up
+                            element.blur();
+                            setTimeout(function() {
+                                element.focus();
+                                
+                                // Notify for suggestions
+                                if (window.SuggestionHandler) {
+                                    console.log('TKF Browser: Notifying SuggestionHandler with key: ' + key);
+                                    window.SuggestionHandler.onInputFocused(key);
+                                    window.SuggestionHandler.onInputChanged(key, element.value || '');
+                                } else {
+                                    console.log('TKF Browser: SuggestionHandler not available');
+                                }
+                            }, 50);
+                        }, 50);
+                        
+                        return true;
+                    }
+                    
+                    return false;
+                })();
+                """
                 
                 webView.evaluateJavascript(script) { result ->
-                    if (result.equals("true")) {
-                        // Girdi alanı - klavyeyi göster
+                    if (result.contains("true")) {
+                        // Ensure keyboard is visible
                         showKeyboard(v)
                     }
                 }
@@ -1380,6 +1416,53 @@ class MainActivity : AppCompatActivity() {
             // 2. Track the IDs and names we've seen to avoid duplicates
             var processedKeys = [];
             
+            // Helper function for focus handling that ensures keyboard is shown
+            function createStrongFocusHandler(inputElement, inputKey) {
+                return function(e) {
+                    console.log('Input focused with key=' + inputKey);
+                    
+                    // Ensure keyboard is shown by applying a sequence of focus/blur actions
+                    var forceFocusSequence = function() {
+                        // First blur to reset focus state
+                        inputElement.blur();
+                        
+                        // Then focus again after a small delay
+                        setTimeout(function() {
+                            // Focus hard
+                            inputElement.focus();
+                            inputElement.click();
+                            
+                            // Ensure cursor is at end of text
+                            try {
+                                var valueLength = inputElement.value ? inputElement.value.length : 0;
+                                inputElement.setSelectionRange(valueLength, valueLength);
+                            } catch(e) {}
+                            
+                            // Notify SuggestionHandler
+                            if (window.SuggestionHandler) {
+                                // Send multiple notifications to ensure it's caught
+                                window.SuggestionHandler.onInputFocused(inputKey);
+                                
+                                // Also send the current value
+                                setTimeout(function() {
+                                    var currentValue = inputElement.value || '';
+                                    window.SuggestionHandler.onInputChanged(inputKey, currentValue);
+                                    console.log('Sent input value to suggestion handler: ' + currentValue);
+                                }, 50);
+                            } else {
+                                console.log('SuggestionHandler not available');
+                            }
+                        }, 10);
+                    };
+                    
+                    // Execute the sequence
+                    forceFocusSequence();
+                    
+                    // Also set a timeout to try again in case the first attempt fails
+                    setTimeout(forceFocusSequence, 100);
+                };
+            }
+            
             // 3. Process each input field
             var processedCount = 0;
             for (var i = 0; i < inputs.length; i++) {
@@ -1394,7 +1477,7 @@ class MainActivity : AppCompatActivity() {
                     var name = input.name || '';
                     var placeholder = input.placeholder || '';
                     
-                    // Create a key for this input
+                    // Create a key for this input - make it more specific to avoid collisions
                     var key;
                     if (id) {
                         key = 'id_' + id.replace(/[^a-zA-Z0-9_]/g, '_');
@@ -1418,70 +1501,69 @@ class MainActivity : AppCompatActivity() {
                     // Store the key as a data attribute
                     input.setAttribute('data-tkf-key', key);
                     
-                    // Create enhanced event listeners
-                    // 1. Focus event with keyboard activation
-                    function createFocusHandler(inputElement, inputKey) {
-                        return function(e) {
-                            console.log('Input focused: key=' + inputKey);
-                            
-                            // Save current position so we can restore it
-                            var selStart = inputElement.selectionStart;
-                            var selEnd = inputElement.selectionEnd;
-                            
-                            // Ensure keyboard is shown
-                            inputElement.blur();
-                            setTimeout(function() {
-                                inputElement.focus();
-                                
-                                // Restore selection
-                                try {
-                                    inputElement.setSelectionRange(selStart, selEnd);
-                                } catch(e) {}
-                                
-                                // Notify suggestion handler
-                                if (window.SuggestionHandler) {
-                                    window.SuggestionHandler.onInputFocused(inputKey);
-                                    window.SuggestionHandler.onInputChanged(inputKey, inputElement.value || '');
-                                }
-                            }, 10);
-                        };
-                    }
-                    
-                    // Remove existing event listeners by cloning
+                    // Replace the input with a clone to remove existing event listeners
                     var newInput = input.cloneNode(true);
                     if (input.parentNode) {
                         input.parentNode.replaceChild(newInput, input);
                     }
                     input = newInput;
                     
-                    // Add enhanced focus event
-                    input.addEventListener('focus', createFocusHandler(input, key));
+                    // Create strong focus handler for this input
+                    var focusHandler = createStrongFocusHandler(input, key);
                     
-                    // Handle clicks too
-                    input.addEventListener('click', createFocusHandler(input, key));
+                    // Add enhanced event listeners
+                    input.addEventListener('focus', focusHandler);
+                    input.addEventListener('click', focusHandler);
+                    input.addEventListener('touchstart', focusHandler);
                     
-                    // Handle input changes to filter suggestions
+                    // Handle input changes for suggestions
                     input.addEventListener('input', function(e) {
-                        console.log('Input changed: key=' + key + ', value=' + this.value);
+                        var key = this.getAttribute('data-tkf-key');
+                        var value = this.value || '';
+                        console.log('Input changed: key=' + key + ', value=' + value);
+                        
                         if (window.SuggestionHandler) {
-                            window.SuggestionHandler.onInputChanged(key, this.value || '');
+                            window.SuggestionHandler.onInputChanged(key, value);
+                        }
+                    });
+                    
+                    // Handle blur event to save values
+                    input.addEventListener('blur', function(e) {
+                        var key = this.getAttribute('data-tkf-key');
+                        var value = this.value || '';
+                        
+                        if (value && window.SuggestionHandler) {
+                            console.log('Saving value on blur: ' + value);
+                            window.SuggestionHandler.saveInputSuggestion(key, value);
                         }
                     });
                     
                     // Save submitted values
                     input.addEventListener('change', function(e) {
-                        if (this.value && window.SuggestionHandler) {
-                            window.SuggestionHandler.saveInputSuggestion(key, this.value);
+                        var key = this.getAttribute('data-tkf-key');
+                        var value = this.value || '';
+                        
+                        if (value && window.SuggestionHandler) {
+                            console.log('Saving value on change: ' + value);
+                            window.SuggestionHandler.saveInputSuggestion(key, value);
                         }
                     });
                     
-                    // Test - highlight this field with a border
+                    // Make the field visually distinct so users know it's enhanced
                     input.style.borderColor = '#4285f4';
                     input.style.borderWidth = '2px';
+                    input.style.borderRadius = '4px';
+                    
+                    // If this is already the active element, trigger focus handler
+                    if (document.activeElement === input) {
+                        setTimeout(function() {
+                            focusHandler({ type: 'focus' });
+                        }, 200);
+                    }
                     
                     processedCount++;
                 } catch(e) {
-                    console.error('Error processing input: ' + e.message);
+                    console.error('Error processing input #' + i + ': ' + e.message);
                 }
             }
             
@@ -1504,6 +1586,24 @@ class MainActivity : AppCompatActivity() {
                     }
                 });
             }
+            
+            // Global touchstart event to ensure proper focus handling
+            document.addEventListener('touchstart', function(e) {
+                var element = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+                if (element) {
+                    if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                        var key = element.getAttribute('data-tkf-key');
+                        if (key && window.SuggestionHandler) {
+                            // Ensure element is focused
+                            element.focus();
+                            
+                            // Notify suggestion handler
+                            window.SuggestionHandler.onInputFocused(key);
+                            window.SuggestionHandler.onInputChanged(key, element.value || '');
+                        }
+                    }
+                }
+            }, {passive: true});
             
             return 'Processed ' + processedCount + ' input fields on szutest.com.tr';
         })();
