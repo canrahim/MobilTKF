@@ -2,6 +2,8 @@ package com.asforce.asforcetkf2
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -33,6 +35,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.asforce.asforcetkf2.adapter.TabsAdapter
 import com.asforce.asforcetkf2.databinding.ActivityMainBinding
 import com.asforce.asforcetkf2.model.Tab
+import com.asforce.asforcetkf2.qrscanner.QRScannerFragment
 import com.asforce.asforcetkf2.util.TabResourceMonitor
 import com.asforce.asforcetkf2.util.TKFDownloadManager
 import com.asforce.asforcetkf2.viewmodel.TabViewModel
@@ -146,6 +149,9 @@ class MainActivity : AppCompatActivity() {
         
         // Start resource monitoring
         startTabResourceMonitoring()
+        
+        // QR Kod tarayıcı butonunu ayarla
+        setupQrScannerButton()
     }
     
     private fun initializeTabComponents() {
@@ -902,28 +908,55 @@ class MainActivity : AppCompatActivity() {
     
     /**
      * Dosya kaynağı seçim menüsünü gösterir (Kamera, Galeri, Dosya Seçici)
+     * Modern, özel bir tasarım ile
      */
     private fun showFileSourceDialog() {
-        val options = arrayOf(
-            getString(R.string.file_source_camera),
-            getString(R.string.file_source_gallery),
-            getString(R.string.file_source_files)
-        )
+        // BottomSheetDialog kullan - daha modern ve mobil dostu
+        val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
         
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.file_source_dialog_title)
-            .setItems(options) { _, which ->
-                when (which) {
-                    0 -> takePictureFromCamera()
-                    1 -> selectImageFromGallery()
-                    2 -> openFileChooser()
-                }
-            }
-            .setNegativeButton(R.string.file_source_cancel) { _, _ ->
-                filePathCallback?.onReceiveValue(null)
-                filePathCallback = null
-            }
-            .show()
+        // Özel düzeni şişir
+        val view = layoutInflater.inflate(R.layout.dialog_file_source, null)
+        dialog.setContentView(view)
+        
+        // UI öğelerini ayarla
+        val cameraCard = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cameraCard)
+        val galleryCard = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.galleryCard)
+        val filesCard = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.filesCard)
+        val btnCancel = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancel)
+        
+        // Kamera seçeneği için tıklama dinleyicisi
+        cameraCard.setOnClickListener {
+            dialog.dismiss()
+            takePictureFromCamera()
+        }
+        
+        // Galeri seçeneği için tıklama dinleyicisi
+        galleryCard.setOnClickListener {
+            dialog.dismiss()
+            selectImageFromGallery()
+        }
+        
+        // Dosyalar seçeneği için tıklama dinleyicisi
+        filesCard.setOnClickListener {
+            dialog.dismiss()
+            openFileChooser()
+        }
+        
+        // İptal düğmesi için tıklama dinleyicisi
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+            filePathCallback?.onReceiveValue(null)
+            filePathCallback = null
+        }
+        
+        // Dialog iptal edildiğinde dosya seçimi iptal edilir
+        dialog.setOnCancelListener {
+            filePathCallback?.onReceiveValue(null)
+            filePathCallback = null
+        }
+        
+        // Dialog'u göster
+        dialog.show()
     }
     
     /**
@@ -1039,5 +1072,96 @@ class MainActivity : AppCompatActivity() {
                 return
             }
         }
+    }
+    
+    /**
+     * QR kod tarayıcı butonunu ayarla
+     */
+    private fun setupQrScannerButton() {
+        binding.fabQrScanner.setOnClickListener {
+            // QR kod tarayıcıyı başlat
+            openQrScanner()
+        }
+    }
+    
+    /**
+     * QR kod tarayıcıyı aç
+     */
+    private fun openQrScanner() {
+        // İzin kontrolü
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) 
+                != PackageManager.PERMISSION_GRANTED) {
+            // İzin iste
+            ActivityCompat.requestPermissions(
+                this, 
+                arrayOf(android.Manifest.permission.CAMERA),
+                CAMERA_PERMISSION_REQUEST_CODE
+            )
+            return
+        }
+        
+        // QR kod tarayıcı fragment'ı oluştur ve başlat
+        val qrScannerFragment = QRScannerFragment.newInstance { qrContent ->
+            // QR kod algılandığında çalışacak callback
+            handleQrCodeResult(qrContent)
+        }
+        
+        qrScannerFragment.show(supportFragmentManager, "QR_SCANNER")
+    }
+    
+    /**
+     * QR kod tarama sonucunu işle
+     */
+    private fun handleQrCodeResult(content: String) {
+        // QR kod içeriğine göre işlem yap
+        if (URLUtil.isValidUrl(content)) {
+            // İçerik bir URL ise doğrudan aç
+            loadUrl(content)
+            Snackbar.make(
+                binding.root,
+                "QR koddan URL açıldı: $content",
+                Snackbar.LENGTH_SHORT
+            ).show()
+        } else {
+            // URL değilse kullanıcıya ne yapmak istediğini sor
+            showQrResultActionDialog(content)
+        }
+    }
+    
+    /**
+     * QR kod sonuç işlemi için seçenekler sunan diyalog
+     */
+    private fun showQrResultActionDialog(content: String) {
+        val options = arrayOf(
+            "İnternet'te ara",
+            "Panoya kopyala"
+        )
+        
+        MaterialAlertDialogBuilder(this)
+            .setTitle("QR Kod İçeriği")
+            .setMessage(content)
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> {
+                        // İnternet'te ara
+                        val searchUrl = "https://www.google.com/search?q=${Uri.encode(content)}"
+                        loadUrl(searchUrl)
+                    }
+                    1 -> {
+                        // Panoya kopyala
+                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("QR Code Content", content)
+                        clipboard.setPrimaryClip(clip)
+                        
+                        Toast.makeText(
+                            this,
+                            "İçerik panoya kopyalandı",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+            .setPositiveButton("Kapat", null)
+            .show()
     }
 }

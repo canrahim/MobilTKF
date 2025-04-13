@@ -39,4 +39,17 @@
     <string name="camera_permission_required">Kamera için izin gerekli</string>
     <string name="camera_app_not_found">Kamera uygulaması bulunamadı</string>
     <string name="camera_error">Kamera için geçici dosya oluşturulamadı</string>
+    <!-- QR Kod Tarayıcı -->    
+    <string name="qr_scanner">QR Kod Tarayıcı</string>
+    <string name="scan_qr_instructions">QR kodu çerçeve içine hizalayın</string>
+    <string name="qr_code_detected">QR Kod algılandı</string>
+    <string name="toggle_flashlight">Flaşı Aç/Kapat</string>
+    <string name="zoom_in">Yakınlaştır</string>
+    <string name="zoom_out">Uzaklaştır</string>
+    <string name="qr_scanning">QR Kod Taranıyor</string>
+    <string name="qr_scan_success">QR Kod Başarıyla Tarandı</string>
+    <string name="qr_scan_failed">QR Kod Tarama Başarısız</string>
+    <string name="close">Kapat</string>
+    <string name="qr_camera_permission_required">QR kod taraması için kamera izni gereklidir</string>
+    <string name="scan_qr_code">QR Kod Tara</string>
 </resources>
