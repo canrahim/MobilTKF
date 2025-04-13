@@ -1,29 +1,39 @@
 package com.asforce.asforcetkf2.util
 
+import android.app.Dialog
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.widget.Button
-import android.widget.ListView
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.asforce.asforcetkf2.R
 import com.asforce.asforcetkf2.adapter.DeviceAdapter
 import com.asforce.asforcetkf2.model.device.DeviceItem
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.chip.Chip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.progressindicator.CircularProgressIndicator
+import com.google.android.material.textfield.TextInputEditText
 import org.json.JSONArray
 import org.json.JSONException
-import org.json.JSONObject
 import timber.log.Timber
+import java.util.ArrayList
 import java.util.HashSet
-import java.util.Objects
 
 /**
- * Cihaz listesi yönetimi için manager sınıfı
+ * Cihaz listesi yönetimi için modern manager sınıfı
  */
 class DeviceManager(
     private val context: Context,
@@ -32,11 +42,30 @@ class DeviceManager(
     private val TAG = "DeviceManager"
     private val prefs: SharedPreferences = context.getSharedPreferences("DeviceFavorites", Context.MODE_PRIVATE)
     
+    // Dialog ve bileşenler
+    private var dialog: Dialog? = null
+    private var deviceAdapter: DeviceAdapter? = null
+    private var progressIndicator: CircularProgressIndicator? = null
+    private var emptyStateView: LinearLayout? = null
+    
+    /**
+     * Cihaz ID'si için favori durumunu kontrol eder
+     */
+    fun isDeviceFavorite(deviceId: String): Boolean {
+        return prefs.getBoolean(deviceId, false)
+    }
+    
     /**
      * Cihaz eklemek için WebView'dan cihaz listesini çeker
      */
     fun fetchDeviceList() {
         Timber.d("Cihaz listesi çekiliyor")
+        
+        // Önce modern diyaloğu göster
+        showModernDeviceDialog()
+        
+        progressIndicator?.visibility = View.VISIBLE
+        emptyStateView?.visibility = View.GONE
         
         val jsCode = """
             (function() {
@@ -58,6 +87,9 @@ class DeviceManager(
 
         webView.evaluateJavascript(jsCode) { result ->
             try {
+                // Yükleme göstergesini gizle
+                progressIndicator?.visibility = View.GONE
+                
                 // Log verisi
                 Timber.d("Alınan cihaz verisi: $result")
 
@@ -75,12 +107,14 @@ class DeviceManager(
 
                 // Boş veri kontrolü
                 if (cleaned.isEmpty() || cleaned == "null") {
+                    emptyStateView?.visibility = View.VISIBLE
                     throw Exception("Boş veri döndü")
                 }
 
                 // JSON'a dönüştür
                 val devices = JSONArray(cleaned)
-                showDeviceSelectionDialog(devices)
+                // Modern diyalogu güncelle
+                updateDeviceDialog(devices)
 
             } catch (e: Exception) {
                 Timber.e(e, "Hata: %s", e.message)
@@ -89,38 +123,151 @@ class DeviceManager(
                     "Cihaz listesi alınamadı: ${e.message}",
                     Toast.LENGTH_LONG
                 ).show()
+                
+                // Hata durumunda boş durum göster
+                emptyStateView?.visibility = View.VISIBLE
             }
         }
     }
 
     /**
-     * Cihaz ID'si için favori durumunu kontrol eder
+     * Modern cihaz seçim dialogunu gösterir
      */
-    fun isDeviceFavorite(deviceId: String): Boolean {
-        return prefs.getBoolean(deviceId, false)
+    @SuppressLint("SetTextI18s")
+    private fun showModernDeviceDialog() {
+        // Standart Dialog oluştur - AlertDialog yerine
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_device_selection, null)
+        dialog = Dialog(context).apply {
+            setContentView(dialogView)
+            setCancelable(true)
+            window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        }
+        
+        // Dialog'u göster
+        dialog?.show()
+        
+        // ToolBar'ı ayarla
+        val toolbar = dialogView.findViewById<MaterialToolbar>(R.id.topAppBar)
+        toolbar.setNavigationOnClickListener {
+            dialog?.dismiss()
+        }
+        
+        // Toolbar menu işlemleri
+        toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_refresh -> {
+                    // Listeyi yenile
+                    fetchDeviceList()
+                    true
+                }
+                R.id.action_filter -> {
+                    // Filtreleme seçenekleri
+                    showFilterOptions()
+                    true
+                }
+                else -> false
+            }
+        }
+        
+        // View'ları bağla
+        progressIndicator = dialogView.findViewById(R.id.progressIndicator)
+        emptyStateView = dialogView.findViewById(R.id.emptyState)
+        val recyclerView = dialogView.findViewById<RecyclerView>(R.id.deviceRecyclerView)
+        val chipFavorites = dialogView.findViewById<Chip>(R.id.chipFavorites)
+        val chipAll = dialogView.findViewById<Chip>(R.id.chipAll)
+        val btnSelectAll = dialogView.findViewById<Button>(R.id.btnSelectAll)
+        val btnSubmit = dialogView.findViewById<Button>(R.id.btnSubmit)
+        val btnCancel = dialogView.findViewById<Button>(R.id.btnCancel)
+        val searchEditText = dialogView.findViewById<TextInputEditText>(R.id.searchEditText)
+
+        
+        // RecyclerView ayarları
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        
+        // Chip'ler için dinleyiciler
+        chipFavorites.setOnClickListener {
+            deviceAdapter?.toggleFavorites(true)
+        }
+        
+        chipAll.setOnClickListener {
+            deviceAdapter?.toggleFavorites(false)
+        }
+        
+        // Arama için dinleyici
+        searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                deviceAdapter?.filter?.filter(s)
+            }
+            
+            override fun afterTextChanged(s: Editable?) {}
+        })
+        
+        // Tümünü seç butonu için dinleyici
+        var allSelected = false
+        btnSelectAll.setOnClickListener {
+            allSelected = !allSelected
+            deviceAdapter?.toggleSelectAll(allSelected)
+            btnSelectAll.text = if (allSelected) "Seçimi Kaldır" else "Tümünü Seç"
+        }
+        
+        // Ekle butonu için dinleyici
+        btnSubmit.setOnClickListener {
+            val selectedDevices = deviceAdapter?.getSelectedDevices() ?: emptyList()
+            
+            if (selectedDevices.isEmpty()) {
+                Toast.makeText(context, "Lütfen en az bir cihaz seçin", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            
+            // Seçilen cihazları WebView formuna gönder
+            val selectedIds = selectedDevices.map { it.id }
+            submitSelectedDevices(selectedIds, selectedDevices.size == deviceAdapter?.itemCount)
+            
+            // Dialog'u kapat
+            dialog?.dismiss()
+        }
+        
+        // İptal butonu için dinleyici
+        btnCancel.setOnClickListener {
+            dialog?.dismiss()
+        }
+        
+        // Yükleme göstergesini göster, cihaz listesi gelene kadar
+        progressIndicator?.visibility = View.VISIBLE
+    }
+    
+    /**
+     * Filtreleme seçeneklerini gösteren dialog
+     */
+    private fun showFilterOptions() {
+        val options = arrayOf("Sadece Favoriler", "Hepsi", "Alfabetik Sırala", "Tarih Sırala")
+        val checkedItems = booleanArrayOf(true, false, false, false)
+        
+        MaterialAlertDialogBuilder(context)
+            .setTitle("Filtreleme Seçenekleri")
+            .setMultiChoiceItems(options, checkedItems) { _, which, isChecked ->
+                // Filtreleme seçeneklerini işle
+                when (which) {
+                    0 -> deviceAdapter?.toggleFavorites(isChecked)
+                    // Diğer filtreleme seçenekleri burada işlenebilir
+                }
+            }
+            .setPositiveButton("Uygula") { _, _ ->
+                // Filtreler uygulandı
+            }
+            .setNegativeButton("İptal", null)
+            .show()
     }
 
     /**
-     * Cihaz seçim dialogunu gösterir
+     * Cihaz diyalogunu cihaz listesi ile güncelle
      */
-    @SuppressLint("SetTextI18n")
-    private fun showDeviceSelectionDialog(devices: JSONArray) {
+    private fun updateDeviceDialog(devices: JSONArray) {
         try {
-            val builder = AlertDialog.Builder(context)
-            val inflater = LayoutInflater.from(context)
-            val dialogView = inflater.inflate(R.layout.dialog_device_selection, null)
-            builder.setView(dialogView)
-
-            // View'ları bağla
-            val listView: ListView = dialogView.findViewById(R.id.deviceListView)
-            val btnSubmit: Button = dialogView.findViewById(R.id.btnSubmit)
-            val btnCancel: Button = dialogView.findViewById(R.id.btnCancel)
-            val btnToggleFavorites: Button = dialogView.findViewById(R.id.btnToggleFavorites)
-            val btnSelectAllFavorites: Button = dialogView.findViewById(R.id.btnSelectAllFavorites)
-
             // Cihaz listesini hazırla
             val deviceList = ArrayList<DeviceItem>()
-            val currentDeviceList = ArrayList<DeviceItem>()
             val deviceIds = HashSet<String>() // Çift kayıtları filtrelemek için
 
             for (i in 0 until devices.length()) {
@@ -135,118 +282,32 @@ class DeviceManager(
                     deviceIds.add(id)
                 }
             }
-
-            // Başlangıçta sadece favorileri göster
-            for (device in deviceList) {
-                if (device.isFavorite) {
-                    currentDeviceList.add(device)
-                }
-            }
-
-            // Buton metnini ayarla
-            val buttonText = arrayOf("Tümünü Göster", "Favorileri Göster")
-
-            // Adapter'ı ayarla
-            val adapter = DeviceAdapter(context, currentDeviceList)
-            listView.adapter = adapter
-            listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE
-
-            // ListView item tıklama dinleyicisi
-            listView.setOnItemClickListener { parent, _, position, _ ->
-                val device = parent.getItemAtPosition(position) as DeviceItem
-                device.isSelected = !device.isSelected
-                adapter.notifyDataSetChanged()
-            }
-
-            // Favorileri göster/gizle butonu tıklama dinleyicisi
-            btnToggleFavorites.setOnClickListener {
-                if (btnToggleFavorites.text.toString() == "Tümünü Göster") {
-                    btnToggleFavorites.text = "Favorileri Göster"
-                    // Tüm cihazları göster
-                    currentDeviceList.clear()
-                    currentDeviceList.addAll(deviceList)
+            
+            // RecyclerView'ı bul ve adaptörü ayarla
+            dialog?.findViewById<RecyclerView>(R.id.deviceRecyclerView)?.let { recyclerView ->
+                deviceAdapter = DeviceAdapter(context, deviceList)
+                recyclerView.adapter = deviceAdapter
+                
+                // İlk açılışta sadece favorileri göster
+                deviceAdapter?.toggleFavorites(true)
+                
+                // Yükleme göstergesini gizle
+                progressIndicator?.visibility = View.GONE
+                
+                // Eğer liste boşsa, boş durum göster
+                if (deviceList.isEmpty()) {
+                    emptyStateView?.visibility = View.VISIBLE
                 } else {
-                    btnToggleFavorites.text = "Tümünü Göster"
-                    // Sadece favorileri göster
-                    currentDeviceList.clear()
-                    for (device in deviceList) {
-                        if (device.isFavorite) {
-                            currentDeviceList.add(device)
-                        }
-                    }
+                    emptyStateView?.visibility = View.GONE
                 }
-                adapter.notifyDataSetChanged()
-            }
-
-            btnToggleFavorites.text = buttonText[0] // Başlangıç buton metni
-
-            // Tümünü seç butonu tıklama dinleyicisi
-            btnSelectAllFavorites.setOnClickListener {
-                var allSelected = true
-                for (device in currentDeviceList) {
-                    if (!device.isSelected) {
-                        allSelected = false
-                        break
-                    }
-                }
-                // Tüm cihazların seçim durumunu tersine çevir
-                for (device in currentDeviceList) {
-                    device.isSelected = !allSelected
-                }
-                adapter.notifyDataSetChanged()
-            }
-
-            val dialog = builder.create()
-            dialog.show()
-
-            // Dialog'u tam ekran yap
-            dialog.window?.setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-
-            // Ekle butonu tıklama dinleyicisi
-            btnSubmit.setOnClickListener {
-                val selectedIds = ArrayList<String>()
-                for (device in deviceList) {
-                    if (device.isSelected) {
-                        selectedIds.add(device.id)
-                    }
-                }
-
-                if (selectedIds.isNotEmpty()) {
-                    // Tüm cihazlar seçili mi?
-                    val selectAll = selectedIds.size == deviceList.size
-                    submitSelectedDevices(selectedIds, selectAll)
-
-                    // Seçimleri sıfırla
-                    for (device in deviceList) {
-                        device.isSelected = false
-                    }
-
-                    // Görüntülenen listeyi sıfırla
-                    currentDeviceList.clear()
-                    currentDeviceList.addAll(deviceList)
-                    adapter.notifyDataSetChanged()
-                    dialog.dismiss()
-                } else {
-                    Toast.makeText(context, "Lütfen en az bir cihaz seçin", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            // İptal butonu tıklama dinleyicisi
-            btnCancel.setOnClickListener {
-                dialog.dismiss()
-                // WebView'daki checkbox'ları temizle
-                webView.evaluateJavascript(
-                    "document.querySelectorAll('input[type=\"checkbox\"]').forEach(cb => cb.checked = false);",
-                    null
-                )
             }
 
         } catch (e: JSONException) {
             Timber.e(e, "JSON ayrıştırma hatası: %s", e.message)
             Toast.makeText(context, "Cihaz verisi okunamadı", Toast.LENGTH_SHORT).show()
+            
+            // Boş durum göster
+            emptyStateView?.visibility = View.VISIBLE
         }
     }
 
