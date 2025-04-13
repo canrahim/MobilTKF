@@ -32,7 +32,8 @@
             android:exported="true"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.AsforceTKF2.Translucent">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

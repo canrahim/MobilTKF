@@ -113,6 +113,12 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // Tam ekran modu ve şeffaf gezinme çubuğu
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or 
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        
         // Bileşenleri başlat
         initializeTabComponents()
         setupTabRecyclerView()
@@ -1078,7 +1084,7 @@ class MainActivity : AppCompatActivity() {
      * QR kod tarayıcı butonunu ayarla
      */
     private fun setupQrScannerButton() {
-        binding.fabQrScanner.setOnClickListener {
+        binding.btnQr.setOnClickListener {
             // QR kod tarayıcıyı başlat
             openQrScanner()
         }

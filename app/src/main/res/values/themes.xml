@@ -23,9 +23,9 @@
         <item name="android:textColorHint">@color/text_disabled_dark</item>
         
         <!-- Arka plan renkleri - Koyu Tema -->
-        <item name="android:colorBackground">@color/dark_background</item>
-        <item name="backgroundColor">@color/dark_background</item>
-        <item name="android:windowBackground">@color/dark_background</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="backgroundColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
         
         <!-- Widget renkleri -->
         <item name="android:colorControlNormal">@color/white</item>
@@ -41,4 +41,15 @@
     </style>
 
     <style name="Theme.AsforceTKF2" parent="Base.Theme.AsforceTKF2" />
+
+    <style name="Theme.AsforceTKF2.Translucent" parent="Theme.AsforceTKF2">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
 </resources>
