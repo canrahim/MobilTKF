@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/dark_surface">
+
+    <TextView
+        android:id="@+id/dialogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:text="Cihaz Seçimi"
+        android:textColor="@color/white"
+        android:paddingBottom="16dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:paddingBottom="8dp">
+
+        <Button
+            android:id="@+id/btnToggleFavorites"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tümünü Göster"
+            android:backgroundTint="@color/primary"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/btnSelectAllFavorites"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tümünü Seç"
+            android:backgroundTint="@color/primary" />
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/deviceListView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/dark_background"
+        android:divider="@color/dark_divider"
+        android:dividerHeight="1dp"
+        android:choiceMode="multipleChoice"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:paddingTop="16dp">
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="İptal"
+            android:backgroundTint="@color/secondary"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/btnSubmit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ekle"
+            android:backgroundTint="@color/primary" />
+    </LinearLayout>
+</LinearLayout>

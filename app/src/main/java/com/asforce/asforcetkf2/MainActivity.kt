@@ -25,6 +25,7 @@ import android.webkit.ValueCallback
 import android.widget.EditText
 import android.widget.Toast
 import com.asforce.asforcetkf2.suggestion.SuggestionManager
+import com.asforce.asforcetkf2.util.DeviceManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -115,6 +116,9 @@ class MainActivity : AppCompatActivity() {
     
     // Suggestion manager
     private lateinit var suggestionManager: SuggestionManager
+    
+    // Device manager
+    private lateinit var deviceManager: DeviceManager
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -1385,6 +1389,20 @@ class MainActivity : AppCompatActivity() {
         binding.btnLeft2.setOnClickListener {
             // Sadece URL'yi yükle, özel form desteği yok
             loadUrl("https://app.szutest.com.tr/EXT/PKControl/EKControlList")
+        }
+        
+        // Cihaz Ekleme butonu - btn_right_top
+        binding.btnRightTop.setOnClickListener {
+            val currentTab = viewModel.activeTab.value
+            val webView = currentTab?.let { activeWebViews[it.id] }
+            
+            if (webView != null) {
+                // DeviceManager örneği oluştur ve cihaz listesini çek
+                deviceManager = DeviceManager(this, webView)
+                deviceManager.fetchDeviceList()
+            } else {
+                Toast.makeText(this, "Aktif sekme bulunamadı", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
