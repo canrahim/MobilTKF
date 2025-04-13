@@ -4,10 +4,13 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -20,6 +23,9 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -47,6 +53,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tabsAdapter: TabsAdapter
     private lateinit var itemTouchHelper: ItemTouchHelper
     
+    // Dosya seçici ve kamera için gerekli değişkenler
+    private var filePathCallback: ValueCallback<Array<Uri>>? = null
+    private var cameraPhotoPath: String? = null
+    private var currentPhotoUri: Uri? = null
+    private val CAMERA_PERMISSION_REQUEST_CODE = 1001
+    
+    // Dosya seçici başlatıcı - önceki hali
     private val fileChooserLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -71,7 +84,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    private var filePathCallback: ValueCallback<Array<Uri>>? = null
+    // Kamera başlatıcı
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            filePathCallback?.let { callback ->
+                currentPhotoUri?.let { uri ->
+                    callback.onReceiveValue(arrayOf(uri))
+                } ?: callback.onReceiveValue(null)
+            }
+        } else {
+            filePathCallback?.onReceiveValue(null)
+        }
+        filePathCallback = null
+        currentPhotoUri = null
+    }
+    
     private val downloadManager by lazy { TKFDownloadManager(this) }
     private val resourceMonitor by lazy { TabResourceMonitor() }
     private val activeWebViews = mutableMapOf<String, TabWebView>()
@@ -511,28 +540,8 @@ class MainActivity : AppCompatActivity() {
         webView.onFileChooser = { callback ->
             filePathCallback = callback
             
-            try {
-                val intent = Intent(Intent.ACTION_GET_CONTENT)
-                intent.addCategory(Intent.CATEGORY_OPENABLE)
-                intent.type = "*/*"
-                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-                
-                fileChooserLauncher.launch(Intent.createChooser(
-                    intent,
-                    getString(R.string.file_chooser_title)
-                ))
-                true
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to open file chooser")
-                Toast.makeText(
-                    this,
-                    R.string.file_chooser_error,
-                    Toast.LENGTH_SHORT
-                ).show()
-                callback.onReceiveValue(null)
-                filePathCallback = null
-                false
-            }
+            showFileSourceDialog()
+            true
         }
         
         webView.onDownloadRequested = { url, userAgent, contentDisposition, mimeType, contentLength ->
@@ -889,5 +898,146 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             .show()
+    }
+    
+    /**
+     * Dosya kaynağı seçim menüsünü gösterir (Kamera, Galeri, Dosya Seçici)
+     */
+    private fun showFileSourceDialog() {
+        val options = arrayOf(
+            getString(R.string.file_source_camera),
+            getString(R.string.file_source_gallery),
+            getString(R.string.file_source_files)
+        )
+        
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.file_source_dialog_title)
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> takePictureFromCamera()
+                    1 -> selectImageFromGallery()
+                    2 -> openFileChooser()
+                }
+            }
+            .setNegativeButton(R.string.file_source_cancel) { _, _ ->
+                filePathCallback?.onReceiveValue(null)
+                filePathCallback = null
+            }
+            .show()
+    }
+    
+    /**
+     * Kamera ile fotoğraf çekmek için gerekli izinleri kontrol eder ve kamerayı başlatır
+     */
+    private fun takePictureFromCamera() {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) 
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this, 
+                arrayOf(android.Manifest.permission.CAMERA),
+                CAMERA_PERMISSION_REQUEST_CODE
+            )
+            return
+        }
+        
+        // Kamera ile fotoğraf çekme işlemi
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { intent ->
+            intent.resolveActivity(packageManager)?.also {
+                // Geçici dosya oluştur
+                val photoFile = try {
+                    createImageFile()
+                } catch (e: Exception) {
+                    Timber.e(e, "Kamera için geçici dosya oluşturulamadı")
+                    null
+                }
+                
+                photoFile?.also {
+                    currentPhotoUri = FileProvider.getUriForFile(
+                        this,
+                        "com.asforce.asforcetkf2.fileprovider",
+                        it
+                    )
+                    
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, currentPhotoUri)
+                    cameraLauncher.launch(intent)
+                }
+            } ?: run {
+                filePathCallback?.onReceiveValue(null)
+                filePathCallback = null
+                Toast.makeText(this, R.string.camera_app_not_found, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    /**
+     * Galeri/Medya'dan görsel seçmek için intent oluşturur
+     */
+    private fun selectImageFromGallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        fileChooserLauncher.launch(intent)
+    }
+    
+    /**
+     * Tüm dosya tiplerini gösteren dosya seçiciyi başlatır
+     */
+    private fun openFileChooser() {
+        try {
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
+            intent.addCategory(Intent.CATEGORY_OPENABLE)
+            intent.type = "*/*"
+            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+            
+            fileChooserLauncher.launch(Intent.createChooser(
+                intent,
+                getString(R.string.file_chooser_title)
+            ))
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to open file chooser")
+            Toast.makeText(
+                this,
+                R.string.file_chooser_error,
+                Toast.LENGTH_SHORT
+            ).show()
+            filePathCallback?.onReceiveValue(null)
+            filePathCallback = null
+        }
+    }
+    
+    /**
+     * Kamera için geçici resim dosyası oluşturur
+     */
+    private fun createImageFile(): java.io.File {
+        val timeStamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(java.util.Date())
+        val imageFileName = "JPEG_" + timeStamp + "_"
+        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        
+        val image = java.io.File.createTempFile(
+            imageFileName,  /* önek */
+            ".jpg",         /* uzantı */
+            storageDir      /* dizin */
+        )
+        
+        // Görüntü dosya yolu
+        cameraPhotoPath = image.absolutePath
+        return image
+    }
+    
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        
+        when (requestCode) {
+            CAMERA_PERMISSION_REQUEST_CODE -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    // İzin verildi, kamera fonksiyonunu çağır
+                    takePictureFromCamera()
+                } else {
+                    // İzin yok, kullanıcıya bilgi ver
+                    Toast.makeText(this, "Kamera için izin gerekli", Toast.LENGTH_SHORT).show()
+                    filePathCallback?.onReceiveValue(null)
+                    filePathCallback = null
+                }
+                return
+            }
+        }
     }
 }

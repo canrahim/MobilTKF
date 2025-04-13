@@ -29,4 +29,14 @@
     <string name="clear_data">Tarama Verilerini Temizle</string>
     <string name="about">Hakkında</string>
     <string name="url_copied">URL kopyalandı</string>
+    
+    <!-- Kamera ve dosya seçici metinleri -->
+    <string name="file_source_dialog_title">Dosya Kaynağı Seçin</string>
+    <string name="file_source_camera">Kamera</string>
+    <string name="file_source_gallery">Galeri</string>
+    <string name="file_source_files">Dosyalar</string>
+    <string name="file_source_cancel">Vazgeç</string>
+    <string name="camera_permission_required">Kamera için izin gerekli</string>
+    <string name="camera_app_not_found">Kamera uygulaması bulunamadı</string>
+    <string name="camera_error">Kamera için geçici dosya oluşturulamadı</string>
 </resources>
