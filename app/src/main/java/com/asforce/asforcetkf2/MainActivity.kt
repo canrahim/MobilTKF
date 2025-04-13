@@ -124,6 +124,7 @@ class MainActivity : AppCompatActivity() {
         setupTabRecyclerView()
         setupUrlInput()
         setupNavigationButtons()
+        setupActionButtons()
         
         // Yeni sekme düğmesi - çift tıklama koruması güçlendirilmiş
         val newTabButton = binding.btnNewTab
@@ -1134,6 +1135,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
+    /**
+     * Aksiyon butonlarını ayarla (Ekipman Listesi ve Kontrol Listesi butonları)
+     */
+    private fun setupActionButtons() {
+        // Ekipman Listesi butonu - btn_left_1
+        binding.btnLeft1.setOnClickListener {
+            loadUrl("https://app.szutest.com.tr/EXT/PKControl/EquipmentList")
+        }
+
+        // Kontrol Listesi butonu - btn_left_2
+        binding.btnLeft2.setOnClickListener {
+            loadUrl("https://app.szutest.com.tr/EXT/PKControl/EKControlList")
+        }
+    }
+
     /**
      * QR kod sonuç işlemi için seçenekler sunan diyalog
      */
