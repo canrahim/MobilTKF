@@ -1,3 +1,32 @@
 <resources>
-    <string name="app_name">AsforceTKF2</string>
+    <string name="app_name">TKF Tarayıcı</string>
+    <string name="go_back">Geri</string>
+    <string name="go_forward">İleri</string>
+    <string name="refresh">Yenile</string>
+    <string name="search_or_type_url">Ara veya URL yaz</string>
+    <string name="clear">Temizle</string>
+    <string name="menu">Menü</string>
+    <string name="main_menu">Ana Menü</string>
+    <string name="copy_url">URL Kopyala</string>
+    <string name="new_tab">Yeni Sekme</string>
+    <string name="close_tab">Sekmeyi Kapat</string>
+    <string name="drag_tab">Sekmeyi Sürükle</string>
+    <string name="favicon">Site İkonu</string>
+    <string name="hibernated">Uyku Modunda</string>
+    <string name="ssl_error_title">Güvenlik Uyarısı</string>
+    <string name="ssl_error_message">Bu sitenin güvenlik sertifikasıyla ilgili bir sorun var. Yine de devam etmek istiyor musunuz?</string>
+    <string name="ssl_error_continue">Devam Et</string>
+    <string name="ssl_error_cancel">İptal</string>
+    <string name="download_started">İndirme başladı</string>
+    <string name="download_complete">İndirme tamamlandı</string>
+    <string name="download_failed">İndirme başarısız</string>
+    <string name="download_file">Dosyayı İndir</string>
+    <string name="file_chooser_title">Yüklenecek dosyayı seçin</string>
+    <string name="file_chooser_error">Dosya seçici açılamadı</string>
+    <string name="settings">Ayarlar</string>
+    <string name="resource_monitoring">Kaynak İzleme</string>
+    <string name="hibernation_mode">Uyku Modu</string>
+    <string name="clear_data">Tarama Verilerini Temizle</string>
+    <string name="about">Hakkında</string>
+    <string name="url_copied">URL kopyalandı</string>
 </resources>

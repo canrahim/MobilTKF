@@ -2,4 +2,43 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Gri tonları -->
+    <color name="grey_50">#FAFAFA</color>
+    <color name="grey_100">#F5F5F5</color>
+    <color name="grey_200">#EEEEEE</color>
+    <color name="grey_300">#E0E0E0</color>
+    <color name="grey_400">#BDBDBD</color>
+    <color name="grey_500">#9E9E9E</color>
+    <color name="grey_600">#757575</color>
+    <color name="grey_700">#616161</color>
+    <color name="grey_800">#424242</color>
+    <color name="grey_900">#212121</color>
+    
+    <!-- Aydınlık mod ana renkler -->
+    <color name="primary">#2196F3</color>
+    <color name="primary_variant">#1976D2</color>
+    <color name="primary_dark">#0D47A1</color>
+    <color name="secondary">#FF5722</color>
+    <color name="secondary_variant">#E64A19</color>
+    
+    <!-- Karanlık mod ana renkler -->
+    <color name="primary_dark_mode">#90CAF9</color>
+    <color name="primary_variant_dark_mode">#64B5F6</color>
+    <color name="primary_dark_dark_mode">#42A5F5</color>
+    <color name="secondary_dark_mode">#FFAB91</color>
+    <color name="secondary_variant_dark_mode">#FF8A65</color>
+    
+    <!-- Karanlık arka plan renkleri -->
+    <color name="dark_background">#121212</color>
+    <color name="dark_surface">#1E1E1E</color>
+    
+    <!-- Sekme renkleri -->
+    <color name="tab_title_active">#FFFFFF</color>
+    <color name="tab_title_inactive">#E0E0E0</color>
+    
+    <!-- Durum renkleri -->
+    <color name="error">#F44336</color>
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FFC107</color>
 </resources>
