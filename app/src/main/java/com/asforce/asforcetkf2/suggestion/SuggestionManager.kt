@@ -268,7 +268,7 @@ class SuggestionManager(private val context: Context) {
             recyclerView.adapter = suggestionAdapter
             
             // Create popup window - USING POPUP WINDOW APPROACH like in Menu5Activity
-            val popupHeight = (45 * context.resources.displayMetrics.density).toInt()
+            val popupHeight = (65 * context.resources.displayMetrics.density).toInt() // Yüksekliği arttırdık (45'ten 65'e)
             
             val popup = PopupWindow(
                 suggestionView,
@@ -294,7 +294,7 @@ class SuggestionManager(private val context: Context) {
             val screenHeight = metrics.heightPixels
             
             // Set height to a fixed percentage from top - try to be more aggressive with this placement
-            val fixedPosition = (screenHeight * 0.67).toInt() // %67 from the top (higher on screen)
+            val fixedPosition = (screenHeight * 0.64).toInt() // %67 from the top (higher on screen)
             
             Timber.d("[SUGGESTION] Screen height: $screenHeight, position from top: $fixedPosition")
             
