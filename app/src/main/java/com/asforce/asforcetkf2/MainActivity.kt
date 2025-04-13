@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Bundle
@@ -21,7 +22,9 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.JsResult
 import android.webkit.URLUtil
 import android.webkit.ValueCallback
+import android.widget.EditText
 import android.widget.Toast
+import com.asforce.asforcetkf2.suggestion.SuggestionManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -108,6 +111,9 @@ class MainActivity : AppCompatActivity() {
     private val resourceMonitor by lazy { TabResourceMonitor() }
     private val activeWebViews = mutableMapOf<String, TabWebView>()
     
+    // Suggestion manager
+    private lateinit var suggestionManager: SuggestionManager
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -125,6 +131,12 @@ class MainActivity : AppCompatActivity() {
         setupUrlInput()
         setupNavigationButtons()
         setupActionButtons()
+        
+        // Direkt olarak WebView'a yazmak için test fonksiyonu ekle
+        binding.btnLeft2.setOnLongClickListener {
+            testSuggestionInsertion()
+            return@setOnLongClickListener true
+        }
         
         // Yeni sekme düğmesi - çift tıklama koruması güçlendirilmiş
         val newTabButton = binding.btnNewTab
@@ -159,6 +171,9 @@ class MainActivity : AppCompatActivity() {
         
         // QR Kod tarayıcı butonunu ayarla
         setupQrScannerButton()
+        
+        // Initialize suggestion manager
+        initializeSuggestionManager()
     }
     
     private fun initializeTabComponents() {
@@ -392,19 +407,31 @@ class MainActivity : AppCompatActivity() {
         
         // WebView için özel dokunma dinleyicisi ekle
         webView.setOnClickListener {
-            // Sadece WebView'e tıklanma - klavye gösterme kararı WebView'e bırakılsın
+            // WebView'e tıklanma - odakla
             it.requestFocus()
         }
 
         // Her dokunma olayı
         webView.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
-                // Tıklanan alanın türünü belirlemek için JavaScript çağrısı
+                // WebView'in odak almasını sağla
+                v.requestFocus()
+                
+                // Her zaman input alanını kontrol et, suggestionsı göster
                 val script = "(function() {" +
                            "var element = document.elementFromPoint(${event.x}, ${event.y});" +
                            "if (element) {" +
                            "  if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {" +
                            "    element.focus();" +
+                           "    var key = element.getAttribute('data-tkf-key');" +
+                           "    if (!key) {" +
+                           "      key = (element.name || element.id || element.placeholder || 'input_' + Math.random().toString(36).substr(2, 9));" +
+                           "      key = key.replace(/[^a-zA-Z0-9_]/g, '_');" +
+                           "      element.setAttribute('data-tkf-key', key);" +
+                           "    }" +
+                           "    if (window.SuggestionHandler) {" +
+                           "      window.SuggestionHandler.onInputFocused(key);" +
+                           "    }" +
                            "    return true;" +
                            "  }" +
                            "}" +
@@ -414,21 +441,21 @@ class MainActivity : AppCompatActivity() {
                 webView.evaluateJavascript(script) { result ->
                     if (result.equals("true")) {
                         // Girdi alanı - klavyeyi göster
-                        v.requestFocusFromTouch()
                         showKeyboard(v)
-                    } else {
-                        // Diğer alanlar - klavyeyi gizle
-                        hideKeyboard()
                     }
                 }
-                
-                v.requestFocus()
             }
             false
         }
         
         // Store in active WebViews
         activeWebViews[tab.id] = webView
+        
+        // Update the suggestion manager with the new WebView
+        suggestionManager.trackEditText(binding.urlInput, "url_input", webView)
+        
+        // Set suggestion manager on WebView
+        webView.setSuggestionManager(suggestionManager)
     }
     
     private fun setupWebViewEvents(webView: TabWebView) {
@@ -472,6 +499,106 @@ class MainActivity : AppCompatActivity() {
                 
                 // Hide progress bar
                 binding.progressBar.isVisible = false
+                
+                // Run enhanced input detection script for specific websites
+                if (url.contains("szutest.com.tr")) {
+                    Timber.d("[WEBVIEW] SzuTest site detected, applying enhanced input tracking")
+                    
+                    // Delay slightly to ensure DOM is fully ready
+                    webView.postDelayed({
+                        val enhancedInputDetectionScript = """
+                        (function() {
+                            console.log('Enhanced input detection running on: $url');
+                            
+                            // Find all input fields on the page
+                            var inputs = document.querySelectorAll('input, textarea, select');
+                            console.log('Found ' + inputs.length + ' form elements');
+                            
+                            // Process each input field
+                            for (var i = 0; i < inputs.length; i++) {
+                                try {
+                                    var input = inputs[i];
+                                    
+                                    // Skip hidden inputs
+                                    if (input.type === 'hidden') continue;
+                                    
+                                    // Get or create a key for this input
+                                    var key = input.name || input.id || 'input_' + Math.random().toString(36).substr(2, 9);
+                                    // Clean the key
+                                    key = key.replace(/[^a-zA-Z0-9_]/g, '_');
+                                    
+                                    // Store the key as a data attribute
+                                    input.setAttribute('data-tkf-key', key);
+                                    
+                                    console.log('Processed input #' + i + ': ' + input.tagName + 
+                                        (input.id ? '#'+input.id : '') + 
+                                        ' with key=' + key);
+                                    
+                                    // Add focus event handler
+                                    input.addEventListener('focus', function(e) {
+                                        var key = this.getAttribute('data-tkf-key');
+                                        console.log('Input focused: ' + key);
+                                        if (window.SuggestionHandler) {
+                                            window.SuggestionHandler.onInputFocused(key);
+                                        }
+                                    });
+                                    
+                                    // Add input event handler
+                                    input.addEventListener('input', function(e) {
+                                        var key = this.getAttribute('data-tkf-key');
+                                        console.log('Input changed: ' + key + ' = ' + this.value);
+                                        if (window.SuggestionHandler) {
+                                            window.SuggestionHandler.onInputChanged(key, this.value);
+                                        }
+                                    });
+                                    
+                                    // Add change event handler
+                                    input.addEventListener('change', function(e) {
+                                        var key = this.getAttribute('data-tkf-key');
+                                        console.log('Input value committed: ' + key + ' = ' + this.value);
+                                        if (window.SuggestionHandler && this.value) {
+                                            window.SuggestionHandler.saveInputSuggestion(key, this.value);
+                                        }
+                                    });
+                                    
+                                    // If this is the active element, notify immediately
+                                    if (document.activeElement === input) {
+                                        console.log('This input is currently active, notifying');
+                                        if (window.SuggestionHandler) {
+                                            setTimeout(function() {
+                                                window.SuggestionHandler.onInputFocused(key);
+                                            }, 100);
+                                        }
+                                    }
+                                } catch(e) {
+                                    console.error('Error processing input #' + i + ': ' + e.message);
+                                }
+                            }
+                            
+                            // Add form submit handlers to save suggestions
+                            var forms = document.querySelectorAll('form');
+                            for (var i = 0; i < forms.length; i++) {
+                                forms[i].addEventListener('submit', function() {
+                                    var inputs = this.querySelectorAll('input, textarea');
+                                    for (var j = 0; j < inputs.length; j++) {
+                                        var input = inputs[j];
+                                        var key = input.getAttribute('data-tkf-key');
+                                        if (key && input.value && window.SuggestionHandler) {
+                                            window.SuggestionHandler.saveInputSuggestion(key, input.value);
+                                        }
+                                    }
+                                });
+                            }
+                            
+                            return 'Enhanced input detection complete';
+                        })();
+                        """.trimIndent()
+                        
+                        webView.evaluateJavascript(enhancedInputDetectionScript) { result ->
+                            Timber.d("[WEBVIEW] Enhanced input detection result: $result")
+                        }
+                    }, 500) // Delay for 500ms to ensure page is fully loaded
+                }
             }
         }
         
@@ -865,6 +992,9 @@ class MainActivity : AppCompatActivity() {
         activeWebViews.values.forEach { it.cleanup() }
         activeWebViews.clear()
         
+        // Clean up suggestion manager
+        suggestionManager.cleanup()
+        
         super.onDestroy()
     }
     
@@ -1082,10 +1212,79 @@ class MainActivity : AppCompatActivity() {
     }
     
     /**
+     * Initialize suggestion manager and track input fields
+     */
+    private fun initializeSuggestionManager() {
+        // Create suggestion manager
+        suggestionManager = SuggestionManager(this)
+        
+        // Track keyboard visibility to show/hide suggestions at appropriate times
+        suggestionManager.trackKeyboardVisibility(binding.root)
+        
+        // Track URL input
+        binding.urlInput.let { editText ->
+            suggestionManager.trackEditText(editText, "url_input")
+        }
+        
+        // Monitor keyboard visibility changes to reposition suggestion bar above keyboard
+        val contentView = window.decorView.findViewById<View>(android.R.id.content)
+        contentView.viewTreeObserver.addOnGlobalLayoutListener {
+            val r = Rect()
+            contentView.getWindowVisibleDisplayFrame(r)
+            
+            val screenHeight = contentView.height
+            val keyboardHeight = screenHeight - r.bottom
+            
+            // Consider keyboard as visible if its height is more than 15% of screen
+            if (keyboardHeight > screenHeight * 0.15) {
+                // Pass keyboard height to suggestion manager for proper positioning
+                val activeTab = viewModel.activeTab.value
+                val webView = activeTab?.let { activeWebViews[it.id] }
+                
+                // Force refresh suggestions for current input
+                webView?.evaluateJavascript("""
+                    (function() {
+                        // Get active element if any
+                        if (document.activeElement && 
+                            (document.activeElement.tagName === 'INPUT' || 
+                             document.activeElement.tagName === 'TEXTAREA')) {
+                            
+                            var el = document.activeElement;
+                            
+                            // Get or create input key
+                            var key = el.getAttribute('data-tkf-key');
+                            if (!key) {
+                                key = (el.name || el.id || el.placeholder || 'input_' + Math.random().toString(36).substr(2, 9));
+                                key = key.replace(/[^a-zA-Z0-9_]/g, '_');
+                                el.setAttribute('data-tkf-key', key);
+                            }
+                            
+                            // Get input value
+                            var value = el.value || '';
+                            
+                            // Notify suggestion handler
+                            if (window.SuggestionHandler) {
+                                window.SuggestionHandler.onInputFocused(key);
+                                window.SuggestionHandler.onInputChanged(key, value);
+                                return "NOTIFIED_SUGGESTION";
+                            }
+                            
+                            return "NO_HANDLER";
+                        }
+                        return "NO_ACTIVE_INPUT";
+                    })();
+                """) { result ->
+                    Timber.d("[SUGGESTION] Keyboard visible, refreshing suggestions: $result")
+                }
+            }
+        }
+    }
+    
+    /**
      * QR kod tarayıcı butonunu ayarla
      */
     private fun setupQrScannerButton() {
-        binding.    btnQr.setOnClickListener {
+        binding.btnQr.setOnClickListener {
             // QR kod tarayıcıyı başlat
             openQrScanner()
         }
@@ -1146,7 +1345,173 @@ class MainActivity : AppCompatActivity() {
 
         // Kontrol Listesi butonu - btn_left_2
         binding.btnLeft2.setOnClickListener {
-            loadUrl("https://app.szutest.com.tr/EXT/PKControl/EKControlList")
+            // Check if we're on a szutest.com.tr page
+            val currentTab = viewModel.activeTab.value
+            val webView = currentTab?.let { activeWebViews[it.id] }
+            
+            if (webView != null && currentTab.url.contains("szutest.com.tr")) {
+                // Apply special handling for szutest forms
+                applySpecialSzutestFormHandling(webView)
+            } else {
+                // Normal behavior
+                loadUrl("https://app.szutest.com.tr/EXT/PKControl/EKControlList")
+            }
+        }
+    }
+
+    /**
+     * Apply special handling for szutest.com.tr form inputs to ensure suggestions work
+     */
+    private fun applySpecialSzutestFormHandling(webView: TabWebView) {
+        Timber.d("[SZUTEST] Applying special form handling")
+        
+        // Show toast so user knows this is happening
+        Toast.makeText(this, "Özel form desteği uygulanıyor...", Toast.LENGTH_SHORT).show()
+        
+        val script = """
+        (function() {
+            // Find and override all input fields specifically for szutest.com.tr
+            console.log('Special form handling for szutest.com.tr');
+            
+            // 1. Find all inputs on the page
+            var inputs = document.querySelectorAll('input, textarea, select');
+            console.log('Found ' + inputs.length + ' form elements');
+            
+            // 2. Track the IDs and names we've seen to avoid duplicates
+            var processedKeys = [];
+            
+            // 3. Process each input field
+            var processedCount = 0;
+            for (var i = 0; i < inputs.length; i++) {
+                try {
+                    var input = inputs[i];
+                    
+                    // Skip hidden inputs
+                    if (input.type === 'hidden') continue;
+                    
+                    // Get identifying information
+                    var id = input.id || '';
+                    var name = input.name || '';
+                    var placeholder = input.placeholder || '';
+                    
+                    // Create a key for this input
+                    var key;
+                    if (id) {
+                        key = 'id_' + id.replace(/[^a-zA-Z0-9_]/g, '_');
+                    } else if (name) {
+                        key = 'name_' + name.replace(/[^a-zA-Z0-9_]/g, '_');
+                    } else if (placeholder) {
+                        key = 'ph_' + placeholder.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 20);
+                    } else {
+                        key = 'input_' + Math.random().toString(36).substr(2, 9);
+                    }
+                    
+                    // Add a unique suffix if we've seen this key before
+                    var baseKey = key;
+                    var keyCounter = 1;
+                    while (processedKeys.indexOf(key) >= 0) {
+                        key = baseKey + '_' + keyCounter;
+                        keyCounter++;
+                    }
+                    processedKeys.push(key);
+                    
+                    // Store the key as a data attribute
+                    input.setAttribute('data-tkf-key', key);
+                    
+                    // Create enhanced event listeners
+                    // 1. Focus event with keyboard activation
+                    function createFocusHandler(inputElement, inputKey) {
+                        return function(e) {
+                            console.log('Input focused: key=' + inputKey);
+                            
+                            // Save current position so we can restore it
+                            var selStart = inputElement.selectionStart;
+                            var selEnd = inputElement.selectionEnd;
+                            
+                            // Ensure keyboard is shown
+                            inputElement.blur();
+                            setTimeout(function() {
+                                inputElement.focus();
+                                
+                                // Restore selection
+                                try {
+                                    inputElement.setSelectionRange(selStart, selEnd);
+                                } catch(e) {}
+                                
+                                // Notify suggestion handler
+                                if (window.SuggestionHandler) {
+                                    window.SuggestionHandler.onInputFocused(inputKey);
+                                    window.SuggestionHandler.onInputChanged(inputKey, inputElement.value || '');
+                                }
+                            }, 10);
+                        };
+                    }
+                    
+                    // Remove existing event listeners by cloning
+                    var newInput = input.cloneNode(true);
+                    if (input.parentNode) {
+                        input.parentNode.replaceChild(newInput, input);
+                    }
+                    input = newInput;
+                    
+                    // Add enhanced focus event
+                    input.addEventListener('focus', createFocusHandler(input, key));
+                    
+                    // Handle clicks too
+                    input.addEventListener('click', createFocusHandler(input, key));
+                    
+                    // Handle input changes to filter suggestions
+                    input.addEventListener('input', function(e) {
+                        console.log('Input changed: key=' + key + ', value=' + this.value);
+                        if (window.SuggestionHandler) {
+                            window.SuggestionHandler.onInputChanged(key, this.value || '');
+                        }
+                    });
+                    
+                    // Save submitted values
+                    input.addEventListener('change', function(e) {
+                        if (this.value && window.SuggestionHandler) {
+                            window.SuggestionHandler.saveInputSuggestion(key, this.value);
+                        }
+                    });
+                    
+                    // Test - highlight this field with a border
+                    input.style.borderColor = '#4285f4';
+                    input.style.borderWidth = '2px';
+                    
+                    processedCount++;
+                } catch(e) {
+                    console.error('Error processing input: ' + e.message);
+                }
+            }
+            
+            // Handle form submissions to save all input values
+            var forms = document.querySelectorAll('form');
+            for (var i = 0; i < forms.length; i++) {
+                var form = forms[i];
+                form.addEventListener('submit', function() {
+                    console.log('Form submit detected - saving all field values');
+                    var formInputs = this.querySelectorAll('input, textarea, select');
+                    for (var j = 0; j < formInputs.length; j++) {
+                        var input = formInputs[j];
+                        var key = input.getAttribute('data-tkf-key');
+                        var value = input.value;
+                        
+                        if (key && value && window.SuggestionHandler) {
+                            console.log('Saving form value: ' + key + '=' + value);
+                            window.SuggestionHandler.saveInputSuggestion(key, value);
+                        }
+                    }
+                });
+            }
+            
+            return 'Processed ' + processedCount + ' input fields on szutest.com.tr';
+        })();
+        """.trimIndent()
+        
+        webView.evaluateJavascript(script) { result ->
+            Timber.d("[SZUTEST] Special form handling result: $result")
+            Toast.makeText(this, "Form işleme tamamlandı", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -1185,5 +1550,160 @@ class MainActivity : AppCompatActivity() {
             }
             .setPositiveButton("Kapat", null)
             .show()
+    }
+
+    /**
+     * Test suggestion insertion directly for debugging purposes
+     */
+    private fun testSuggestionInsertion() {
+        Timber.d("[TEST] Starting suggestion insertion test")
+        val currentTab = viewModel.activeTab.value
+        val webView = currentTab?.let { activeWebViews[it.id] }
+        
+        if (webView != null) {
+            // 1. First try to identify the active input field
+            webView.evaluateJavascript("""
+                (function() {
+                    // Find active element or first visible input
+                    var element = document.activeElement;
+                    var elementInfo = "";
+                    
+                    if (element && (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA')) {
+                        elementInfo = "Active element: " + element.tagName;
+                        if (element.id) elementInfo += "#" + element.id;
+                        if (element.name) elementInfo += " name=" + element.name;
+                        
+                        // Get or create key
+                        var key = element.getAttribute('data-tkf-key');
+                        if (!key) {
+                            key = (element.name || element.id || 'input_' + Math.random().toString(36).substr(2, 9));
+                            key = key.replace(/[^a-zA-Z0-9_]/g, '_');
+                            element.setAttribute('data-tkf-key', key);
+                        }
+                        
+                        return JSON.stringify({
+                            found: true,
+                            key: key,
+                            info: elementInfo,
+                            value: element.value || ""
+                        });
+                    }
+                    
+                    // If no active input, find first visible input
+                    var inputs = document.querySelectorAll('input, textarea');
+                    for (var i = 0; i < inputs.length; i++) {
+                        var input = inputs[i];
+                        if (input.type !== 'hidden' && input.offsetParent !== null) {
+                            elementInfo = "Found input: " + input.tagName;
+                            if (input.id) elementInfo += "#" + input.id;
+                            if (input.name) elementInfo += " name=" + input.name;
+                            
+                            // Focus the input
+                            input.focus();
+                            
+                            // Get or create key
+                            var key = input.getAttribute('data-tkf-key');
+                            if (!key) {
+                                key = (input.name || input.id || 'input_' + Math.random().toString(36).substr(2, 9));
+                                key = key.replace(/[^a-zA-Z0-9_]/g, '_');
+                                input.setAttribute('data-tkf-key', key);
+                            }
+                            
+                            return JSON.stringify({
+                                found: true,
+                                key: key,
+                                info: elementInfo,
+                                value: input.value || ""
+                            });
+                        }
+                    }
+                    
+                    return JSON.stringify({
+                        found: false,
+                        info: "No input elements found"
+                    });
+                })();
+            """) { result ->
+                try {
+                    // Clean up result string (remove quotes)
+                    val jsonStr = result.trim().removeSurrounding("\"").replace("\\\"", "\"").replace("\\\\", "\\")
+                    
+                    // Parse JSON
+                    val jsonObj = org.json.JSONObject(jsonStr)
+                    val found = jsonObj.getBoolean("found")
+                    
+                    if (found) {
+                        val key = jsonObj.getString("key")
+                        val info = jsonObj.getString("info")
+                        Timber.d("[TEST] Found input element: $info with key: $key")
+                        
+                        // Generate a test value
+                        val testValue = "TEST-${System.currentTimeMillis() / 1000}"
+                        
+                        // 2. Save the test value as a suggestion
+                        suggestionManager.saveSuggestion(key, testValue)
+                        
+                        // 3. Use multiple approaches to set the value
+                        (webView as? com.asforce.asforcetkf2.webview.TabWebView)?.apply {
+                            // Direct simulation method
+                            simulateKeyboardInput(testValue)
+                            
+                            // JavaScript method
+                            val setValueScript = """
+                            (function() {
+                                var element = document.querySelector('[data-tkf-key="$key"]');
+                                if (!element) {
+                                    if (document.activeElement && 
+                                        (document.activeElement.tagName === 'INPUT' || 
+                                         document.activeElement.tagName === 'TEXTAREA')) {
+                                        element = document.activeElement;
+                                    }
+                                }
+                                
+                                if (element) {
+                                    // Set value using all available methods
+                                    element.value = '$testValue';
+                                    
+                                    // Select all text
+                                    element.select();
+                                    
+                                    // Try execCommand
+                                    if (document.execCommand) {
+                                        document.execCommand('insertText', false, '$testValue');
+                                    }
+                                    
+                                    // Dispatch events
+                                    var inputEvent = new Event('input', {bubbles: true});
+                                    element.dispatchEvent(inputEvent);
+                                    var changeEvent = new Event('change', {bubbles: true});
+                                    element.dispatchEvent(changeEvent);
+                                    
+                                    return "Successfully set value to: " + element.value;
+                                }
+                                return "No element found to set value";
+                            })();
+                            """.trimIndent()
+                            
+                            evaluateJavascript(setValueScript) { jsResult ->
+                                Timber.d("[TEST] JavaScript set value result: $jsResult")
+                            }
+                        }
+                        
+                        // Show toast notification
+                        Toast.makeText(this, "Test suggestion inserted: $testValue", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val info = jsonObj.getString("info")
+                        Timber.d("[TEST] No input element found: $info")
+                        Toast.makeText(this, "No input element found to test", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e, "[TEST] Error parsing input element info")
+                    Toast.makeText(this, "Error testing suggestions: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else {
+            Timber.d("[TEST] No active WebView found")
+            Toast.makeText(this, "No active WebView to test", Toast.LENGTH_SHORT).show()
+        }
     }
 }
