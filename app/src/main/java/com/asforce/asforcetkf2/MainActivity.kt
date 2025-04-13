@@ -1084,7 +1084,7 @@ class MainActivity : AppCompatActivity() {
      * QR kod tarayıcı butonunu ayarla
      */
     private fun setupQrScannerButton() {
-        binding.btnQr.setOnClickListener {
+        binding.    btnQr.setOnClickListener {
             // QR kod tarayıcıyı başlat
             openQrScanner()
         }

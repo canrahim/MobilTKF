@@ -156,7 +156,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@android:color/transparent"
-        app:layout_constraintBottom_toTopOf="@id/edit_text_1"
+        app:layout_constraintBottom_toTopOf="@id/text_input_layout_1"
         app:layout_constraintTop_toBottomOf="@id/tabs_container" />
 
     <!-- Loading progress bar - Dark Theme colors -->
@@ -188,7 +188,7 @@
         android:layout_height="wrap_content"
         android:text="Button 2"
         android:backgroundTint="@color/primary"
-        app:layout_constraintBottom_toTopOf="@id/edit_text_1"
+        app:layout_constraintBottom_toTopOf="@id/text_input_layout_1"
         app:layout_constraintStart_toStartOf="parent" />
 
     <!-- Right Side Buttons -->
@@ -209,55 +209,116 @@
         android:drawableStart="@drawable/ic_qr_code"
         android:drawableTint="@color/white"
         android:backgroundTint="@color/primary"
-        app:layout_constraintBottom_toTopOf="@id/edit_text_3"
+        app:layout_constraintBottom_toTopOf="@id/text_input_layout_3"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Bottom EditTexts -->
-    <EditText
-        android:id="@+id/edit_text_1"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/text_input_layout_1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="EditText 1"
-        android:background="@android:color/transparent"
-        android:textColor="@color/white"
-        android:textColorHint="@color/text_secondary_dark"
-        android:padding="8dp"
+        android:layout_marginEnd="2dp"
         android:layout_marginBottom="8dp"
+        android:hint="EditText 1"
+        android:theme="@style/ModernEditTextTheme"
+        app:boxStrokeColor="@color/primary"
+        app:boxStrokeWidth="1dp"
+        app:hintTextColor="@color/text_secondary_dark"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/edit_text_2"
-        app:layout_constraintHorizontal_weight="1" />
+        app:layout_constraintEnd_toStartOf="@id/divider_1"
+        app:layout_constraintHorizontal_weight="1"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-    <EditText
-        android:id="@+id/edit_text_2"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:padding="4dp"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Divider 1 -->
+    <View
+        android:id="@+id/divider_1"
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        android:background="@color/primary"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        app:layout_constraintBottom_toBottomOf="@id/text_input_layout_1"
+        app:layout_constraintTop_toTopOf="@id/text_input_layout_1"
+        app:layout_constraintStart_toEndOf="@id/text_input_layout_1"
+        app:layout_constraintEnd_toStartOf="@id/text_input_layout_2" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/text_input_layout_2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginBottom="8dp"
         android:hint="EditText 2"
-        android:background="@android:color/transparent"
-        android:textColor="@color/white"
-        android:textColorHint="@color/text_secondary_dark"
-        android:padding="8dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginBottom="8dp"
+        android:theme="@style/ModernEditTextTheme"
+        app:boxStrokeColor="@color/primary"
+        app:boxStrokeWidth="1dp"
+        app:hintTextColor="@color/text_secondary_dark"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/edit_text_1"
-        app:layout_constraintEnd_toStartOf="@id/edit_text_3"
-        app:layout_constraintHorizontal_weight="1" />
+        app:layout_constraintStart_toEndOf="@id/divider_1"
+        app:layout_constraintEnd_toStartOf="@id/divider_2"
+        app:layout_constraintHorizontal_weight="1"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-    <EditText
-        android:id="@+id/edit_text_3"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:padding="4dp"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Divider 2 -->
+    <View
+        android:id="@+id/divider_2"
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        android:background="@color/primary"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        app:layout_constraintBottom_toBottomOf="@id/text_input_layout_2"
+        app:layout_constraintTop_toTopOf="@id/text_input_layout_2"
+        app:layout_constraintStart_toEndOf="@id/text_input_layout_2"
+        app:layout_constraintEnd_toStartOf="@id/text_input_layout_3" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/text_input_layout_3"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="EditText 3"
-        android:background="@android:color/transparent"
-        android:textColor="@color/white"
-        android:textColorHint="@color/text_secondary_dark"
-        android:padding="8dp"
+        android:layout_marginStart="2dp"
         android:layout_marginBottom="8dp"
+        android:hint="EditText 3"
+        android:theme="@style/ModernEditTextTheme"
+        app:boxStrokeColor="@color/primary"
+        app:boxStrokeWidth="1dp"
+        app:hintTextColor="@color/text_secondary_dark"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/edit_text_2"
+        app:layout_constraintStart_toEndOf="@id/divider_2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_weight="1" />
+        app:layout_constraintHorizontal_weight="1"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:padding="4dp"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+    </com.google.android.material.textfield.TextInputLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

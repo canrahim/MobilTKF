@@ -26,4 +26,14 @@
         <item name="cornerSizeBottomRight">0dp</item>
         <item name="cornerSizeBottomLeft">0dp</item>
     </style>
+    
+    <!-- Modern EditText Style -->
+    <style name="ModernEditTextTheme">
+        <item name="colorControlActivated">@color/primary</item>
+        <item name="colorControlNormal">@color/white</item>
+        <item name="android:textColorHint">@color/text_secondary_dark</item>
+        <item name="colorAccent">@color/primary</item>
+        <item name="boxStrokeColor">@color/primary</item>
+        <item name="boxBackgroundColor">@android:color/transparent</item>
+    </style>
 </resources>
