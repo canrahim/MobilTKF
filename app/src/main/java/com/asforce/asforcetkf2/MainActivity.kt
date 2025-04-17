@@ -26,6 +26,7 @@ import android.widget.EditText
 import android.widget.Toast
 import com.asforce.asforcetkf2.suggestion.SuggestionManager
 import com.asforce.asforcetkf2.util.DeviceManager
+import com.asforce.asforcetkf2.ui.leakage.LeakageControlActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -761,8 +762,9 @@ class MainActivity : AppCompatActivity() {
     
     // Yeni menü işlevleri
     private fun handleKacakAkim() {
-        Toast.makeText(this, "Kaçak Akım işlevi seçildi", Toast.LENGTH_SHORT).show()
-        // Kaçak Akım işlevselliği buraya eklenecek
+        // Kaçak Akım aktivitesini başlat
+        val intent = Intent(this, LeakageControlActivity::class.java)
+        startActivity(intent)
     }
     
     private fun handlePanoFonksiyon() {
