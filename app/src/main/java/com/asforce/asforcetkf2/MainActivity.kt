@@ -522,6 +522,12 @@ class MainActivity : AppCompatActivity() {
                 // Show progress bar
                 binding.progressBar.isVisible = true
                 binding.progressBar.progress = 0
+                
+                // Input alanları için daha agresif tarama yap
+                if (url.contains("szutest.com.tr", ignoreCase = true)) {
+                    Timber.d("[SZUTEST] Loading SzuTest page, enabling enhanced form detection")
+                    injectEnhancedFormDetection(webView)
+                }
             }
         }
         
@@ -542,105 +548,31 @@ class MainActivity : AppCompatActivity() {
                 // Hide progress bar
                 binding.progressBar.isVisible = false
                 
-                // Run enhanced input detection script for specific websites
-                if (url.contains("szutest.com.tr")) {
-                    Timber.d("[WEBVIEW] SzuTest site detected, applying enhanced input tracking")
+                // Sayfa yükleme tamamlanınca form işlemlerini ve gelişmiş form algılamayı çalıştır
+                // Süreyi azalttık - daha hızlı tepki ver
+                webView.postDelayed({
+                    // Form işleme enjeksiyonu
+                    webView.injectFormHandlers()
                     
-                    // Delay slightly to ensure DOM is fully ready
-                    webView.postDelayed({
-                        val enhancedInputDetectionScript = """
-                        (function() {
-                            console.log('Enhanced input detection running on: $url');
-                            
-                            // Find all input fields on the page
-                            var inputs = document.querySelectorAll('input, textarea, select');
-                            console.log('Found ' + inputs.length + ' form elements');
-                            
-                            // Process each input field
-                            for (var i = 0; i < inputs.length; i++) {
-                                try {
-                                    var input = inputs[i];
-                                    
-                                    // Skip hidden inputs
-                                    if (input.type === 'hidden') continue;
-                                    
-                                    // Get or create a key for this input
-                                    var key = input.name || input.id || 'input_' + Math.random().toString(36).substr(2, 9);
-                                    // Clean the key
-                                    key = key.replace(/[^a-zA-Z0-9_]/g, '_');
-                                    
-                                    // Store the key as a data attribute
-                                    input.setAttribute('data-tkf-key', key);
-                                    
-                                    console.log('Processed input #' + i + ': ' + input.tagName + 
-                                        (input.id ? '#'+input.id : '') + 
-                                        ' with key=' + key);
-                                    
-                                    // Add focus event handler
-                                    input.addEventListener('focus', function(e) {
-                                        var key = this.getAttribute('data-tkf-key');
-                                        console.log('Input focused: ' + key);
-                                        if (window.SuggestionHandler) {
-                                            window.SuggestionHandler.onInputFocused(key);
-                                        }
-                                    });
-                                    
-                                    // Add input event handler
-                                    input.addEventListener('input', function(e) {
-                                        var key = this.getAttribute('data-tkf-key');
-                                        console.log('Input changed: ' + key + ' = ' + this.value);
-                                        if (window.SuggestionHandler) {
-                                            window.SuggestionHandler.onInputChanged(key, this.value);
-                                        }
-                                    });
-                                    
-                                    // Add change event handler
-                                    input.addEventListener('change', function(e) {
-                                        var key = this.getAttribute('data-tkf-key');
-                                        console.log('Input value committed: ' + key + ' = ' + this.value);
-                                        if (window.SuggestionHandler && this.value) {
-                                            window.SuggestionHandler.saveInputSuggestion(key, this.value);
-                                        }
-                                    });
-                                    
-                                    // If this is the active element, notify immediately
-                                    if (document.activeElement === input) {
-                                        console.log('This input is currently active, notifying');
-                                        if (window.SuggestionHandler) {
-                                            setTimeout(function() {
-                                                window.SuggestionHandler.onInputFocused(key);
-                                            }, 100);
-                                        }
-                                    }
-                                } catch(e) {
-                                    console.error('Error processing input #' + i + ': ' + e.message);
-                                }
-                            }
-                            
-                            // Add form submit handlers to save suggestions
-                            var forms = document.querySelectorAll('form');
-                            for (var i = 0; i < forms.length; i++) {
-                                forms[i].addEventListener('submit', function() {
-                                    var inputs = this.querySelectorAll('input, textarea');
-                                    for (var j = 0; j < inputs.length; j++) {
-                                        var input = inputs[j];
-                                        var key = input.getAttribute('data-tkf-key');
-                                        if (key && input.value && window.SuggestionHandler) {
-                                            window.SuggestionHandler.saveInputSuggestion(key, input.value);
-                                        }
-                                    }
-                                });
-                            }
-                            
-                            return 'Enhanced input detection complete';
-                        })();
-                        """.trimIndent()
-                        
-                        webView.evaluateJavascript(enhancedInputDetectionScript) { result ->
-                            Timber.d("[WEBVIEW] Enhanced input detection result: $result")
-                        }
-                    }, 500) // Delay for 500ms to ensure page is fully loaded
-                }
+                    // Giriş alanı izleme
+                    webView.injectInputTracking()
+                    
+                    // Elle odaklama işleme
+                    webView.injectManualFocusHandling()
+                    
+                    // Giriş algılamayı iyileştir
+                    webView.enhanceInputFocusDetection()
+                    
+                    // SzuTest gibi özel siteler için gelişmiş form algılama yöntemini kullan
+                    if (url.contains("szutest.com.tr", ignoreCase = true) || 
+                        url.contains("equipmentid", ignoreCase = true) ||
+                        url.contains("tkf", ignoreCase = true)) {
+                        // Özel form algılamayı aktifleştir
+                        Timber.d("[WEBVIEW] Special site detected, applying enhanced form detection")
+                        injectEnhancedFormDetection(webView)
+                    }
+                    
+                }, 300) // 500ms -> 300ms (daha hızlı tepki için süreyi azalttık)
             }
         }
         
@@ -769,6 +701,7 @@ class MainActivity : AppCompatActivity() {
             "Favoriler",
             "Geçmiş",
             "İndirilenler",
+            "Öneri Önbelleğini Temizle",
             "Ayarlar"
         )
         
@@ -781,10 +714,26 @@ class MainActivity : AppCompatActivity() {
                     1 -> Toast.makeText(this, "Favoriler henüz uygulanmadı", Toast.LENGTH_SHORT).show()
                     2 -> Toast.makeText(this, "Geçmiş henüz uygulanmadı", Toast.LENGTH_SHORT).show()
                     3 -> Toast.makeText(this, "İndirilenler henüz uygulanmadı", Toast.LENGTH_SHORT).show()
-                    4 -> showMenu() // Standart ayarlar menüsünü göster
+                    4 -> clearSuggestionCache()
+                    5 -> showMenu() // Standart ayarlar menüsünü göster
                 }
             }
             .show()
+    }
+    
+    /**
+     * Clear the suggestion cache to optimize performance
+     */
+    private fun clearSuggestionCache() {
+        // Önbelleği temizle ve kullanıcıya bilgi ver
+        suggestionManager.clearAllSuggestionCaches()
+        
+        // Bilgilendirme mesajı göster
+        Snackbar.make(
+            binding.root,
+            "Öneri önbelleği temizlendi",
+            Snackbar.LENGTH_SHORT
+        ).show()
     }
     
     private fun showMenu() {
@@ -1520,7 +1469,7 @@ class MainActivity : AppCompatActivity() {
                     val jsonStr = result.trim().removeSurrounding("\"").replace("\\\"", "\"").replace("\\\\", "\\")
                     
                     // Parse JSON
-                    val jsonObj = org.json.JSONObject(jsonStr)
+                    val jsonObj = org.json.JSONObject(jsonStr.toString())
                     val found = jsonObj.getBoolean("found")
                     
                     if (found) {
@@ -1596,5 +1545,282 @@ class MainActivity : AppCompatActivity() {
             Timber.d("[TEST] No active WebView found")
             Toast.makeText(this, "No active WebView to test", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    /**
+     * Override onLowMemory to handle low memory conditions
+     */
+    /**
+     * Gelişmiş form algılama ve giriş alanlarını hızlı bulma (SzuTest gibi özel siteler için)
+     */
+    private fun injectEnhancedFormDetection(webView: TabWebView) {
+        Timber.d("[FORM] Injecting enhanced form detection")
+        
+        // 250ms sonra form algılamayı başlat - DOM'un yüklenmesi için bekle
+        Handler(Looper.getMainLooper()).postDelayed({
+            val script = """
+            (function() {
+                try {
+                    console.log('TKF Browser: Running enhanced form detection...');
+                    
+                    // Formlara otomatik key ekle
+                    var forms = document.querySelectorAll('form');
+                    forms.forEach(function(form, formIndex) {
+                        form.setAttribute('data-tkf-form-index', formIndex);
+                        console.log('Found form #' + formIndex + (form.id ? ' id=' + form.id : ''));
+                    });
+                    
+                    // Tüm giriş elemanlarını tara ve kategorize et
+                    var allInputs = Array.from(document.querySelectorAll('input, textarea, select'));
+                    var visibleInputs = [];
+                    
+                    // Öncelikli giriş alanlarını belirle
+                    var idMap = {};
+                    var keyFields = [];
+                    
+                    // Özellikle ekipmanid, seri no, id vb. alanları öncelikle bul
+                    var keyPatterns = [
+                        /equip/i, /id$/i, /^id/i, /code/i, /number/i, /no$/i, 
+                        /serial/i, /seri/i, /cihaz/i, /device/i
+                    ];
+                    
+                    allInputs.forEach(function(input, index) {
+                        // Görünürlük ve erişilebilirlik kontrollerini yap
+                        var isVisible = input.offsetParent !== null && 
+                                       !input.disabled && 
+                                       !input.readOnly &&
+                                       input.type !== 'hidden' &&
+                                       (getComputedStyle(input).display !== 'none') &&
+                                       (getComputedStyle(input).visibility !== 'hidden');
+                                       
+                        if (!isVisible) return;
+                        
+                        visibleInputs.push(input);
+                        
+                        // Öznitelikleri kontrol et
+                        var inputId = input.id || '';
+                        var inputName = input.name || '';
+                        var inputPlaceholder = input.placeholder || '';
+                        var labels = document.querySelectorAll('label[for="' + inputId + '"]');
+                        var labelText = labels.length > 0 ? labels[0].textContent.trim() : '';
+                        
+                        // Bir key oluştur
+                        var keyBase = inputName || inputId || inputPlaceholder || labelText || 'input_' + index;
+                        var key = keyBase.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
+                        input.setAttribute('data-tkf-key', key);
+                        
+                        // Arama kriterlerini birleştir 
+                        var searchText = (inputId + ' ' + inputName + ' ' + inputPlaceholder + ' ' + labelText).toLowerCase();
+                        
+                        // Önemli giriş alanlarını işaretle
+                        var isPriority = false;
+                        keyPatterns.forEach(function(pattern) {
+                            if (pattern.test(searchText)) {
+                                isPriority = true;
+                                keyFields.push(input);
+                            }
+                        });
+                        
+                        if (isPriority) {
+                            input.setAttribute('data-tkf-priority', 'true');
+                            console.log('Found KEY field: ' + key + ' (' + searchText + ')');
+                        }
+                        
+                        console.log('Input #' + index + ': ' + input.tagName + 
+                            (inputId ? '#'+inputId : '') + 
+                            (inputName ? ' name='+inputName : '') + 
+                            ' → key=' + key);
+                            
+                        // ID tablosu için ekle
+                        idMap[key] = {
+                            element: input,
+                            id: inputId,
+                            name: inputName,
+                            placeholder: inputPlaceholder,
+                            label: labelText,
+                            priority: isPriority
+                        };
+                    });
+                    
+                    // Öncelikli alanlardan biri aktif hale getir (varsa)
+                    if (keyFields.length > 0) {
+                        console.log('Activating key field: ' + keyFields[0].getAttribute('data-tkf-key'));
+                        keyFields[0].focus();
+                        keyFields[0].select();
+                        
+                        // SuggestionHandler'a bildir
+                        if (window.SuggestionHandler) {
+                            setTimeout(function() {
+                                var key = keyFields[0].getAttribute('data-tkf-key') || '';
+                                window.SuggestionHandler.onInputFocused(key);
+                            }, 100);
+                        }
+                    } 
+                    // Yoksa ilk görünür girişi odakla
+                    else if (visibleInputs.length > 0) {
+                        console.log('No key fields found, activating first visible input');
+                        visibleInputs[0].focus();
+                        visibleInputs[0].select();
+                        
+                        // SuggestionHandler'a bildir
+                        if (window.SuggestionHandler) {
+                            setTimeout(function() {
+                                var key = visibleInputs[0].getAttribute('data-tkf-key') || '';
+                                window.SuggestionHandler.onInputFocused(key);
+                            }, 100);
+                        }
+                    }
+                    
+                    // DOM değişikliklerini izlemek için gözlemci oluştur
+                    if (!window._tkfObserver) {
+                        window._tkfObserver = new MutationObserver(function(mutations) {
+                            mutations.forEach(function(mutation) {
+                                if (mutation.addedNodes.length > 0) {
+                                    // Yeni eklenen her düğümde input ara
+                                    mutation.addedNodes.forEach(function(node) {
+                                        if (node.querySelectorAll) {
+                                            var newInputs = node.querySelectorAll('input, textarea, select');
+                                            if (newInputs.length > 0) {
+                                                console.log('Found ' + newInputs.length + ' new inputs in DOM mutations');
+                                                // Yeni girişleri yeniden işle
+                                                setTimeout(function() {
+                                                    try {
+                                                        newInputs.forEach(function(input, index) {
+                                                            if (input.offsetParent !== null) {
+                                                                var key = input.name || input.id || 'dynamic_input_' + Math.random().toString(36).substring(2, 9);
+                                                                key = key.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
+                                                                input.setAttribute('data-tkf-key', key);
+                                                                console.log('Added key for dynamic input: ' + key);
+                                                            }
+                                                        });
+                                                    } catch(e) {
+                                                        console.error('Error processing new inputs:', e);
+                                                    }
+                                                }, 100);
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        });
+                        
+                        window._tkfObserver.observe(document.body, {
+                            childList: true,
+                            subtree: true
+                        });
+                        console.log('DOM mutation observer started');
+                    }
+                    
+                    // Özel aktivasyon fonksiyonu
+                    window.activateInputField = function(key) {
+                        if (idMap[key] && idMap[key].element) {
+                            idMap[key].element.focus();
+                            idMap[key].element.select();
+                            console.log('Activated field: ' + key);
+                            return true;
+                        }
+                        return false;
+                    };
+                    
+                    return JSON.stringify({
+                        forms: forms.length,
+                        inputs: allInputs.length,
+                        visibleInputs: visibleInputs.length,
+                        keyFields: keyFields.length,
+                        idMapKeys: Object.keys(idMap)
+                    });
+                } catch(e) {
+                    console.error('Error in enhanced form detection:', e);
+                    return JSON.stringify({error: e.message});
+                }
+            })();
+            """.trimIndent()
+            
+            webView.evaluateJavascript(script) { result ->
+                // Sonuç stringini temizle
+                val cleanResult = result.trim().removeSurrounding("\"").replace("\\\"(", "\"(").replace("\\\"", "\"").replace("\\\\", "\\")
+                
+                try {
+                    // JSON sonuç alındıysa işle
+                    val jsonResult = org.json.JSONObject(cleanResult.toString())
+                    val formCount = jsonResult.optInt("forms", 0)
+                    val inputCount = jsonResult.optInt("inputs", 0)
+                    val visibleCount = jsonResult.optInt("visibleInputs", 0)
+                    val keyFieldCount = jsonResult.optInt("keyFields", 0)
+                    
+                    Timber.d("[FORM] Enhanced detection results: Forms=$formCount, Inputs=$inputCount, Visible=$visibleCount, KeyFields=$keyFieldCount")
+                    
+                    // Form bulunduğunda ve alanlar tanımlandığında önerileri aktifleştir
+                    if (formCount > 0 && visibleCount > 0) {
+                        // 300ms sonra önerileri göstermeyi dene
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            // Aktif tab ve webview hala geçerli mi kontrol et
+                            val currentTab = viewModel.activeTab.value
+                            val currentWebView = activeWebViews[currentTab?.id]
+                            
+                            if (currentWebView == webView) {
+                                // Öneri sistem aktivitesini kontrol et
+                                webView.evaluateJavascript("""
+                                (function() {
+                                    var activeElement = document.activeElement;
+                                    if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+                                        var key = activeElement.getAttribute('data-tkf-key') || '';
+                                        if (key && window.SuggestionHandler) {
+                                            window.SuggestionHandler.onInputFocused(key);
+                                            return "SUGGESTION_ACTIVATED";
+                                        }
+                                    }
+                                    return "NO_ACTIVE_INPUT";
+                                })();
+                                """.trimIndent()) { suggestionResult ->
+                                    Timber.d("[FORM] Suggestion check: $suggestionResult")
+                                }
+                            }
+                        }, 300)
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e, "[FORM] Error parsing enhanced form detection result: $cleanResult")
+                }
+            }
+        }, 250) // 250ms gecikme ile çalıştır
+    }
+    
+    override fun onLowMemory() {
+        super.onLowMemory()
+        Timber.w("[MEMORY] Low memory condition detected")
+        
+        // Öneri önbelleğini temizle
+        suggestionManager.onLowMemory()
+        
+        // İhtiyaç duyulmayan webview'ları uykuya al
+        val currentTab = viewModel.activeTab.value
+        activeWebViews.forEach { (tabId, webView) ->
+            if (currentTab?.id != tabId) {
+                webView.hibernate()
+                // Sekmeyi veritabanında da uyku moduna al
+                viewModel.allTabs.value?.find { it.id == tabId }?.let { tab ->
+                    if (!tab.isHibernated) {
+                        viewModel.hibernateTab(tab)
+                    }
+                }
+            }
+        }
+        
+        // Web önbelleğini temizle (current tab hariç)
+        activeWebViews.values.forEach { webView ->
+            if (webView != activeWebViews[currentTab?.id]) {
+                webView.clearCache(true)
+            }
+        }
+        
+        // Log memory usage
+        val rt = Runtime.getRuntime()
+        val usedMemInMB = (rt.totalMemory() - rt.freeMemory()) / 1048576L
+        val maxHeapSizeInMB = rt.maxMemory() / 1048576L
+        val availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB
+        Timber.w("[MEMORY] Memory usage: $usedMemInMB MB used, $availHeapSizeInMB MB available, $maxHeapSizeInMB MB max")
+        
+        // Bilgi mesajı göster
+        Toast.makeText(this, "Düşük bellek: Önbellek temizleniyor", Toast.LENGTH_SHORT).show()
     }
 }

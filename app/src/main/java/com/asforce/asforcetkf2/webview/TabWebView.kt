@@ -831,7 +831,7 @@ class TabWebView @JvmOverloads constructor(
     /**
      * Manual focus handling for input fields
      */
-    private fun injectManualFocusHandling() {
+    fun injectManualFocusHandling() {
         val script = """
         (function() {
             // Add touch handling script for input fields
@@ -887,237 +887,353 @@ class TabWebView @JvmOverloads constructor(
     fun simulateKeyboardInput(text: String) {
         Timber.d("[DIRECT INPUT] Attempting direct keyboard simulation for: '$text'")
         
-        // WebView'in odakta olmasını sağla
+        // Hemen odakla
         requestFocus()
+        post { requestFocus() } // İkinci bir odaklama garantisi
 
-        // YÖNTEM 1: Doğrudan değer atama ve DOM değiştirme - en güvenilir yöntem
+        // Çok yöntemli, yüksek başarı oranına sahip geliştirilmiş yaklaşım
         val enhancedScript = """
         (function() {
             try {
-                // First find active element
+                // =========== AŞAMA 1: ADAY ELEMENTİ BUL ===========
                 var activeElement = document.activeElement;
-                var elementToUpdate = null;
-                var debugInfo = "Initial state: ";
+                var targetsFound = [];
+                var debugInfo = [];
                 
-                // Check if we have a focused input element
+                // 1. Aktif elementi kontrol et
                 if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
-                    elementToUpdate = activeElement;
-                    debugInfo += "Found active element: " + elementToUpdate.tagName;
-                } else {
-                    // If no active element, search for visible inputs
-                    debugInfo += "No active element found, searching for visible inputs. ";
-                    var inputs = document.querySelectorAll('input[type="text"], input[type="search"], input[type="url"], input[type="number"], input[type="email"], input[type="password"], textarea');
-                    
-                    for (var i = 0; i < inputs.length; i++) {
-                        var input = inputs[i];
-                        // Check if the input is visible and not disabled
-                        if (input.offsetParent !== null && !input.disabled && !input.readOnly) {
-                            elementToUpdate = input;
-                            // Force focus 
-                            input.focus();
-                            debugInfo += "Found visible input: " + input.tagName;
+                    targetsFound.push({element: activeElement, source: "active_element"});
+                    debugInfo.push("Found active element: " + activeElement.tagName + 
+                        (activeElement.id ? "#" + activeElement.id : "") + 
+                        (activeElement.name ? "[name=" + activeElement.name + "]" : ""));
+                }
+                
+                // 2. Veri-özniteliği ile etiketlenmiş elementleri ara
+                var keyElements = document.querySelectorAll('[data-tkf-key]');
+                for (var i = 0; i < keyElements.length; i++) {
+                    if (keyElements[i].tagName === 'INPUT' || keyElements[i].tagName === 'TEXTAREA') {
+                        targetsFound.push({element: keyElements[i], source: "data_key"});
+                        debugInfo.push("Found element with data-tkf-key: " + keyElements[i].tagName + 
+                            (keyElements[i].id ? "#" + keyElements[i].id : ""));
+                    }
+                }
+                
+                // 3. Tüm görünür girdi alanlarını ara
+                var allInputs = document.querySelectorAll('input, textarea');
+                for (var i = 0; i < allInputs.length; i++) {
+                    // Zaten bulunmuş mu kontrol et 
+                    var alreadyFound = false;
+                    for (var j = 0; j < targetsFound.length; j++) {
+                        if (targetsFound[j].element === allInputs[i]) {
+                            alreadyFound = true;
                             break;
                         }
                     }
+                    
+                    if (!alreadyFound && allInputs[i].offsetParent !== null && 
+                        !allInputs[i].disabled && !allInputs[i].readOnly &&
+                        allInputs[i].type !== 'hidden') {
+                            
+                        var input = allInputs[i];
+                        targetsFound.push({element: input, source: "visible_input"});
+                        debugInfo.push("Found visible input: " + input.tagName + 
+                            (input.id ? "#" + input.id : "") + 
+                            (input.name ? "[name=" + input.name + "]" : ""));
+                    }
                 }
                 
-                // If we found an element to update
-                if (elementToUpdate) {
-                    // Remember original state
-                    var originalValue = elementToUpdate.value;
-                    
-                    // Check if it's an input or textarea element
-                    debugInfo += ". Attempting to update element.";
-                    
-                    // APPROACH 1: Directly set the value
-                    elementToUpdate.value = '$text';
-                    debugInfo += " Value set directly.";
-                    
-                    // APPROACH 2: Use Object.getOwnPropertyDescriptor if direct setting didn't work
-                    if (elementToUpdate.value !== '$text') {
-                        debugInfo += " Direct setting failed, trying descriptor.";
-                        var descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(elementToUpdate), 'value');
-                        if (descriptor && descriptor.set) {
-                            descriptor.set.call(elementToUpdate, '$text');
-                            debugInfo += " Used descriptor.";
-                        }
-                    }
-                    
-                    // APPROACH 3: Use execCommand if available
-                    if (elementToUpdate.value !== '$text') {
-                        debugInfo += " Trying execCommand.";
-                        elementToUpdate.select();
-                        if (document.execCommand) {
-                            document.execCommand('insertText', false, '$text');
-                            debugInfo += " Used execCommand.";
-                        }
-                    }
-                    
-                    // APPROACH 4: Character-by-character simulation
-                    if (elementToUpdate.value !== '$text') {
-                        debugInfo += " Trying character-by-character.";
-                        // Clear input
-                        elementToUpdate.value = '';
-                        // Add character by character
-                        for (var i = 0; i < '$text'.length; i++) {
-                            elementToUpdate.value += '$text'.charAt(i);
-                        }
-                        debugInfo += " Used character-by-character.";
-                    }
-                    
-                    // Dispatch events
-                    function triggerEvent(element, eventName) {
-                        try {
-                            var event = new Event(eventName, { bubbles: true });
-                            element.dispatchEvent(event);
-                            debugInfo += " " + eventName + " event dispatched.";
-                        } catch (e) {
-                            debugInfo += " Error dispatching " + eventName + ": " + e.message + ".";
-                            try {
-                                // Fallback for older browsers
-                                var fallbackEvent = document.createEvent('HTMLEvents');
-                                fallbackEvent.initEvent(eventName, true, true);
-                                element.dispatchEvent(fallbackEvent);
-                                debugInfo += " " + eventName + " event dispatched with fallback.";
-                            } catch (e2) {
-                                debugInfo += " Even fallback failed: " + e2.message + ".";
-                            }
-                        }
-                    }
-                    
-                    // Trigger events after updating value
-                    triggerEvent(elementToUpdate, 'input');
-                    triggerEvent(elementToUpdate, 'change');
-                    
-                    // APPROACH 5: Mock keyboard events as a last resort
-                    if (elementToUpdate.value !== '$text') {
-                        debugInfo += " Trying keyboard events.";
-                        // Clear again
-                        elementToUpdate.value = '';
-                        elementToUpdate.focus();
+                // Eğer hedef bulunamadıysa, basit bir metin girişi oluşturmayı dene
+                if (targetsFound.length === 0) {
+                    debugInfo.push("No input elements found, trying to create one");
+                    try {
+                        // Bir iframe oluştur ve içine bir giriş alanı yerleştir
+                        // Bu, bazı JavaScriptle korunan sitelerdeki form kısıtlamalarını aşmaya yardımcı olabilir
+                        var tempFrame = document.createElement('iframe');
+                        tempFrame.style.position = 'fixed';
+                        tempFrame.style.top = '-1000px';
+                        tempFrame.style.left = '-1000px';
+                        document.body.appendChild(tempFrame);
                         
-                        // Send keyboard events for each character
-                        var chars = '$text'.split('');
-                        for (var i = 0; i < chars.length; i++) {
-                            var char = chars[i];
-                            var keyCode = char.charCodeAt(0);
-                            
-                            try {
-                                // Key down
-                                var keydownEvent = new KeyboardEvent('keydown', {
-                                    key: char,
-                                    code: 'Key' + char.toUpperCase(),
-                                    keyCode: keyCode,
-                                    which: keyCode,
-                                    bubbles: true
-                                });
-                                elementToUpdate.dispatchEvent(keydownEvent);
-                                
-                                // Key press
-                                var keypressEvent = new KeyboardEvent('keypress', {
-                                    key: char,
-                                    code: 'Key' + char.toUpperCase(),
-                                    keyCode: keyCode,
-                                    which: keyCode,
-                                    bubbles: true
-                                });
-                                elementToUpdate.dispatchEvent(keypressEvent);
-                                
-                                // Add character
-                                elementToUpdate.value += char;
-                                
-                                // Key up
-                                var keyupEvent = new KeyboardEvent('keyup', {
-                                    key: char,
-                                    code: 'Key' + char.toUpperCase(),
-                                    keyCode: keyCode,
-                                    which: keyCode,
-                                    bubbles: true
-                                });
-                                elementToUpdate.dispatchEvent(keyupEvent);
-                                
-                                debugInfo += " Keyboard event for '" + char + "'.";
-                            } catch (e) {
-                                debugInfo += " Error with keyboard event: " + e.message + ".";
-                            }
-                        }
-                        
-                        // Ensure final value and trigger events again
-                        elementToUpdate.value = '$text';
-                        triggerEvent(elementToUpdate, 'input');
-                        triggerEvent(elementToUpdate, 'change');
+                        var frameDoc = tempFrame.contentDocument || tempFrame.contentWindow.document;
+                        frameDoc.body.innerHTML = '<input type="text" id="tkf_temp_input" />';
+                        var tempInput = frameDoc.getElementById('tkf_temp_input');
+                        targetsFound.push({element: tempInput, source: "created_input"});
+                        debugInfo.push("Created temporary input element in iframe");
+                    } catch(e) {
+                        debugInfo.push("Failed to create temp input: " + e.message);
                     }
-                    
-                    // Focus element at the end to ensure it's selected
-                    elementToUpdate.focus();
-                    
-                    // Check if we were successful
-                    if (elementToUpdate.value === '$text') {
-                        return "SUCCESS: Value set to '" + elementToUpdate.value + "'. " + debugInfo;
-                    } else {
-                        return "PARTIAL_SUCCESS: Value is '" + elementToUpdate.value + "' should be '$text'. " + debugInfo;
-                    }
-                } else {
-                    return "NO_INPUT_FOUND: " + debugInfo;
                 }
+                
+                // Hala hiçbir hedef bulunamadıysa, başarısızlık durumunu bildir
+                if (targetsFound.length === 0) {
+                    return JSON.stringify({
+                        success: false,
+                        message: "No suitable input elements found",
+                        debug: debugInfo
+                    });
+                }
+                
+                // =========== AŞAMA 2: DEĞER ATAMA STRATEJİLERİNİ UYGULA ===========
+                // Her hedefte değer atama stratejilerini dene
+                var results = [];
+                var overallSuccess = false;
+                
+                for (var i = 0; i < targetsFound.length; i++) {
+                    var target = targetsFound[i].element;
+                    var source = targetsFound[i].source;
+                    
+                    // Odakla ve seç
+                    try {
+                        target.focus();
+                        target.select();
+                    } catch(e) {
+                        debugInfo.push("Focus/select error on " + source + ": " + e.message);
+                    }
+                    
+                    // STRATEJİ 1: Doğrudan değer atama
+                    var directValue = false;
+                    try {
+                        var origValue = target.value || "";
+                        target.value = '$text';
+                        directValue = (target.value === '$text');
+                    } catch(e) {
+                        debugInfo.push("Direct value error on " + source + ": " + e.message);
+                    }
+                    
+                    // STRATEJİ 2: Property descriptor kullanımı
+                    var descriptorValue = false;
+                    if (!directValue) {
+                        try {
+                            var inputProto = Object.getPrototypeOf(target);
+                            if (inputProto) {
+                                var descriptor = Object.getOwnPropertyDescriptor(inputProto, 'value');
+                                if (descriptor && descriptor.set) {
+                                    descriptor.set.call(target, '$text');
+                                    descriptorValue = (target.value === '$text');
+                                }
+                            }
+                        } catch(e) {
+                            debugInfo.push("Descriptor error on " + source + ": " + e.message);
+                        }
+                    }
+                    
+                    // STRATEJİ 3: execCommand kullanımı
+                    var execCommandValue = false;
+                    if (!directValue && !descriptorValue) {
+                        try {
+                            target.select();
+                            execCommandValue = document.execCommand('insertText', false, '$text');
+                        } catch(e) {
+                            debugInfo.push("execCommand error on " + source + ": " + e.message);
+                        }
+                    }
+                    
+                    // STRATEJİ 4: Karakter karakter girme
+                    var charByCharValue = false;
+                    if (!directValue && !descriptorValue && !execCommandValue) {
+                        try {
+                            target.value = '';
+                            var chars = '$text'.split('');
+                            for (var j = 0; j < chars.length; j++) {
+                                target.value += chars[j];
+                            }
+                            charByCharValue = (target.value === '$text');
+                        } catch(e) {
+                            debugInfo.push("Char-by-char error on " + source + ": " + e.message);
+                        }
+                    }
+                    
+                    // STRATEJİ 5: Kompozisyon olayları kullanımı (IME benzeri giriş)
+                    var compositionValue = false;
+                    if (!directValue && !descriptorValue && !execCommandValue && !charByCharValue) {
+                        try {
+                            // Giriş temizle
+                            target.value = '';
+                            // Kompozisyon başlatma olayı
+                            var compStartEvent = new Event('compositionstart', {bubbles: true});
+                            target.dispatchEvent(compStartEvent);
+                            // Kompozisyon güncelleme
+                            var compUpdateEvent = new Event('compositionupdate', {bubbles: true});
+                            compUpdateEvent.data = '$text';
+                            target.dispatchEvent(compUpdateEvent);
+                            // Değeri ayarla
+                            target.value = '$text';
+                            // Kompozisyon bitirme
+                            var compEndEvent = new Event('compositionend', {bubbles: true});
+                            compEndEvent.data = '$text';
+                            target.dispatchEvent(compEndEvent);
+                            compositionValue = (target.value === '$text');
+                        } catch(e) {
+                            debugInfo.push("Composition error on " + source + ": " + e.message);
+                        }
+                    }
+                    
+                    // =========== AŞAMA 3: OLAY TETİKLEME ===========
+                    // Input ve change olaylarını tetikle - her türlü tetikle, başarılı veya değil
+                    var eventsDispatched = false;
+                    try {
+                        // input olayı
+                        var inputEvent = new Event('input', {bubbles: true});
+                        target.dispatchEvent(inputEvent);
+                        // change olayı
+                        var changeEvent = new Event('change', {bubbles: true});
+                        target.dispatchEvent(changeEvent);
+                        // form olayları - hemen form kontrolü
+                        var form = target.form;
+                        if (form) {
+                            try {
+                                var formInputEvent = new Event('input', {bubbles: true});
+                                form.dispatchEvent(formInputEvent);
+                            } catch(e) { /* Form olaylarında hata olabilir, yoksay */ }
+                        }
+                        eventsDispatched = true;
+                    } catch(e) {
+                        // Fallback: eski tarayıcılar için createEvent
+                        try {
+                            var fallbackInput = document.createEvent('HTMLEvents');
+                            fallbackInput.initEvent('input', true, true);
+                            target.dispatchEvent(fallbackInput);
+                            var fallbackChange = document.createEvent('HTMLEvents');
+                            fallbackChange.initEvent('change', true, true);
+                            target.dispatchEvent(fallbackChange);
+                            eventsDispatched = true;
+                        } catch(e2) {
+                            debugInfo.push("Event error on " + source + ": " + e.message + ", fallback: " + e2.message);
+                        }
+                    }
+                    
+                    // Son bir kez odakla
+                    try {
+                        target.focus();
+                    } catch(e) { /* yoksay */ }
+                    
+                    // Sonucu kaydet
+                    var methodsSuccess = directValue || descriptorValue || execCommandValue || charByCharValue || compositionValue;
+                    var finalValue = target.value || "";
+                    var successful = (finalValue === '$text');
+                    
+                    results.push({
+                        source: source,
+                        element: target.tagName + (target.id ? "#" + target.id : ""),
+                        successful: successful,
+                        finalValue: finalValue,
+                        eventsDispatched: eventsDispatched,
+                        methods: {
+                            directValue: directValue,
+                            descriptorValue: descriptorValue,
+                            execCommandValue: execCommandValue,
+                            charByCharValue: charByCharValue,
+                            compositionValue: compositionValue
+                        }
+                    });
+                    
+                    // Genel başarı durumunu güncelle
+                    if (successful) {
+                        overallSuccess = true;
+                    }
+                    
+                    // Başarılı olduysa, diğer hedefleri denemeyi kes
+                    if (successful) {
+                        break;
+                    }
+                }
+                
+                // Değer atama sonucunu döndür 
+                return JSON.stringify({
+                    success: overallSuccess,
+                    message: overallSuccess ? "Value set successfully" : "Failed to set value",
+                    targetsCount: targetsFound.length,
+                    results: results,
+                    finalValue: overallSuccess ? '$text' : "",
+                    debug: debugInfo
+                });
+                
             } catch(e) {
-                return "ERROR: " + e.message;
+                return JSON.stringify({
+                    success: false,
+                    message: "Error: " + e.message,
+                    stack: e.stack,
+                    debug: ["Fatal error: " + e.message]
+                });
             }
         })();
         """.trimIndent()
         
-        // Execute the enhanced script
+        // Ana stratejiyi uygula ve başarı olup olmadığını kontrol et
         evaluateJavascript(enhancedScript) { result ->
-            Timber.d("[DIRECT INPUT] Enhanced input result: $result")
-            
-            // If the first attempt fails, try a more aggressive approach with a slight delay
-            if (!result.contains("SUCCESS")) {
-                Handler(Looper.getMainLooper()).postDelayed({
-                    // Force another attempt with a different strategy focused on active element
-                    val lastResortScript = """
-                    (function() {
-                        try {
-                            // Force focus on any input we can find
-                            var allInputs = document.querySelectorAll('input, textarea');
-                            var debugInfo = "Last resort: ";
-                            var foundAny = false;
-                            
-                            for (var i = 0; i < allInputs.length; i++) {
-                                try {
-                                    var input = allInputs[i];
-                                    if (input.offsetParent !== null) {
-                                        input.focus();
-                                        debugInfo += "Found visible input " + input.tagName + "#" + input.id + ". ";
-                                        foundAny = true;
-                                        
-                                        // Set value
-                                        input.value = '$text';
-                                        
-                                        // Trigger events
-                                        var inputEvent = new Event('input', { bubbles: true });
-                                        input.dispatchEvent(inputEvent);
-                                        var changeEvent = new Event('change', { bubbles: true });
-                                        input.dispatchEvent(changeEvent);
-                                        
-                                        debugInfo += "Set value and triggered events.";
-                                        break;
-                                    }
-                                } catch(e) {
-                                    debugInfo += "Error with input " + i + ": " + e.message + ". ";
-                                }
-                            }
-                            
-                            return foundAny ? "LAST_RESORT_SUCCESS: " + debugInfo : "LAST_RESORT_FAILED: " + debugInfo;
-                        } catch(e) {
-                            return "LAST_RESORT_ERROR: " + e.message;
-                        }
-                    })();
-                    """.trimIndent()
+            try {
+                // Sonuç stringini temizle (tırnak işaretlerini ve kaçış karakterlerini kaldır)
+                val cleanResult = result.trim().removeSurrounding("\"").replace("\\\"(", "\"(").replace("\\\"", "\"").replace("\\\\", "\\")
+                
+                // Log çıktısını oluştur
+                Timber.d("[DIRECT INPUT] Enhanced input script completed")
+                
+                try {
+                    // JSON sonucunu ayrıştırmaya çalış
+                    val jsonResult = org.json.JSONObject(cleanResult)
+                    val success = jsonResult.optBoolean("success", false)
+                    Timber.d("[DIRECT INPUT] Success: $success, Message: ${jsonResult.optString("message")}")
                     
-                    evaluateJavascript(lastResortScript) { fallbackResult ->
-                        Timber.d("[DIRECT INPUT] Last resort result: $fallbackResult")
+                    // Başarısız olduysa, son çare olarak tekrar dene
+                    if (!success) {
+                        // Bir süre bekleyip son çare yaklaşımını dene
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            Timber.d("[DIRECT INPUT] Trying last resort method")
+                            // Super güçlü son çare yaklaşımı - en basit ve kaba yöntem
+                            val finalResortScript = """
+                            (function() {
+                                try {
+                                    // Mevcut bağlama JavaScript kodu enjekte et
+                                    var js = "var allInputs = document.querySelectorAll('input, textarea');" +
+                                            "for (var i = 0; i < allInputs.length; i++) {" +
+                                            "  if (allInputs[i].offsetParent !== null) {" +
+                                            "    allInputs[i].value = '$text';" +
+                                            "    var inputEvent = new Event('input', {bubbles: true});" +
+                                            "    allInputs[i].dispatchEvent(inputEvent);" +
+                                            "    var changeEvent = new Event('change', {bubbles: true});" +
+                                            "    allInputs[i].dispatchEvent(changeEvent);" +
+                                            "  }" +
+                                            "}";
+                                    
+                                    // Siteye doğrudan bir script etiketi olarak enjekte et
+                                    var scriptElement = document.createElement('script');
+                                    scriptElement.textContent = js;
+                                    document.head.appendChild(scriptElement);
+                                    document.head.removeChild(scriptElement);
+                                    
+                                    // Aktif form varsa, enter tuşu göndermeyi dene
+                                    setTimeout(function() {
+                                        var activeElement = document.activeElement;
+                                        if (activeElement && activeElement.form) {
+                                            var enterEvent = new KeyboardEvent('keydown', {
+                                                bubbles: true,
+                                                cancelable: true,
+                                                key: 'Enter',
+                                                code: 'Enter',
+                                                keyCode: 13,
+                                                which: 13
+                                            });
+                                            activeElement.dispatchEvent(enterEvent);
+                                        }
+                                    }, 200);
+                                    
+                                    return "EMERGENCY_ATTEMPT_COMPLETED";
+                                } catch(e) {
+                                    return "EMERGENCY_ATTEMPT_FAILED: " + e.message;
+                                }
+                            })();
+                            """.trimIndent()
+                            
+                            evaluateJavascript(finalResortScript) { emergencyResult ->
+                                Timber.d("[DIRECT INPUT] Last resort result: $emergencyResult")
+                            }
+                        }, 200) // Son çare denemesi için kısa bir gecikme
                     }
-                }, 100) // Small delay before last resort
+                } catch (e: Exception) {
+                    Timber.e(e, "[DIRECT INPUT] Error parsing result: $cleanResult")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "[DIRECT INPUT] Error processing result")
             }
         }
     }

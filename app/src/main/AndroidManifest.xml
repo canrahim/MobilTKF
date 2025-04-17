@@ -26,7 +26,13 @@
         android:hardwareAccelerated="true"
         android:largeHeap="true"
         android:networkSecurityConfig="@xml/network_security_config"
+        android:requestLegacyExternalStorage="true"
         tools:targetApi="31">
+        <!-- Memory Trimmer Component -->
+        <meta-data android:name="android.webkit.WebView.EnableSafeBrowsing"
+                   android:value="true" />
+        <meta-data android:name="android.webkit.WebView.MetricsOptOut"
+                   android:value="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

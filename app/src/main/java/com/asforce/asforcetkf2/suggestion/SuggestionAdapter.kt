@@ -8,6 +8,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.asforce.asforcetkf2.R
 import com.google.android.material.chip.Chip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import timber.log.Timber
 
 /**
@@ -49,13 +50,13 @@ class SuggestionAdapter(
             }
         }
         
-        // Handle click on close icon - delete the suggestion
+        // Handle click on close icon - show delete confirmation dialog
         holder.suggestionChip.setOnCloseIconClickListener {
             val pos = holder.adapterPosition
             if (pos != RecyclerView.NO_POSITION) {
                 val suggestionText = suggestions[pos]
                 Timber.d("[SUGGESTION] Delete icon clicked for suggestion: $suggestionText")
-                onSuggestionDeleted(suggestionText, pos)
+                showDeleteConfirmationDialog(suggestionText, pos)
             }
         }
     }
@@ -63,6 +64,51 @@ class SuggestionAdapter(
     override fun getItemCount(): Int {
         Timber.d("[SUGGESTION] Getting item count: ${suggestions.size}")
         return suggestions.size
+    }
+    
+    /**
+     * Silme onayı için dialog gösterir
+     * 3 seçenek sunar: Sadece seçilen öneriyi sil, tüm önerileri sil ve iptal
+     */
+    private fun showDeleteConfirmationDialog(suggestion: String, position: Int) {
+        MaterialAlertDialogBuilder(context)
+            .setTitle("Öneri Silme")
+            .setMessage("\"$suggestion\" önerisini silmek istediğinize emin misiniz?")
+            .setPositiveButton("Bu Öneriyi Sil") { _, _ ->
+                // Sadece seçilen öneriyi sil
+                Timber.d("[SUGGESTION] User confirmed deletion of single suggestion: $suggestion")
+                onSuggestionDeleted(suggestion, position)
+            }
+            .setNegativeButton("İptal") { dialog, _ ->
+                dialog.dismiss()
+                Timber.d("[SUGGESTION] User cancelled deletion")
+            }
+            .setNeutralButton("Tüm Önerileri Sil") { _, _ ->
+                // Tüm önerileri silmek için SuggestionManager'a bildir
+                Timber.d("[SUGGESTION] User chose to delete all suggestions for key: $inputKey")
+                // Önce tüm öneri silme onayı sor
+                confirmDeleteAllSuggestions()
+            }
+            .show()
+    }
+    
+    /**
+     * Tüm önerileri silme işlemi için ikinci bir onay isteği
+     */
+    private fun confirmDeleteAllSuggestions() {
+        MaterialAlertDialogBuilder(context)
+            .setTitle("Tüm Önerileri Sil")
+            .setMessage("Bu alan için TÜM önerileri silmek istediğinize emin misiniz? Bu işlem geri alınamaz.")
+            .setPositiveButton("Tümünü Sil") { _, _ ->
+                Timber.d("[SUGGESTION] User confirmed deletion of ALL suggestions for key: $inputKey")
+                // Özel bir işaretleyici ile silme işlemini çağır
+                onSuggestionDeleted("__DELETE_ALL_SUGGESTIONS__", -1)
+            }
+            .setNegativeButton("İptal") { dialog, _ ->
+                dialog.dismiss()
+                Timber.d("[SUGGESTION] User cancelled deletion of all suggestions")
+            }
+            .show()
     }
 
     /**

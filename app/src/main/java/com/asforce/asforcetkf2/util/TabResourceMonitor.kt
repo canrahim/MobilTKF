@@ -1,18 +1,22 @@
 package com.asforce.asforcetkf2.util
 
+import android.content.Context
 import android.os.Process
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.BufferedReader
 import java.io.FileReader
 import java.io.IOException
+import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Utility class that monitors CPU and memory usage of tabs
+ * Sekmelerin CPU ve bellek kullanımını izleyen sınıf
+ * Geliştirilmiş versiyon - daha verimli izleme ve hızlı uyarı sistemi
  */
 class TabResourceMonitor {
     

@@ -64,13 +64,34 @@ class WebViewSuggestionInterface(
                                 Timber.d("[SUGGESTION] Got current value from active element: '$currentInputValue'")
                             }
                             
-                            // Force show suggestions
-                            suggestionManager.showSuggestions(webView, currentInputKey, currentInputValue)
+                            // Güçlü öneri gösterimi
+                            // Önce boş filtreyle, tüm önerileri görüntüle
+                            suggestionManager.showSuggestions(webView, currentInputKey, "")
+                            
+                            // Sonra, eğer değer varsa, o filtreyi uygula
+                            if (currentInputValue.isNotBlank()) {
+                                // Kısa gecikme ile ikinci bir gösterme çağrısı yap
+                                // bu görüntüleme sorununu önler
+                                mainHandler.postDelayed({
+                                    suggestionManager.showSuggestions(webView, currentInputKey, currentInputValue)
+                                }, 50) 
+                            } else {
+                                // Boş input için, henüz yüklenmemiş olabilecek tüm önerileri 
+                                // gösterebilmek için yine de ikinci bir defa dene
+                                mainHandler.postDelayed({
+                                    suggestionManager.showSuggestions(webView, currentInputKey, "")
+                                }, 100)
+                            }
                         } catch (e: Exception) {
                             Timber.e(e, "[SUGGESTION] Error processing active element info")
                             
                             // Still show suggestions with empty filter as fallback
-                            suggestionManager.showSuggestions(webView, currentInputKey, currentInputValue)
+                            suggestionManager.showSuggestions(webView, currentInputKey, "")
+                            
+                            // Bozuk JSON durumunda da ikinci bir deneme yap
+                            mainHandler.postDelayed({
+                                suggestionManager.showSuggestions(webView, currentInputKey, "")
+                            }, 100)
                         }
                     }
                 )
