@@ -418,77 +418,131 @@ class MainActivity : AppCompatActivity() {
             it.requestFocus()
         }
 
-        // Her dokunma olayı
+        // WebView için geliştirilmiş dokunma olayı işleyicisi - klavye ve imleç sorunlarını çözen versiyon
         webView.setOnTouchListener { v, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                // WebView'in odak almasını sağla
-                v.requestFocus()
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    // WebView'in odak almasını sağla - imleç sorununu gider
+                    v.requestFocus()
+                }
                 
-                // Her zaman input alanını kontrol et, suggestionsı göster
-                val script = """
-                (function() {
-                    // Get the element at the touch point
-                    var element = document.elementFromPoint(${event.x}, ${event.y});
-                    if (!element) return false;
-                    
-                    // Check if touched element is an input field
-                    var isInput = element.tagName === 'INPUT' || element.tagName === 'TEXTAREA';
-                    
-                    // If it's an input field, focus it and prepare for suggestions
-                    if (isInput) {
-                        console.log('TKF Browser: Touch detected on input field: ' + element.tagName);
-                        
-                        // Force focus on element
-                        element.focus();
-                        
-                        // Get or create key
-                        var key = element.getAttribute('data-tkf-key');
-                        if (!key) {
-                            key = (element.name || element.id || element.placeholder || 'input_' + Math.random().toString(36).substr(2, 9));
-                            key = key.replace(/[^a-zA-Z0-9_]/g, '_');
-                            element.setAttribute('data-tkf-key', key);
-                        }
-                        
-                        // Make sure the element is visible in viewport
-                        if (element.scrollIntoViewIfNeeded) {
-                            element.scrollIntoViewIfNeeded();
-                        } else if (element.scrollIntoView) {
-                            element.scrollIntoView();
-                        }
-                        
-                        // Reset the focus and blur to ensure keyboard shows
-                        setTimeout(function() {
-                            // Blur and focus to ensure keyboard and suggestions show up
-                            element.blur();
-                            setTimeout(function() {
+                MotionEvent.ACTION_UP -> {
+                    // Dokunma sonrası tıklanan elementi ve tipini belirle
+                    val script = """
+                    (function() {
+                        try {
+                            // Get the element at the touch point
+                            var element = document.elementFromPoint(${event.x}, ${event.y});
+                            if (!element) return "NO_ELEMENT";
+                            
+                            console.log('TKF Browser: Touched element: ' + element.tagName + 
+                                (element.id ? '#' + element.id : '') + 
+                                (element.className ? '.' + element.className : ''));
+                            
+                            // Check if touched element is an input field
+                            var isInput = element.tagName === 'INPUT' || element.tagName === 'TEXTAREA';
+                            var inputType = isInput ? (element.type || 'text').toLowerCase() : '';
+                            
+                            // If it's an input field, handle with enhanced focus logic
+                            if (isInput) {
+                                console.log('TKF Browser: Touch detected on input field: ' + element.tagName + 
+                                    ' type=' + inputType);
+                                
+                                // Ensure element is not disabled or readonly
+                                if (element.disabled || element.readOnly) {
+                                    return "INPUT_DISABLED";
+                                }
+                                
+                                // Get or create key
+                                var key = element.getAttribute('data-tkf-key');
+                                if (!key) {
+                                    key = (element.name || element.id || element.placeholder || 'input_' + Math.random().toString(36).substr(2, 9));
+                                    key = key.replace(/[^a-zA-Z0-9_]/g, '_');
+                                    element.setAttribute('data-tkf-key', key);
+                                }
+                                
+                                // Make sure the element is visible in viewport
+                                if (element.scrollIntoViewIfNeeded) {
+                                    element.scrollIntoViewIfNeeded();
+                                } else if (element.scrollIntoView) {
+                                    element.scrollIntoView();
+                                }
+                                
+                                // Odakla - buraya blur/focus döngüsü koymuyoruz, imleç sorununu önlemek için
                                 element.focus();
                                 
-                                // Notify for suggestions
-                                if (window.SuggestionHandler) {
-                                    console.log('TKF Browser: Notifying SuggestionHandler with key: ' + key);
-                                    window.SuggestionHandler.onInputFocused(key);
-                                    window.SuggestionHandler.onInputChanged(key, element.value || '');
-                                } else {
-                                    console.log('TKF Browser: SuggestionHandler not available');
-                                }
-                            }, 50);
-                        }, 50);
-                        
-                        return true;
-                    }
+                                // ÖNEMLI: Odaklama ve klavye işlemlerini daha iyi yönetmek için element bilgilerini döndür
+                                return JSON.stringify({
+                                    tagName: element.tagName,
+                                    id: element.id || '',
+                                    type: inputType,
+                                    isNumeric: (inputType === 'number' || inputType === 'tel'),
+                                    value: element.value || '',
+                                    key: key
+                                });
+                            }
+                            
+                            return "NOT_INPUT";
+                        } catch(e) {
+                            console.error('TKF Browser: Error in touch handling:', e);
+                            return "ERROR: " + e.message;
+                        }
+                    })();
+                    """
                     
-                    return false;
-                })();
-                """
-                
-                webView.evaluateJavascript(script) { result ->
-                    if (result.contains("true")) {
-                        // Ensure keyboard is visible
-                        showKeyboard(v)
+                    webView.evaluateJavascript(script) { result ->
+                        try {
+                            // Tırnak işaretlerini ve kaçış karakterlerini temizle
+                            val cleanResult = result.trim().removeSurrounding("\"").replace("\\\"", "\"").replace("\\\\", "\\")
+                            
+                            // Input alanı ise özel işlem yap
+                            if (cleanResult.startsWith("{")) {
+                                try {
+                                    // JSON'u ayrıştır
+                                    val jsonResult = org.json.JSONObject(cleanResult)
+                                    val isNumeric = jsonResult.optBoolean("isNumeric", false)
+                                    val inputType = jsonResult.optString("type", "text")
+                                    val inputKey = jsonResult.optString("key", "")
+                                    
+                                    // Öneri sistemini aktifleştir
+                                    if (inputKey.isNotEmpty()) {
+                                        webView.evaluateJavascript("""
+                                            (function() {
+                                                if (window.SuggestionHandler) {
+                                                    window.SuggestionHandler.onInputFocused('$inputKey');
+                                                    return true;
+                                                }
+                                                return false;
+                                            })();
+                                        """.trimIndent(), null)
+                                    }
+                                    
+                                    // Sayısal klavye için özel klavye tipi ayarla
+                                    if (isNumeric) {
+                                        // Sayısal klavye durumunda klavyeyi dikkatli şekilde göster
+                                        // InputMethodManager'ı doğrudan kullan, showKeyboard'u bypass et
+                                        val imm = this@MainActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                                        imm.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT)
+                                    } else {
+                                        // Text input için normal klavye göster
+                                        showKeyboard(v)
+                                    }
+                                } catch (e: Exception) {
+                                    Timber.e(e, "[INPUT] JSON parsing error: $cleanResult")
+                                    // Hata durumunda normal klavyeyi göster
+                                    showKeyboard(v)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Timber.e(e, "[INPUT] Error processing touch event result")
+                        }
                     }
                 }
             }
-            false
+            
+            // WebView'in normal tıklama işlemesine izin ver
+            // Bu önemli: WebView'in kendi dokunma olaylarını da işlemesi gerekiyor
+            return@setOnTouchListener false
         }
         
         // Store in active WebViews
@@ -962,10 +1016,29 @@ class MainActivity : AppCompatActivity() {
     
     /**
      * Klavyeyi görünür hale getirir
+     * Geliştirilmiş klavye gösterimi - imleç sorununu çözmek için
      */
     private fun showKeyboard(view: View) {
-        val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+        try {
+            // Önce görünümün odaklandığından emin ol - imleç sorununu çözmek için
+            if (!view.isFocused) {
+                view.requestFocus()
+            }
+            
+            // InputMethodManager ile klavyeyi göster
+            val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+            
+            // Klavyenin gerçekten gösterildiğinden emin olmak için ek işlemler
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (!inputMethodManager.isActive(view)) {
+                    // Klavye hala açılmadıysa, zorla açmayı dene
+                    inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_FORCED)
+                }
+            }, 200) // Klavyenin yüklenmesi için kısa bir gecikme
+        } catch (e: Exception) {
+            Timber.e(e, "Klavye gösterme hatası")
+        }
     }
     
     override fun onBackPressed() {

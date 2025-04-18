@@ -253,19 +253,42 @@ class TabWebView @JvmOverloads constructor(
         // Performansı artırmak için asenkron yerine senkron işleme modu
         settings.blockNetworkLoads = false
         
-        // WebView içinde klavye işlevselliğini etkinleştir (dokunma performansı arttırıldı)
+        // WebView içinde klavye ve odaklanma işlevselliğini etkinleştir (geliştirilmiş dokunma kontrolü)
         setOnTouchListener { v, event ->
-            // Dokunan alanı belirle ve odaklan
-            if (isFocused) {
-                // Zaten odaklandıysa işlem yapma
-                v.performClick()
-                false
-            } else {
-                requestFocusFromTouch()
-                v.requestFocus()
-                v.performClick()
-                false
+            // İlk olarak tıklama olayını işle
+            v.performClick()
+            
+            // Odaklanma sorunlarını önlemek için dokunma olaylarını kontrol et
+            when (event.action) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    // Dokunma sırasında odaklanma sorununu çözmek için WebView'e odaklan
+                    if (!isFocused) {
+                        requestFocusFromTouch()
+                        v.requestFocus()
+                    }
+                }
+                android.view.MotionEvent.ACTION_UP -> {
+                    // Dokunulan noktadaki HTML elementini bulmak için JavaScript çalıştır
+                    val x = event.x
+                    val y = event.y
+                    post {
+                        evaluateJavascript(
+                            "(function() { " +
+                                "var el = document.elementFromPoint($x, $y); " +
+                                "if(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) { " +
+                                    "el.focus(); " +
+                                    "return true; " +
+                                "} " +
+                                "return false; " +
+                            "})()",
+                            null
+                        )
+                    }
+                }
             }
+            
+            // Olayı normal işle (WebView'in standart dokunma işlemlerini engelleme)
+            false
         }
         
         // Optimize for performance
@@ -274,19 +297,39 @@ class TabWebView @JvmOverloads constructor(
     
     /**
      * Klavye girişini yönetmek için input connection oluştur
+     * Geliştirilmiş klavye kontrolü ve imlec yönetimi
      */
     override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection {
         // Önce default davranışı al
         val connection = super.onCreateInputConnection(outAttrs)
         
-        // Eğer super metodu null döndüyse kendi connection'umuzı oluştur
+        // Eğer super metodu null döndüyse veya aktif bir form elemanı varsa kendi connection'umızı oluştur
         if (connection == null) {
-            // EditorInfo ayarları
-            outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI or EditorInfo.IME_FLAG_NO_FULLSCREEN or EditorInfo.IME_ACTION_DONE
-            outAttrs.inputType = EditorInfo.TYPE_CLASS_TEXT or EditorInfo.TYPE_TEXT_FLAG_AUTO_COMPLETE or EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT
+            // EditorInfo ayarları - klavye türünü korumak için IME bayraklarını yönet
+            outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI or 
+                                  EditorInfo.IME_FLAG_NO_FULLSCREEN or 
+                                  EditorInfo.IME_ACTION_DONE
+
+            // İnput tipini sabit tut - karışık klavye sorununu önle
+            outAttrs.inputType = EditorInfo.TYPE_CLASS_TEXT
             
             // Base input connection oluştur
             return BaseInputConnection(this, true)
+        } else {
+            // Mevcut bağlantıdan inputType'ı al
+            val currentInputType = outAttrs.inputType
+            
+            // Eğer numerik klavye gerekiyorsa (TYPE_CLASS_NUMBER), bu tipi koru
+            // aksi takdirde varsayılan olarak TEXT kullan
+            if ((currentInputType and EditorInfo.TYPE_CLASS_NUMBER) == 0) {
+                // Metin giriş alanı - normal klavye için ayarla
+                outAttrs.inputType = EditorInfo.TYPE_CLASS_TEXT 
+            }
+            
+            // IME seçeneklerinin tutarlı olmasını sağla
+            outAttrs.imeOptions = outAttrs.imeOptions or 
+                                  EditorInfo.IME_FLAG_NO_EXTRACT_UI or 
+                                  EditorInfo.IME_FLAG_NO_FULLSCREEN
         }
         
         return connection
