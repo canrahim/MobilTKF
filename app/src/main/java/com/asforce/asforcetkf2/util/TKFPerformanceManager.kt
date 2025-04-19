@@ -535,4 +535,277 @@ class TKFPerformanceManager private constructor(context: Context) {
     fun isInLowMemoryMode(): Boolean {
         return isLowMemoryMode
     }
+    
+    /**
+     * Bellek optimizasyonu - seviyeye göre uygulanır
+     * @param level: "normal", "moderate", "aggressive", "extreme" değerlerinden biri
+     */
+    fun optimizeMemory(level: String) {
+        // Bellek optimizasyon seviyesini logla
+        Timber.d("Memory optimization requested at level: $level")
+        
+        // Temel temizlik her seviyede uygulanır
+        trimApplicationMemory()
+        
+        when (level) {
+            "extreme" -> {
+                // En agresif temizlik - kritik durumlarda
+                System.gc()
+                Runtime.getRuntime().gc()
+                clearUnusedCache()
+                clearImageCache()
+                WebView(appContext).clearCache(true)
+                
+                // WebView depolamayı temizle
+                try {
+                    android.webkit.WebStorage.getInstance().deleteAllData()
+                } catch (e: Exception) {
+                    Timber.e("Error clearing WebStorage: ${e.message}")
+                }
+                
+                // Garbage collection'ı ikinci kez zorla 
+                System.runFinalization()
+                System.gc()
+                
+                Timber.w("Extreme memory optimization applied")
+            }
+            "aggressive" -> {
+                // Agresif temizlik
+                System.gc()
+                clearUnusedCache()
+                clearImageCache()
+                
+                Timber.d("Aggressive memory optimization applied")
+            }
+            "moderate" -> {
+                // Orta düzey temizlik
+                clearUnusedCache()
+                
+                Timber.d("Moderate memory optimization applied")
+            }
+            else -> {
+                // Normal düzey - minimal temizlik
+                Timber.d("Normal memory optimization applied")
+            }
+        }
+    }
+    
+    /**
+     * Bellek durumunu kontrol et ve bir durum stringi döndür
+     * @return "critical", "low", "moderate", veya "normal" 
+     */
+    fun getMemoryStatus(): String {
+        val activityManager = appContext.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        val memoryInfo = android.app.ActivityManager.MemoryInfo()
+        activityManager.getMemoryInfo(memoryInfo)
+        
+        // Mevcut bellek kullanımını kontrol et
+        val availableMemMB = memoryInfo.availMem / (1024 * 1024)
+        val totalMemMB = memoryInfo.totalMem / (1024 * 1024)
+        val memoryUsagePercent = 100 - (availableMemMB * 100 / totalMemMB)
+        
+        return when {
+            memoryInfo.lowMemory || memoryUsagePercent > 90 -> "critical" // %90 üzeri veya sistem düşük bellek bildirimi
+            memoryUsagePercent > 80 -> "low"                            // %80-90 arası
+            memoryUsagePercent > 70 -> "moderate"                       // %70-80 arası
+            else -> "normal"                                            // %70 altı
+        }
+    }
+    
+    /**
+     * Acil durum bellek temizliği
+     * Kritik düşük bellek durumlarında çağrılır
+     */
+    fun emergencyMemoryCleanup() {
+        Timber.w("Emergency memory cleanup initiated")
+        
+        // Maksimum seviyede bellek temizliği yap
+        optimizeMemory("extreme")
+        
+        // Disk cache temizleme
+        try {
+            // Uygulama cache klasörünü tamamen boşalt
+            val cacheDir = appContext.cacheDir
+            deleteDirectoryContents(cacheDir)
+            
+            // WebView cache'i boşalt
+            WebView(appContext).clearCache(true)
+            android.webkit.WebStorage.getInstance().deleteAllData()
+        } catch (e: Exception) {
+            Timber.e("Error during emergency cleanup: ${e.message}")
+        }
+        
+        // Son çare: Bitmaps ve diğer native kaynakları temizle
+        try {
+            val bitmap = android.graphics.Bitmap.createBitmap(1, 1, android.graphics.Bitmap.Config.ARGB_8888)
+            bitmap.recycle()
+        } catch (e: Exception) {
+            // Yoksay
+        }
+        
+        // GC'yi iki kez tetikle
+        System.gc()
+        handler.postDelayed({
+            System.runFinalization()
+            System.gc()
+        }, 200)
+    }
+    
+    /**
+     * Dizin içeriğini sil - recursive
+     */
+    private fun deleteDirectoryContents(directory: java.io.File) {
+        if (!directory.exists() || !directory.isDirectory) return
+        
+        directory.listFiles()?.forEach { file ->
+            if (file.isDirectory) {
+                deleteDirectoryContents(file)
+            } else {
+                file.delete()
+            }
+        }
+    }
+    
+    /**
+     * Veri tasarrufu modunda mı kontrol et
+     */
+    fun isDataSaverEnabled(): Boolean {
+        val connectivityManager = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        
+        return try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                val status = connectivityManager.restrictBackgroundStatus
+                status == android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_ENABLED
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Timber.e("Error checking data saver mode: ${e.message}")
+            false
+        }
+    }
+    
+    /**
+     * Optimizasyon süresini kaydet
+     */
+    fun recordOptimizationTime(type: String, durationMs: Long) {
+        val key = "${type}_time"
+        metrics[key] = durationMs
+        
+        // Toplamayı da güncelle
+        val totalKey = "${type}_total_time"
+        val totalCount = "${type}_count"
+        metrics[totalKey] = (metrics[totalKey] ?: 0) + durationMs
+        metrics[totalCount] = (metrics[totalCount] ?: 0) + 1
+    }
+    
+    /**
+     * Sekme istatistiklerini kaydet
+     */
+    fun logTabStats(tabId: String, url: String, duration: Long, resourceCount: Int) {
+        val simplifiedUrl = url.split("?")[0].split("#")[0] // URL parametrelerini kaldır
+        
+        // İstatistikleri metrics maps'e ekle
+        metrics["tab_${tabId}_duration"] = duration
+        metrics["tab_${tabId}_resources"] = resourceCount.toLong()
+        
+        // Domain bazlı istatistikleri güncelle
+        try {
+            val uri = android.net.Uri.parse(url)
+            val domain = uri.host ?: "unknown"
+            
+            val domainKey = "domain_${domain.replace(".", "_")}"
+            metrics[domainKey] = (metrics[domainKey] ?: 0) + 1
+        } catch (e: Exception) {
+            Timber.e("Error parsing URL for stats: ${e.message}")
+        }
+    }
+    
+    /**
+     * Optimizasyon istatistiklerini kaydet
+     */
+    fun recordOptimizationStats(
+        optimizationLevel: String,
+        durationMs: Long,
+        estimatedMemorySavedKb: Long,
+        tabsOptimized: Int,
+        tabsHibernated: Int
+    ) {
+        metrics["last_optimization_level"] = when(optimizationLevel) {
+            "extreme" -> 4
+            "aggressive" -> 3
+            "moderate" -> 2
+            else -> 1 
+        }
+        
+        metrics["last_optimization_duration"] = durationMs
+        metrics["last_optimization_memory_saved"] = estimatedMemorySavedKb
+        metrics["last_optimization_tabs_count"] = tabsOptimized.toLong()
+        metrics["last_optimization_hibernated"] = tabsHibernated.toLong()
+        
+        // Toplam istatistikleri güncelle
+        metrics["total_optimization_count"] = (metrics["total_optimization_count"] ?: 0) + 1
+        metrics["total_optimization_duration"] = (metrics["total_optimization_duration"] ?: 0) + durationMs
+        metrics["total_memory_saved"] = (metrics["total_memory_saved"] ?: 0) + estimatedMemorySavedKb
+    }
+    
+    /**
+     * Sistem kaynaklarını optimize et
+     */
+    fun optimizeSystemResources() {
+        Timber.d("System resources optimization initiated")
+        
+        // CPU ve bellek sınırlamalarını uygula
+        Thread.currentThread().priority = Thread.MIN_PRIORITY
+        
+        // Arka plan işlemleri için daha düşük öncelikli Executor kullan
+        val executor = java.util.concurrent.Executors.newSingleThreadExecutor()
+        executor.execute {
+            // İşletim sistemi bellek ve CPU kullanım durumunu al
+            val memStatus = getMemoryStatus()
+            
+            // Duruma göre sistemsel optimizasyonlar uygula
+            when (memStatus) {
+                "critical", "low" -> {
+                    // Kritik durumlarda agresif temizlik
+                    optimizeMemory("aggressive")
+                    
+                    // Ağ bağlantılarını optimize et
+                    optimizeNetworkUsage()
+                }
+                "moderate" -> {
+                    // Orta seviye temizlik
+                    optimizeMemory("moderate")
+                }
+                else -> {
+                    // Normal modda minimal temizlik
+                    optimizeMemory("normal")
+                }
+            }
+        }
+        
+        // Executor'u kapat
+        executor.shutdown()
+    }
+    
+    /**
+     * Ağ kullanımını optimize et
+     */
+    private fun optimizeNetworkUsage() {
+        try {
+            // Veri tasarrufu modunu kontrol et
+            val isDataSaverOn = isDataSaverEnabled()
+            
+            if (isDataSaverOn) {
+                Timber.d("Data Saver mode is active, optimizing network usage")
+                
+                // Veri tasarrufu ayarlarını güncelle
+                prefs.edit().putBoolean("data_saving_mode", true).apply()
+            } else {
+                prefs.edit().putBoolean("data_saving_mode", false).apply()
+            }
+        } catch (e: Exception) {
+            Timber.e("Error optimizing network usage: ${e.message}")
+        }
+    }
 }

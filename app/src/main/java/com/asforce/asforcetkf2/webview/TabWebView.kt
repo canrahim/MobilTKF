@@ -1283,32 +1283,116 @@ class TabWebView @JvmOverloads constructor(
     
     /**
      * Clean up resources when this WebView is no longer needed
-     * Geliştirilmiş bellek temizleme
+     * Geliştirilmiş bellek temizleme v2.0
      */
     fun cleanup() {
-        // Tüm yükleme ve işlemleri durdur
-        stopLoading()
-        
-        // JavaScript'i devre dışı bırak 
-        settings.javaScriptEnabled = false
-        
-        // Önbellekleri temizle
-        clearCache(true)
-        clearFormData()
-        clearHistory()
-        clearSslPreferences()
-        clearMatches()
-        
-        // Cookie'leri temizleme - oturum bilgilerini korumak için kaldırıldı
-        // CookieManager.getInstance().removeAllCookies(null)
-        
-        // Tüm görüntüleme işlemlerini durdur
-        onPause()
-        pauseTimers()
-        
-        // WebView'i yok et
-        destroy()
-        
-        Timber.d("Cleaned up WebView for tab ${tab?.id}")
+        // JavaScript ile önce bellek temizliği yap
+        try {
+            evaluateJavascript("""
+                (function() {
+                    try {
+                        // Tüm zamanlayıcıları ve aralıkları temizle
+                        const highestId = setTimeout(() => {}, 0);
+                        for (let i = 0; i < highestId; i++) {
+                            clearTimeout(i);
+                            clearInterval(i);
+                        }
+                        
+                        // DOM içeriğini temizle
+                        if (document && document.body) {
+                            document.body.innerHTML = '';
+                        }
+                        
+                        // Büyük global nesneleri temizle
+                        for (let prop in window) {
+                            if (window.hasOwnProperty(prop) && 
+                                typeof window[prop] === 'object' && 
+                                window[prop] !== null) {
+                                try { 
+                                    window[prop] = null; 
+                                } catch(e) {}
+                            }
+                        }
+                        
+                        // Web Workers'ları sonlandır
+                        if (window._tkfWorkers && Array.isArray(window._tkfWorkers)) {
+                            window._tkfWorkers.forEach(worker => {
+                                try { worker.terminate(); } catch(e) {}
+                            });
+                        }
+                        
+                        // Depolama yönetimi
+                        try { localStorage.clear(); } catch(e) {}
+                        try { sessionStorage.clear(); } catch(e) {}
+                        try { if (window.indexedDB && window.indexedDB.deleteDatabase) {
+                            window.indexedDB.deleteDatabase('TKFBrowser');
+                        }} catch(e) {}
+                        
+                        return "CLEANUP_COMPLETE";
+                    } catch(e) {
+                        return "CLEANUP_ERROR: " + e.message;
+                    }
+                })();
+            """.trimIndent()) { result ->
+                // Temizlik sonucunu logla
+                Timber.d("WebView JS cleanup result: $result")
+                
+                // JavaScript tamamlandıktan sonra ana temizlik işlemlerini yap
+                completeCleanup()
+            }
+            
+            // JavaScript sonucunun gelmemesi durumunda 300ms sonra mecburen temizlik yap
+            postDelayed({ completeCleanup() }, 300)
+        } catch (e: Exception) {
+            // JavaScript çalıştırma hatası - doğrudan temizliğe geç
+            Timber.e(e, "Error during JS cleanup")
+            completeCleanup()
+        }
+    }
+    
+    /**
+     * JavaScript temizlikten sonra ana kaynak temizleme
+     */
+    private fun completeCleanup() {
+        try {
+            // Tüm yükleme ve işlemleri durdur
+            stopLoading()
+            
+            // JavaScript'i devre dışı bırak 
+            settings.javaScriptEnabled = false
+            
+            // Önbellekleri temizle
+            clearCache(true)
+            clearFormData()
+            clearHistory()
+            clearSslPreferences()
+            clearMatches()
+            
+            // Tüm görüntüleme işlemlerini durdur
+            onPause()
+            pauseTimers()
+            
+            // Bellek sızıntılarını önlemek için referansları temizle
+            tag = null
+            tab = null
+            onPageStarted = null
+            onPageFinished = null
+            onProgressChanged = null
+            onReceivedTitle = null
+            onReceivedError = null
+            onReceivedSslError = null
+            onJsAlert = null
+            onJsConfirm = null
+            onFileChooser = null
+            onDownloadRequested = null
+            onLongPress = null
+            
+            // WebView'i yok et
+            destroy()
+            
+            Timber.d("Completed WebView cleanup process")
+        } catch (e: Exception) {
+            Timber.e(e, "Error during WebView cleanup")
+        }
     }
 }

@@ -6,6 +6,7 @@ import android.os.Process
 import android.webkit.WebView
 import com.asforce.asforcetkf2.util.TKFPerformanceManager
 import timber.log.Timber
+import java.io.File
 
 /**
  * TKF Tarayıcı Uygulama sınıfı
@@ -178,33 +179,107 @@ class TKFBrowserApplication : Application() {
     
     /**
      * Uygulama klasörlerini ve kaynakları hazırla
+     * Geliştirilmiş versiyon: Paralel işleme ve daha akıllı önbellek yönetimi
      */
     private fun prepareFolders() {
-        try {
-            // İndirilenler klasörü
-            val downloadsDir = getExternalFilesDir(null)?.also {
-                if (!it.exists()) it.mkdirs()
-            }
-            
-            // Önbellek temizleme - 7 günden eski önbellek dosyalarını temizle
-            val cacheDir = cacheDir
-            if (cacheDir.exists() && cacheDir.isDirectory) {
-                val cutoffTime = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000) // 7 gün öncesi
-                cacheDir.listFiles()?.forEach { file ->
-                    if (file.lastModified() < cutoffTime) {
-                        try {
-                            if (file.isDirectory) file.deleteRecursively() else file.delete()
-                        } catch (e: Exception) {
-                            Timber.w("Could not delete cache file: ${file.name}")
+        // İşlemi ayrı bir thread'de çalıştır - UI bloklanmasını önler
+        Thread {
+            try {
+                Timber.d("Preparing application folders...")
+                val startTime = System.currentTimeMillis()
+                
+                // Gerekli klasörleri hazırla
+                val fileDirectories = mutableListOf<java.io.File?>()
+                
+                // İndirilenler klasörü
+                fileDirectories.add(getExternalFilesDir(null))
+                
+                // Önbellekler klasörü
+                fileDirectories.add(cacheDir)
+                
+                // WebView önbellek klasörü
+                fileDirectories.add(getDir("webview", Context.MODE_PRIVATE))
+                
+                // Resim önbellek klasörü
+                fileDirectories.add(getDir("images", Context.MODE_PRIVATE))
+                
+                // Tüm klasörlerin oluştuğundan emin ol
+                fileDirectories.forEach { dir ->
+                    dir?.let {
+                        if (!it.exists()) {
+                            if (it.mkdirs()) {
+                                Timber.d("Created directory: ${it.absolutePath}")
+                            } else {
+                                Timber.w("Failed to create directory: ${it.absolutePath}")
+                            }
                         }
                     }
                 }
+                
+                // Önbellek temizleme stratejisi - daha akıllı yaklaşım
+                val totalSpace = cacheDir.totalSpace
+                val freeSpace = cacheDir.freeSpace
+                val usedPercentage = 100 - (freeSpace * 100 / totalSpace)
+                
+                // Çok doluysa daha agresif temizle
+                val cutoffDays = when {
+                    usedPercentage > 90 -> 1 // 1 günden eski dosyaları sil
+                    usedPercentage > 70 -> 3 // 3 günden eski dosyaları sil
+                    else -> 7 // 7 günden eski dosyaları sil
+                }
+                
+                val cutoffTime = System.currentTimeMillis() - (cutoffDays * 24 * 60 * 60 * 1000L)
+                
+                // Önbellek temizleme - belirli bir tarihten eski önbellek dosyalarını sil
+                var deletedFiles = 0
+                var deletedSize = 0L
+                var failedDeletes = 0
+                
+                // Zamana dayanan temizlik
+                cacheDir.listFiles()?.forEach { file ->
+                    if (file.lastModified() < cutoffTime) {
+                        val fileSize = if (file.isDirectory) file.walkTopDown().filter { it.isFile }.map { it.length() }.sum() else file.length()
+                        
+                        try {
+                            val deleted = if (file.isDirectory) file.deleteRecursively() else file.delete()
+                            if (deleted) {
+                                deletedFiles++
+                                deletedSize += fileSize
+                            } else {
+                                failedDeletes++
+                            }
+                        } catch (e: Exception) {
+                            Timber.w("Could not delete cache file: ${file.name}, error: ${e.message}")
+                            failedDeletes++
+                        }
+                    }
+                }
+                
+                // Önbellek durumunu logla
+                val deletedMB = deletedSize / (1024 * 1024)
+                Timber.d("Cache cleanup: deleted $deletedFiles files ($deletedMB MB), failed: $failedDeletes")
+                
+                // WebView-spesifik önbellekleri temizlemeyi dene
+                try {
+                    val webViewCacheDir = getDir("webview", Context.MODE_PRIVATE)
+                    val webViewCacheDirFiles = webViewCacheDir.listFiles()
+                    if (webViewCacheDirFiles != null && webViewCacheDirFiles.isNotEmpty()) {
+                        webViewCacheDirFiles.forEach { file ->
+                            if (file.lastModified() < cutoffTime) {
+                                if (file.isDirectory) file.deleteRecursively() else file.delete()
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Timber.w("WebView cache cleanup error: ${e.message}")
+                }
+                
+                val duration = System.currentTimeMillis() - startTime
+                Timber.d("Application folders prepared in $duration ms")
+            } catch (e: Exception) {
+                Timber.e("Error preparing application folders: ${e.message}")
             }
-            
-            Timber.d("Application folders prepared")
-        } catch (e: Exception) {
-            Timber.e("Error preparing application folders: ${e.message}")
-        }
+        }.start()
     }
     
     /**
@@ -221,23 +296,66 @@ class TKFBrowserApplication : Application() {
     
     /**
      * Düşük bellek uyarısı alındığında çağrılır
+     * Geliştirilmiş bellek kurtarma - En kritik durum
      */
     override fun onLowMemory() {
         super.onLowMemory()
-        Timber.w("System reports low memory")
+        val startTime = System.currentTimeMillis()
+        Timber.w("CRITICAL: System reports low memory - emergency cleanup initiated")
         
-        // Agresif bellek optimizasyonu uygula
+        // Olay başlamadan önce bellek durumunu logla
+        logMemoryInfo()
+        
+        // En agresif bellek optimizasyonu uygula
         browserOptimizer.performMemoryOptimization()
         
-        // Bellek durumunu logla
+        // Acil durum bellek temizliği
+        try {
+            // Sistemin WebView önbelleklerini temizle
+            WebView(this).clearCache(true)
+            
+            // Tüm önbellek dosyalarını temizle
+            val cacheDir = cacheDir
+            if (cacheDir.exists() && cacheDir.isDirectory) {
+                cacheDir.listFiles()?.forEach { file ->
+                    if (file.name.contains("cache") || file.name.contains("temp") || file.name.contains("tmp")) {
+                        try {
+                            if (file.isDirectory) file.deleteRecursively() else file.delete()
+                        } catch (e: Exception) {
+                            // Temizleme hatasını geç - şu anda maksimum bellek kurtarmaya odaklan
+                        }
+                    }
+                }
+            }
+            
+            // WebView depolamayı temizle
+            try { android.webkit.WebStorage.getInstance().deleteAllData() } catch (e: Exception) { }
+            
+            // Tüm HTTP önbelleklerini zorla temizle
+            try { android.webkit.CookieManager.getInstance().removeSessionCookies(null) } catch (e: Exception) { }
+            
+            // GC tetikle
+            System.gc()
+            Runtime.getRuntime().gc()
+            
+        } catch (e: Exception) {
+            Timber.e("Error during emergency memory cleanup: ${e.message}")
+        }
+
+        // Son bellek durumunu logla
         logMemoryInfo()
+        
+        val duration = System.currentTimeMillis() - startTime
+        Timber.d("Emergency memory cleanup completed in $duration ms")
     }
     
     /**
      * Kritik olmayan bileşenlerin belleğini serbestleştirir
+     * Geliştirilmiş versiyon: Kademeli bellek optimizasyonu
      */
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
+        val startTime = System.currentTimeMillis()
         
         // Bellek kısıtlama seviyesine göre farklı eylemler
         val levelStr = when (level) {
@@ -253,21 +371,58 @@ class TKFBrowserApplication : Application() {
         
         Timber.d("onTrimMemory: $levelStr ($level)")
         
-        // Kritik seviyeler için bellek optimizasyonu
-        if (level >= TRIM_MEMORY_RUNNING_LOW) {
-            browserOptimizer.performMemoryOptimization()
-            
-            // WebView önbelleklerini temizle
-            if (level >= TRIM_MEMORY_RUNNING_CRITICAL) {
-                try {
-                    WebView(this).clearCache(true)
-                } catch (e: Exception) {
-                    Timber.w("Could not clear WebView cache: ${e.message}")
+        // Bellek durumunu logla
+        logMemoryInfo()
+        
+        // Optimizasyon seviyesini belirle
+        val optimizationLevel = when (level) {
+            TRIM_MEMORY_RUNNING_CRITICAL, TRIM_MEMORY_COMPLETE -> "extreme"
+            TRIM_MEMORY_RUNNING_LOW, TRIM_MEMORY_BACKGROUND -> "aggressive"
+            TRIM_MEMORY_RUNNING_MODERATE, TRIM_MEMORY_MODERATE -> "moderate" 
+            else -> "normal"
+        }
+        
+        // Seviyeye göre optimizasyon yöntemini belirle
+        // UI Thread'i bloklamadan asenkron çalıştır
+        Thread {
+            try {
+                // Optimize edicini direk çağır
+                TKFPerformanceManager.getInstance(this).optimizeMemory(optimizationLevel)
+                
+                // Kritik seviyeler için ana optimizasyonu da çağır
+                if (level >= TRIM_MEMORY_RUNNING_LOW) {
+                    browserOptimizer.performMemoryOptimization()
+                    
+                    // WebView önbelleklerini temizle
+                    if (level >= TRIM_MEMORY_RUNNING_CRITICAL || level == TRIM_MEMORY_COMPLETE) {
+                        try {
+                            WebView(this).clearCache(true)
+                            // WebView depolama temizliği
+                            android.webkit.WebStorage.getInstance().deleteAllData()
+                            // Son çare: GC tetikle
+                            System.gc()
+                            Runtime.getRuntime().gc()
+                        } catch (e: Exception) {
+                            Timber.w("Could not clear WebView cache: ${e.message}")
+                        }
+                    }
                 }
                 
-                // GC tetikle
-                System.gc()
+                // Arka planda çalışıyorsa veya UI gizliyse ek optimizasyonlar
+                if (level == TRIM_MEMORY_UI_HIDDEN || level == TRIM_MEMORY_BACKGROUND) {
+                    // Geçici önbellek dosyalarını temizle
+                    val tempDir = File(cacheDir, "tmp")
+                    if (tempDir.exists() && tempDir.isDirectory) {
+                        tempDir.listFiles()?.forEach { it.delete() }
+                    }
+                }
+                
+                val duration = System.currentTimeMillis() - startTime
+                Timber.d("Memory optimization (${optimizationLevel}) completed in $duration ms")
+                
+            } catch (e: Exception) {
+                Timber.e("Error during memory optimization: ${e.message}")
             }
-        }
+        }.start()
     }
 }
