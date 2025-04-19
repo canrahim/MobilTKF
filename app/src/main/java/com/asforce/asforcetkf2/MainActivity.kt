@@ -1631,6 +1631,22 @@ class MainActivity : AppCompatActivity() {
     private fun injectEnhancedFormDetection(webView: TabWebView) {
         Timber.d("[FORM] Injecting enhanced form detection")
         
+        // Form algılama için deneme sayısını takip et
+        var formDetectionAttempts = 0
+        val MAX_FORM_DETECTION_ATTEMPTS = 3
+        
+        // Form algılama işlevini tanımla - yeniden deneme mekanizması ile
+        val tryFormDetection = object : Runnable {
+            override fun run() {
+                formDetectionAttempts++
+                Timber.d("[FORM] Enhanced form detection attempt $formDetectionAttempts")
+                
+                // Eğer maksimum deneme sayısına ulaşıldıysa daha fazla bekleme süresi ekle
+                if (formDetectionAttempts > MAX_FORM_DETECTION_ATTEMPTS) {
+                    Timber.w("[FORM] Maximum form detection attempts reached")
+                    return
+                }
+        
         // 250ms sonra form algılamayı başlat - DOM'un yüklenmesi için bekle
         Handler(Looper.getMainLooper()).postDelayed({
             val script = """
@@ -1858,6 +1874,20 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }, 250) // 250ms gecikme ile çalıştır
+                
+                // DOM tam olarak yüklenmemiş olabilir, JS hatasını kontrol et
+                webView.evaluateJavascript("typeof document !== 'undefined' && !!document.body") { result ->
+                    if (result?.contains("true") != true) {
+                        Timber.w("[FORM] DOM not ready yet, retrying form detection later...")
+                        // Daha uzun bir gecikme ile tekrar dene
+                        Handler(Looper.getMainLooper()).postDelayed(this, 500)
+                    }
+                }
+            }
+        }
+        
+        // Form algılama işlevini başlat
+        tryFormDetection.run()
     }
     
     override fun onLowMemory() {

@@ -132,11 +132,29 @@ public class WebViewPool {
         settings.setLoadWithOverviewMode(true);
         settings.setUseWideViewPort(true);
         
-        // Performans iyileştirmeleri
-        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        settings.setAllowFileAccess(true);
+        // Touch ve sürükleme hassasiyeti için gelişmiş ayarlar
+        settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
+        settings.setTextZoom(100); // Varsayılan metin yakınlaştırma seviyesi
+        settings.setDefaultTextEncodingName("UTF-8");
+        
+        // Kaydırma performansı için optimize edilmiş ayarlar
+        // AppCache artık kullanımdan kaldırıldı (API 33+)
+        // settings.setAppCacheEnabled(false);
         settings.setAllowContentAccess(true);
+        settings.setAllowFileAccess(true);
         settings.setDatabaseEnabled(true);
-        // setAppCacheEnabled artık desteklenmiyor - modern API kullanıyoruz
+        settings.setLoadsImagesAutomatically(true);
+        settings.setEnableSmoothTransition(true); // Geçişleri pürüzsüzleştir
+        
+        // API 23+ için desteklenen özellik
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            settings.setOffscreenPreRaster(true);  // Hızlı renderlamayı etkinleştir
+        }
+        
+        // Hafıza iyileştirmeleri
+        settings.setGeolocationEnabled(false); // Geolocation kapalı (gereksiz)
+        
+        // Medya ayarları
+        settings.setMediaPlaybackRequiresUserGesture(true); // Otomatik oynatmayı devre dışı bırak
     }
 }

@@ -82,6 +82,8 @@ public class LeakageControlActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private final Handler handler = new Handler(Looper.getMainLooper());
 
+    // NestedScrollView kaldırıldığı için onPostCreate metodu silindi
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,6 +97,7 @@ public class LeakageControlActivity extends AppCompatActivity {
         setupSharedPreferences();
         setupWebView();
         setupClickListeners();
+        setupTouchHandling();
         restoreState(savedInstanceState);
 
         // URL'yi Shared Preferences'tan yükle
@@ -103,6 +106,44 @@ public class LeakageControlActivity extends AppCompatActivity {
         editTextUrl.setText(lastUrl);
 
         loadWebPage();
+    }
+    
+    @SuppressLint("ClickableViewAccessibility")
+    private void setupTouchHandling() {
+        // WebView için direkt dokunma olayı iyileştirmesi
+        if (webView != null) {
+            // Kaydırma performansını artırmak için
+            webView.setOverScrollMode(View.OVER_SCROLL_ALWAYS);
+            
+            // Size parametrelerini güncelle
+            webView.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+            
+            // Dokunma ve kaydırma iyileştirmesi
+            webView.setFocusable(true);
+            webView.setFocusableInTouchMode(true);
+            
+            // Direkt WebView'e geçerli onTouch olayları için
+            webView.setOnTouchListener((v, event) -> {
+                v.requestFocus();
+                v.performClick();
+                return false; // Olayları işlemeye devam et
+            });
+        }
+        
+        // Kaydırmayı düzenli aralıklarla optimize et (animasyon frame'leriyle senkronize et)
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (webView != null) {
+                    // Performans için webview'i yenile
+                    webView.invalidate();
+                }
+                // Kendimizi sıradaki frame'e zamanla
+                handler.postDelayed(this, 16); // ~60fps
+            }
+        });
     }
 
     private void initializeViews() {
@@ -147,6 +188,7 @@ public class LeakageControlActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void setupWebView() {
         // WebView null kontrolü ekleyelim
         if (webView == null) {
@@ -170,17 +212,117 @@ public class LeakageControlActivity extends AppCompatActivity {
             }
         }
         
+        // WebView dokunma hassasiyeti ve sürükleme ayarlarını iyileştir
+        webView.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setBuiltInZoomControls(true);
+        webView.getSettings().setDisplayZoomControls(false);
+        webView.getSettings().setUseWideViewPort(true);
+        webView.getSettings().setLoadWithOverviewMode(true);
+        
+        // Kaydırma davranışını iyileştir
+        webView.setVerticalScrollBarEnabled(true);
+        webView.setHorizontalScrollBarEnabled(true);
+        webView.setScrollContainer(true);
+        webView.setScrollbarFadingEnabled(false); // Kaydırma çubuğunu her zaman göster
+        
+        // WebView kaydırma davranışını iyileştir
+        webView.setOnTouchListener((v, event) -> {
+            // Her türlü dokunma olayında WebView'in olayları işlemesine izin ver
+            // Yönü ne olursa olsun (yatay/dikey) kaydırmaya izin ver
+            // WebView kendi içinde kaydırmayı yönetmesi için parent'tan dokunma olaylarını engelle
+            v.getParent().requestDisallowInterceptTouchEvent(true);
+            
+            // WebView için odak ayarla (klavye girişi vb. için)
+            v.requestFocus();
+            
+            // false döndür ki WebView olayları işlemeye devam etsin
+            return false;
+        });
+        
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                applyColumnWidths();
                 
-                // URL'yi kaydet
-                SharedPreferences prefs = getSharedPreferences("LeakageControlPrefs", MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("lastUrl", url);
-                editor.apply();
+                // Web sayfası yüklenme işlemi tamamlandığında, WebView kontrolü
+                // Aktivite kapanırken WebView null olabilir, bu durumda işlemi atlayarak çöküşü önleyelim
+                if (webView == null) {
+                    Log.w(TAG, "WebView is null in onPageFinished, skipping operations");
+                    return;
+                }
+                
+                try {
+                    applyColumnWidths();
+                    
+                    // URL'yi kaydet
+                    SharedPreferences prefs = getSharedPreferences("LeakageControlPrefs", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString("lastUrl", url);
+                    editor.apply();
+                    
+                    // Özel kaydırma optimizasyonu - daha agresif bir yaklaşım
+                    String scrollOptimizationJS = ""
+                        + "(function() {"
+                        + "  document.body.style.overflow = 'scroll';"
+                        + "  document.body.style.height = 'auto';"
+                        + "  document.documentElement.style.overflow = 'scroll';"
+                        + "  document.documentElement.style.height = 'auto';"
+                        + "  document.body.style.webkitOverflowScrolling = 'touch';"
+                        + "  document.documentElement.style.webkitOverflowScrolling = 'touch';"
+                        + "  var style = document.createElement('style');"
+                        + "  style.textContent = '"
+                        + "    * { -webkit-overflow-scrolling: touch !important; }\n"
+                        + "    body, html { overflow: scroll !important; height: auto !important; }\n"
+                        + "    div, table, tr, td { overflow: visible !important; }\n"
+                        + "    .scroll-wrapper { overflow: scroll !important; -webkit-overflow-scrolling: touch !important; }\n"
+                        + "  ';"
+                        + "  document.head.appendChild(style);"
+                        + "  "
+                        + "  // Form elementlerini kaydırılabilir yap"
+                        + "  var forms = document.querySelectorAll('form');"
+                        + "  for (var i = 0; i < forms.length; i++) {"
+                        + "    forms[i].style.overflow = 'auto';"
+                        + "    forms[i].style.webkitOverflowScrolling = 'touch';"
+                        + "  }"
+                        + "  "
+                        + "  // Tüm container'ları kaydırılabilir yap"
+                        + "  var containers = document.querySelectorAll('.container, .container-fluid, .panel, .panel-body, .row, .col');"
+                        + "  for (var i = 0; i < containers.length; i++) {"
+                        + "    containers[i].style.overflow = 'visible';"
+                        + "  }"
+                        + "})();";
+                webView.evaluateJavascript(scrollOptimizationJS, null);
+                    
+                    // ProgressBar'ı göster ve gizle (yükleme tamamlandığında)
+                    runOnUiThread(() -> {
+                        View progressBar = findViewById(R.id.progressBar);
+                        if (progressBar != null) {
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    });
+                } catch (Exception e) {
+                    Log.e(TAG, "Error in onPageFinished: " + e.getMessage());
+                }
+            }
+            
+            @Override
+            public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                // WebView kontrolü
+                if (webView == null) {
+                    Log.w(TAG, "WebView is null in onPageStarted, skipping operations");
+                    return;
+                }
+                
+                // Sayfa yüklenmeye başladığında progress bar'ı göster
+                runOnUiThread(() -> {
+                    View progressBar = findViewById(R.id.progressBar);
+                    if (progressBar != null) {
+                        progressBar.setVisibility(View.VISIBLE);
+                    }
+                });
             }
         });
     }
@@ -353,17 +495,18 @@ public class LeakageControlActivity extends AppCompatActivity {
             return;
         }
 
-        String checkElementsScript = "(function() {" +
-                "var allFound = true;" +
-                "for (var i = 0; i < " + columnNames.length + "; i++) {" +
-                "    var elements = document.getElementsByName('" + columnNames[0] + "0');" +
-                "    if (!elements || elements.length === 0) {" +
-                "        allFound = false;" +
-                "        break;" +
-                "    }" +
-                "}" +
-                "return allFound;" +
-                "})()";
+        try {
+            String checkElementsScript = "(function() {" +
+                    "var allFound = true;" +
+                    "for (var i = 0; i < " + columnNames.length + "; i++) {" +
+                    "    var elements = document.getElementsByName('" + columnNames[0] + "0');" +
+                    "    if (!elements || elements.length === 0) {" +
+                    "        allFound = false;" +
+                    "        break;" +
+                    "    }" +
+                    "}" +
+                    "return allFound;" +
+                    "})()";
 
         webView.evaluateJavascript(checkElementsScript, result -> {
             if ("true".equals(result)) {
@@ -378,6 +521,10 @@ public class LeakageControlActivity extends AppCompatActivity {
                 retryCount = 0; // Reset for next time
             }
         });
+        } catch (Exception e) {
+            Log.e(TAG, "Error in applyColumnWidths: " + e.getMessage());
+            retryCount = 0; // Reset for next time
+        }
     }
 
     private void applyWidthsToColumns() {
@@ -387,8 +534,9 @@ public class LeakageControlActivity extends AppCompatActivity {
             return;
         }
         
-        StringBuilder jsBuilder = new StringBuilder();
-        jsBuilder.append("(function() {");
+        try {
+            StringBuilder jsBuilder = new StringBuilder();
+            jsBuilder.append("(function() {");
 
         // Column width adjustments with verification
         jsBuilder.append("try {");
@@ -462,6 +610,9 @@ public class LeakageControlActivity extends AppCompatActivity {
                 Log.e(TAG, "Error applying column widths: " + result);
             }
         });
+        } catch (Exception e) {
+            Log.e(TAG, "Error in applyWidthsToColumns: " + e.getMessage());
+        }
     }
 
     @SuppressLint("SetTextI18n")

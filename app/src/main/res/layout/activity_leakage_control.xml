@@ -7,6 +7,8 @@
     android:layout_height="match_parent"
     tools:context=".ui.leakage.LeakageControlActivity">
 
+
+
     <LinearLayout
         android:id="@+id/topControlBar"
         android:layout_width="match_parent"
@@ -111,20 +113,28 @@
             android:contentDescription="Ayarlar" />
     </LinearLayout>
     
-    <androidx.core.widget.NestedScrollView
+    <!-- Yükleme Barı - daha yüksek z-index ve belirgin renk ile -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="59dp"
+        android:indeterminate="true"
+        android:elevation="10dp"
+        android:indeterminateTint="@android:color/holo_blue_bright"
+        android:progressTint="@android:color/holo_blue_bright"
+        android:background="@android:color/transparent"
+        android:visibility="visible" />
+        
+    <!-- Doğrudan WebView Container (NestedScrollView kullanmadan) -->
+    <LinearLayout
+        android:id="@+id/webViewContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="56dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <!-- WebView Container -->
-        <LinearLayout
-            android:id="@+id/webViewContainer"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:background="?android:attr/colorBackground">
-            <!-- WebView will be added programmatically from pool -->
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+        android:layout_marginTop="65dp"
+        android:orientation="vertical"
+        android:background="?android:attr/colorBackground">
+        <!-- WebView programmatik olarak eklenecek -->
+    </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

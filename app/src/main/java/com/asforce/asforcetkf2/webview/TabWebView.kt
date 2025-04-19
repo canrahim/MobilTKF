@@ -687,25 +687,95 @@ class TabWebView @JvmOverloads constructor(
         webViewClient = TKFWebViewClient(
             tab = tab,
             onPageStarted = { tabId, url ->
+                // Mevcut zaman aşımı varsa iptal et
+                loadTimeoutHandler?.removeCallbacksAndMessages(null)
+                
+                // Şu anki yüklenen URL'i takip et
+                currentLoadingUrl = url
+                
+                // Yeni bir zaman aşımı başlat
+                loadTimeoutHandler = Handler(Looper.getMainLooper())
+                loadTimeoutHandler?.postDelayed({
+                    if (url == currentLoadingUrl) {
+                        Timber.w("Sayfa yükleme zaman aşımı oluştu: $url")
+                        
+                        // Acil durum tamamlama scripti çalıştır
+                        evaluateJavascript("""
+                            (function() {
+                                console.log('TKF Browser: Zaman aşımı kurtarma başlatılıyor');
+                                // Yükleme olaylarını manuel olarak tetikle
+                                if (document.readyState !== 'complete') {
+                                    try {
+                                        window.dispatchEvent(new Event('DOMContentLoaded'));
+                                        window.dispatchEvent(new Event('load'));
+                                        document.dispatchEvent(new Event('readystatechange'));
+                                        console.log('TKF Browser: Zorunlu yükleme olayları tetiklendi');
+                                    } catch(e) {
+                                        console.error('Yükleme olayları hatası:', e);
+                                    }
+                                }
+                                return 'timeout_recovery_triggered';
+                            })();
+                        """.trimIndent()) { _ ->
+                            // Sayfa yükleme olayını manuel olarak çağır
+                            onPageFinished?.invoke(tabId, url, null)
+                        }
+                    }
+                }, LOAD_TIMEOUT_MS)
+                
                 onPageStarted?.invoke(tabId, url)
             },
             onPageFinished = { tabId, url, favicon ->
+                // Zaman aşımını iptal et, sayfa yüklendi
+                loadTimeoutHandler?.removeCallbacksAndMessages(null)
+                currentLoadingUrl = null
+                
                 onPageFinished?.invoke(tabId, url, favicon)
-                // Sayfa yüklendiğinde form işleyicilerini enjekte et
-                injectFormHandlers()
-                // Girdi alanı izleme scriptini enjekte et
-                injectInputTracking()
-                // Manual focus handling
-                injectManualFocusHandling()
-                // Enhance input detection
-                enhanceInputFocusDetection()
-                // Yükleme sonrası performans optimizasyonu yap
-                optimizer.optimizeAfterPageLoad(this@TabWebView)
-                // Çerezleri kalıcı hale getir
-                CookieManager.getInstance().flush()
+                
+                // DOM hazır olduğundan emin olmak için kısa bir gecikme ekle
+                postDelayed({
+                    // Sayfa yüklendiğinde form işleyicilerini enjekte et
+                    injectFormHandlers()
+                    // Girdi alanı izleme scriptini enjekte et
+                    injectInputTracking()
+                    // Manual focus handling
+                    injectManualFocusHandling()
+                    // Enhance input detection
+                    enhanceInputFocusDetection()
+                    // Yükleme sonrası performans optimizasyonu yap
+                    optimizer.optimizeAfterPageLoad(this@TabWebView)
+                    // Çerezleri kalıcı hale getir
+                    CookieManager.getInstance().flush()
+                }, 100) // DOM işlemleri için kısa gecikme
             },
             onReceivedError = { errorCode, description, failingUrl ->
+                // Hata durumunda zaman aşımını iptal et
+                if (failingUrl == currentLoadingUrl) {
+                    loadTimeoutHandler?.removeCallbacksAndMessages(null)
+                    currentLoadingUrl = null
+                }
+                
                 onReceivedError?.invoke(errorCode, description, failingUrl)
+                
+                // Kritik hata - sayfa yüklenemedi, acil durum kurtarma dene
+                if (errorCode < 0) { // Negatif hata kodları genellikle ağ hatalarıdır
+                    Timber.e("Kritik sayfa yükleme hatası: $errorCode, $description")
+                    
+                    // Hata mesajını göster ve kullanıcıya bilgi ver
+                    post {
+                        evaluateJavascript("""
+                            (function() {
+                                document.body.innerHTML = '<div style="padding:20px;text-align:center;">' +
+                                    '<h2>Sayfa yüklenirken hata oluştu</h2>' +
+                                    '<p>Hata: $description</p>' +
+                                    '<p>URL: $failingUrl</p>' +
+                                    '<button onclick="window.location.reload()">Yeniden Dene</button>' +
+                                    '</div>';
+                                return 'error_page_created';
+                            })();
+                        """.trimIndent(), null)
+                    }
+                }
             },
             onReceivedSslError = { error ->
                 onReceivedSslError?.invoke(error) ?: false
@@ -757,6 +827,11 @@ class TabWebView @JvmOverloads constructor(
     /**
      * Load a URL in this WebView - Ultra hızlı yükleme optimizasyonu
      */
+    // Sayfa yükleme zaman aşımı değişkenleri
+    private var loadTimeoutHandler: Handler? = null
+    private var currentLoadingUrl: String? = null
+    private val LOAD_TIMEOUT_MS = 20000L // 20 saniye zaman aşımı
+    
     override fun loadUrl(url: String) {
         // Ensure URL has schema
         val formattedUrl = if (!url.startsWith("http://") && !url.startsWith("https://")) {
@@ -764,6 +839,12 @@ class TabWebView @JvmOverloads constructor(
         } else {
             url
         }
+        
+        // Mevcut zaman aşımı varsa iptal et
+        loadTimeoutHandler?.removeCallbacksAndMessages(null)
+        
+        // Şu anki yüklenen URL'i takip et
+        currentLoadingUrl = formattedUrl
         
         // Hızlı yükleme için görüntüleri engelle
         settings.blockNetworkImage = true
@@ -788,6 +869,74 @@ class TabWebView @JvmOverloads constructor(
         postDelayed({
             settings.blockNetworkImage = false
         }, 300)
+        
+        // Sayfa yüklenmesi için zaman aşımı ayarla
+        loadTimeoutHandler = Handler(Looper.getMainLooper())
+        loadTimeoutHandler?.postDelayed({
+            if (formattedUrl == currentLoadingUrl) {
+                Timber.w("Sayfa yükleme zaman aşımı: $formattedUrl")
+                
+                // Takılmış sayfayı kurtarmak için acil durum scripti çalıştır
+                evaluateJavascript("""
+                    (function() {
+                        // Eğer sayfa takılmışsa document readyState'i force complete yap
+                        if (document.readyState !== 'complete') {
+                            // Sentetik yükleme olaylarını tetikle
+                            try {
+                                window.dispatchEvent(new Event('DOMContentLoaded'));
+                                window.dispatchEvent(new Event('load'));
+                                document.dispatchEvent(new Event('readystatechange'));
+                                console.log('TKF Browser: Zaman aşımı sonrası zorunlu yükleme olayları tetiklendi');
+                                
+                                // WebView'e sayfa yükleme bitti sinyali gönder
+                                setTimeout(function() {
+                                    document.dispatchEvent(new Event('webviewready'));
+                                }, 100);
+                            } catch(e) {
+                                console.error('Yükleme olaylarını zorlama hatası:', e);
+                            }
+                        }
+                        
+                        // Bekleyen kaynakları engellemeyi kaldır
+                        try {
+                            // Bekleyen görüntü yüklemelerini bul ve iptal et
+                            var images = document.querySelectorAll('img');
+                            for (var i = 0; i < images.length; i++) {
+                                if (!images[i].complete && images[i].src) {
+                                    // Yeniden denemek için orijinal src'yi kaydet
+                                    var originalSrc = images[i].src;
+                                    images[i].setAttribute('data-original-src', originalSrc);
+                                    // Yüklemeyi iptal et
+                                    images[i].src = '';
+                                    // Yedek görüntü göster
+                                    images[i].alt = 'Görüntü yüklenemedi';
+                                }
+                            }
+                            
+                            // Mümkünse bekleyen XHR isteklerini iptal et
+                            if (window.XMLHttpRequest) {
+                                console.log('TKF Browser: XHR istekleri zaman aşımı nedeniyle durduruldu');
+                            }
+                            
+                            // Form alanlarını aktif et (en azından kullanıcı veri girebilsin)
+                            var forms = document.querySelectorAll('form');
+                            for (var j = 0; j < forms.length; j++) {
+                                forms[j].setAttribute('data-tkf-timeouted', 'true');
+                            }
+                            
+                            return 'TKF_TIMEOUT_RECOVERY_COMPLETED';
+                        } catch(e) {
+                            return 'TKF_TIMEOUT_RECOVERY_ERROR: ' + e.message;
+                        }
+                    })();
+                """.trimIndent()) { result ->
+                    Timber.d("Zaman aşımı kurtarma sonucu: $result")
+                    
+                    // Sayfa yükleme bitti olayını manuel olarak tetikle
+                    onPageFinished?.invoke(tab?.id ?: "", formattedUrl, null)
+                }
+            }
+        }, LOAD_TIMEOUT_MS)
     }
     
     /**
@@ -880,6 +1029,42 @@ class TabWebView @JvmOverloads constructor(
             // Add touch handling script for input fields
             if (window._tkfTouchHandlingInjected) return 'Already injected';
             window._tkfTouchHandlingInjected = true;
+            
+            // Fix for MutationObserver error
+            if (typeof MutationObserver !== 'undefined') {
+                console.log('TKF Browser: Fixing MutationObserver implementation');
+                try {
+                    // Save original MutationObserver
+                    var originalMutationObserver = window.MutationObserver;
+                    // Create a wrapped version that validates arguments
+                    window.MutationObserver = function(callback) {
+                        var observer = new originalMutationObserver(callback);
+                        var originalObserve = observer.observe;
+                        
+                        // Override observe method with argument validation
+                        observer.observe = function(target, options) {
+                            if (!target || typeof target !== 'object' || !(target instanceof Node)) {
+                                console.warn('TKF Browser: Invalid MutationObserver target, using document.body instead');
+                                // Use document.body as fallback target
+                                if (document.body) {
+                                    return originalObserve.call(observer, document.body, options || {});
+                                } else if (document.documentElement) {
+                                    return originalObserve.call(observer, document.documentElement, options || {});
+                                } else {
+                                    console.error('TKF Browser: No valid DOM target available for MutationObserver');
+                                    return false;
+                                }
+                            }
+                            return originalObserve.call(observer, target, options);
+                        };
+                        return observer;
+                    };
+                    window.MutationObserver.prototype = originalMutationObserver.prototype;
+                    console.log('TKF Browser: MutationObserver fixed successfully');
+                } catch(e) {
+                    console.error('TKF Browser: Error fixing MutationObserver:', e);
+                }
+            }
             
             console.log('TKF Browser: Injecting manual touch handling');
             
