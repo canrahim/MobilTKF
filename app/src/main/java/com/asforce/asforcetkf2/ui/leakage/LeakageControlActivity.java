@@ -37,7 +37,7 @@ import com.asforce.asforcetkf2.R;
 import com.asforce.asforcetkf2.util.DataHolder;
 import com.asforce.asforcetkf2.util.SimpleTextWatcher;
 import com.asforce.asforcetkf2.util.WebViewPool;
-import com.google.android.material.button.MaterialButton;
+// import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -55,11 +55,11 @@ public class LeakageControlActivity extends AppCompatActivity {
     private static final String BASE_URL = "https://app.szutest.com.tr/EXT/PKControl/EditLeakage/";
     private static final long FETCH_DELAY = 1000L;
     
-    private Toolbar toolbar;
+    private Toolbar toolbar; // Toolbar kullanım dışı ancak referans korundu
     private WebView webView;
     private TextInputLayout urlInputLayout;
     private TextInputEditText editTextUrl;
-    private MaterialButton buttonLoadPage, buttonFillForm, buttonSaveItems;
+    private ImageView buttonLoadPage, buttonFillForm, buttonSaveItems, backButton;
     private ImageView settingsButton;
     private WebViewPool webViewPool;
     
@@ -106,13 +106,14 @@ public class LeakageControlActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
-        toolbar = findViewById(R.id.toolbar);
+        // toolbar = findViewById(R.id.toolbar); // Toolbar kaldırıldı
         urlInputLayout = findViewById(R.id.urlInputLayout);
         editTextUrl = findViewById(R.id.editTextUrl);
         buttonLoadPage = findViewById(R.id.buttonLoadPage);
         buttonFillForm = findViewById(R.id.buttonFillForm);
         buttonSaveItems = findViewById(R.id.buttonSaveItems);
         settingsButton = findViewById(R.id.settingsButton);
+        backButton = findViewById(R.id.backButton);
         
         // WebView havuzundan al
         webView = webViewPool.acquireWebView();
@@ -130,11 +131,8 @@ public class LeakageControlActivity extends AppCompatActivity {
     }
     
     private void setupToolbar() {
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Kaçak Akım Kontrolü");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        
-        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        // Toolbar kaldırıldığı için bu metod artık kullanılmıyor
+        // Ancak geriye dönük uyumluluk için boş olarak bırakıldı
     }
 
     private void setupSharedPreferences() {
@@ -192,6 +190,9 @@ public class LeakageControlActivity extends AppCompatActivity {
         buttonFillForm.setOnClickListener(v -> fillForm());
         buttonSaveItems.setOnClickListener(v -> saveItems());
         settingsButton.setOnClickListener(v -> showSettingsDialog());
+        backButton.setOnClickListener(v -> {
+            finish(); // Ana ekrana geri dön
+        });
 
         setupTextWatchers();
     }
@@ -203,8 +204,8 @@ public class LeakageControlActivity extends AppCompatActivity {
                 String input = s.toString();
                 DataHolder.url = input;
 
-                if (input.matches(".*\\d{6}$")) {
-                    String lastSixDigits = input.substring(input.length() - 6);
+                if (input.matches(".*\\d{7}$")) {
+                    String lastSixDigits = input.substring(input.length() - 7);
                     editTextUrl.removeTextChangedListener(this);
                     editTextUrl.setText(lastSixDigits);
                     editTextUrl.setSelection(lastSixDigits.length());
@@ -223,7 +224,7 @@ public class LeakageControlActivity extends AppCompatActivity {
             return;
         }
 
-        if (url.matches("\\d{6}")) {
+        if (url.matches("\\d{7}")) {
             url = BASE_URL + url;
         } else if (!url.startsWith("http")) {
             url = "https://" + url;
