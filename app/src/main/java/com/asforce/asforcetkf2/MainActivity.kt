@@ -1598,13 +1598,6 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Aktif sekme bulunamadı", Toast.LENGTH_SHORT).show()
             }
         }
-        
-        // Topraklama butonunu ekle - sağ alt köşe
-        binding.btnRightBottom.setOnClickListener {
-            // Topraklama kontrol sayfasına git
-            val intent = Intent(this, com.asforce.asforcetkf2.ui.topraklama.kotlin.TopraklamaControlActivity::class.java)
-            topraklamaActivityResultLauncher.launch(intent)
-        }
     }
 
     /**
