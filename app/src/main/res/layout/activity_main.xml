@@ -24,13 +24,13 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/btn_main_menu"
+                android:id="@+id/btn_menu"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/main_menu"
                 android:src="@drawable/ic_menu"
-                android:tint="@color/toolbar_icon"
+
                 android:layout_gravity="center_vertical" />
                 
             <ImageButton
@@ -40,7 +40,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/go_back"
                 android:src="@drawable/ic_back"
-                android:tint="@color/toolbar_icon"
+
                 android:layout_gravity="center_vertical" />
 
             <ImageButton
@@ -50,7 +50,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/go_forward"
                 android:src="@drawable/ic_forward"
-                android:tint="@color/toolbar_icon"
+
                 android:layout_gravity="center_vertical" />
 
             <ImageButton
@@ -60,7 +60,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/refresh"
                 android:src="@drawable/ic_refresh"
-                android:tint="@color/toolbar_icon"
+
                 android:layout_gravity="center_vertical" />
 
             <com.google.android.material.textfield.TextInputLayout
@@ -96,13 +96,13 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <ImageButton
-                android:id="@+id/btn_menu"
+                android:id="@+id/btn_main_menu"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/menu"
                 android:src="@drawable/ic_menu"
-                android:tint="@color/toolbar_icon"
+
                 android:layout_gravity="center_vertical" />
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.appcompat.widget.Toolbar>
