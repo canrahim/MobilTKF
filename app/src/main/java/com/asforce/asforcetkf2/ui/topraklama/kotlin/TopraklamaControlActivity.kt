@@ -490,6 +490,7 @@ class TopraklamaControlActivity : AppCompatActivity() {
         }
         
         webView?.loadUrl(finalUrl)
+        handler.postDelayed({ fetchAndSaveMeasuredLocation0() }, FETCH_DELAY)
         handler.postDelayed({ buttonLoadPage.isEnabled = true }, 1000)
     }
 
@@ -1042,6 +1043,30 @@ class TopraklamaControlActivity : AppCompatActivity() {
 
         if (DataHolder.topraklama.isNotEmpty()) {
             editTextUrl.setText(DataHolder.topraklama)
+        }
+    }
+    
+    private fun fetchAndSaveMeasuredLocation0() {
+        // WebView null kontrolü ekleyelim
+        if (webView == null) {
+            Log.e(TAG, "WebView is null in fetchAndSaveMeasuredLocation0")
+            return
+        }
+        
+        val script = """
+            (function() {
+                var element = document.querySelector('[name="MeasuredLocation0"]');
+                return element ? element.value : '';
+            })()
+        """.trimIndent()
+
+        webView?.evaluateJavascript(script) { value ->
+            if (value != null && value != "null" && value != "\"\"") {
+                DataHolder.measuredLocation0 = value.replace("^\"|\"$".toRegex(), "")
+                Log.d(TAG, "MeasuredLocation0: ${DataHolder.measuredLocation0}")
+            } else {
+                Log.d(TAG, "MeasuredLocation0 değeri alınamadı")
+            }
         }
     }
 
