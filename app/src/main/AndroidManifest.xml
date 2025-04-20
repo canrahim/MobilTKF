@@ -65,6 +65,16 @@
             android:theme="@style/Theme.AsforceTKF2">
         </activity>
         
+        <!-- Pano Fonksiyon Aktivitesi -->
+        <activity
+            android:name=".ui.panel.kotlin.PanoFonksiyonActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.AsforceTKF2">
+        </activity>
+        
         <!-- FileProvider için -->        
         <provider
             android:name="androidx.core.content.FileProvider"

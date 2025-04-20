@@ -873,8 +873,9 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun handlePanoFonksiyon() {
-        Toast.makeText(this, "Pano Fonksiyon işlevi seçildi", Toast.LENGTH_SHORT).show()
-        // Pano Fonksiyon işlevselliği buraya eklenecek
+        // Pano Fonksiyon aktivitesini başlat
+        val intent = Intent(this, com.asforce.asforcetkf2.ui.panel.kotlin.PanoFonksiyonActivity::class.java)
+        startActivity(intent)
     }
     
     private fun handleTopraklama() {
