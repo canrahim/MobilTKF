@@ -836,6 +836,87 @@ class TopraklamaControlActivity : AppCompatActivity() {
             return
         }
         
+        // Önce formdaki "TPStatus" değerlerini kontrol et ve "Yok" olanları bul
+        val checkTPStatusScript = """
+            (function() {
+                try {
+                    console.log('Checking TPStatus values for "Yok"...');
+                    var yokFound = false;
+                    
+                    // Tüm TPStatus select elementlerini bul
+                    var tpStatusSelects = document.querySelectorAll('select[name^="TPStatus"]');
+                    console.log('Found ' + tpStatusSelects.length + ' TPStatus select elements');
+                    
+                    // Her bir select elementi için kontrol et
+                    for (var i = 0; i < tpStatusSelects.length; i++) {
+                        var select = tpStatusSelects[i];
+                        var selectedValue = select.value;
+                        console.log('TPStatus' + i + ' value: ' + selectedValue);
+                        
+                        // "Yok" değerini kontrol et (select.value = "string:Yok" olabilir)
+                        if (selectedValue === 'Yok' || selectedValue === 'string:Yok' || selectedValue.includes('Yok')) {
+                            yokFound = true;
+                            console.log('Found "Yok" value in TPStatus' + i);
+                        }
+                    }
+                    
+                    // Sonucu döndür
+                    return JSON.stringify({
+                        yokFound: yokFound,
+                        tpStatusCount: tpStatusSelects.length
+                    });
+                } catch(e) {
+                    console.error('Error in checkTPStatus script:', e);
+                    return JSON.stringify({
+                        error: e.toString()
+                    });
+                }
+            })();
+        """.trimIndent()
+        
+        webView?.evaluateJavascript(checkTPStatusScript) { result ->
+            Log.d(TAG, "CheckTPStatus result: $result")
+            
+            try {
+                // Temizlenmiş sonuç al
+                val cleanResult = result.trim().replace("^\"|\"$".toRegex(), "").replace("\\\"", "\"").replace("\\\\", "\\")
+                
+                // JSON olarak işle
+                val jsonResult = org.json.JSONObject(cleanResult)
+                
+                // Hata durumunu kontrol et
+                if (jsonResult.has("error")) {
+                    val errorMessage = jsonResult.optString("error", "Bilinmeyen hata")
+                    Log.e(TAG, "TPStatus kontrolü hatası: $errorMessage")
+                } else {
+                    // "Yok" değeri bulundu mu kontrol et
+                    val yokFound = jsonResult.optBoolean("yokFound", false)
+                    val tpStatusCount = jsonResult.optInt("tpStatusCount", 0)
+                    
+                    if (yokFound) {
+                        // "Yok" değeri bulundu, DataHolder'a kaydet
+                        DataHolder.hasTopraklamaSorunu = true
+                        Log.d(TAG, "Topraklama sorunu tespit edildi, DataHolder.hasTopraklamaSorunu = true")
+                        Toast.makeText(this, "Topraklama sorunu tespit edildi!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        // "Yok" değeri bulunamadı
+                        DataHolder.hasTopraklamaSorunu = false
+                        Log.d(TAG, "Topraklama sorunu tespit edilmedi, toplamda $tpStatusCount adet TPStatus kontrol edildi")
+                    }
+                }
+                
+                // Devam et ve formu kaydet
+                proceedWithSave()
+            } catch (e: Exception) {
+                Log.e(TAG, "TPStatus kontrolünde hata: ${e.message}")
+                
+                // Hata olsa bile formu kaydetmeye devam et
+                proceedWithSave()
+            }
+        }
+    }
+    
+    private fun proceedWithSave() {
         // Kullanıcıya bilgi ver
         Toast.makeText(this, "Kaydetme işlemi başlatılıyor...", Toast.LENGTH_SHORT).show()
         
@@ -1240,6 +1321,11 @@ class TopraklamaControlActivity : AppCompatActivity() {
         if (webView?.canGoBack() == true) {
             webView?.goBack()
         } else {
+            // Aktivite kapatılmadan önce Topraklama sorununu Intent'e ekle
+            val resultIntent = Intent()
+            resultIntent.putExtra("hasTopraklamaSorunu", DataHolder.hasTopraklamaSorunu)
+            setResult(RESULT_OK, resultIntent)
+            
             super.onBackPressed()
         }
     }

@@ -41,6 +41,7 @@ import com.asforce.asforcetkf2.adapter.TabsAdapter
 import com.asforce.asforcetkf2.databinding.ActivityMainBinding
 import com.asforce.asforcetkf2.model.Tab
 import com.asforce.asforcetkf2.qrscanner.QRScannerFragment
+import com.asforce.asforcetkf2.util.DataHolder
 import com.asforce.asforcetkf2.util.TabResourceMonitor
 import com.asforce.asforcetkf2.util.TKFDownloadManager
 import com.asforce.asforcetkf2.viewmodel.TabViewModel
@@ -120,6 +121,103 @@ class MainActivity : AppCompatActivity() {
     
     // Device manager
     private lateinit var deviceManager: DeviceManager
+    
+    // Topraklama kontrolünden dönüş için
+    private val topraklamaActivityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            val hasTopraklamaSorunu = data?.getBooleanExtra("hasTopraklamaSorunu", false) ?: DataHolder.hasTopraklamaSorunu
+            
+            if (hasTopraklamaSorunu) {
+                Timber.d("Topraklama sorunu tespit edildi, form güncelleniyor")
+                
+                // WebView'i al
+                val currentTab = viewModel.activeTab.value
+                val webView = currentTab?.let { activeWebViews[it.id] }
+                
+                if (webView != null) {
+                    // Seçeneği "Uygun Değil" olarak ayarla ve tickbox'ı işaretle
+                    val setTopraklamaSorunScript = """
+                        (function() {
+                            try {
+                                console.log('Topraklama sorununu forma uygulama...');
+                                // Topraklama sorusunu bul (soru 9)
+                                var selectElement = document.querySelector('select[name="Questions[8].Option"]');
+                                if (selectElement) {
+                                    console.log('Topraklama seçenek elementi bulundu');
+                                    
+                                    // "Uygun Değil" (değer: 2) seçeneğini seç
+                                    selectElement.value = "2";
+                                    
+                                    // Change event'i tetikle
+                                    var event = new Event('change', { bubbles: true });
+                                    selectElement.dispatchEvent(event);
+                                    
+                                    // Select elementi güncellemek için kullanılan Bootstrap selectpicker'ı güncelle
+                                    if (typeof $ !== 'undefined' && $('.selectpicker').length > 0) {
+                                        $('.selectpicker').selectpicker('refresh');
+                                    }
+                                    
+                                    // Switchery elementi bul ve işaretle
+                                    var switcheryElements = document.querySelectorAll('.switchery');
+                                    for (var i = 0; i < switcheryElements.length; i++) {
+                                        var parentLabel = switcheryElements[i].parentElement;
+                                        var labelText = parentLabel ? parentLabel.textContent.trim() : '';
+                                        
+                                        if (labelText.indexOf('Topraklama direnç değeri ölçülemeyen') !== -1) {
+                                            // Bu, bizim aranan elementimiz
+                                            console.log('Topraklama checkbox elementi bulundu');
+                                            
+                                            // Checkbox'ı kontrol et
+                                            var checkbox = parentLabel.querySelector('input[type="checkbox"]');
+                                            if (checkbox && !checkbox.checked) {
+                                                checkbox.checked = true;
+                                                
+                                                // Change event'i tetikle
+                                                var event = new Event('change', { bubbles: true });
+                                                checkbox.dispatchEvent(event);
+                                                
+                                                // Switchery görsel durumunu güncelle
+                                                var switchery = switcheryElements[i];
+                                                if (switchery && switchery.firstChild) {
+                                                    switchery.style.boxShadow = "rgb(100, 189, 99) 0px 0px 0px 0px inset";
+                                                    switchery.style.borderColor = "rgb(100, 189, 99)";
+                                                    switchery.style.backgroundColor = "rgb(100, 189, 99)";
+                                                    
+                                                    var handle = switchery.firstChild;
+                                                    handle.style.left = "13px";
+                                                    handle.style.backgroundColor = "rgb(255, 255, 255)";
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    return { status: 'success', message: 'Topraklama sorunu uygulandı' };
+                                } else {
+                                    console.log('Topraklama seçenek elementi bulunamadı');
+                                    return { status: 'error', message: 'Topraklama formu bulunamadı' };
+                                }
+                            } catch(e) {
+                                console.error('Topraklama sorunu uygulanırken hata:', e);
+                                return { status: 'error', message: e.toString() };
+                            }
+                        })();
+                    """.trimIndent()
+                    
+                    webView.evaluateJavascript(setTopraklamaSorunScript) { result ->
+                        Timber.d("Topraklama sorunu uygulama sonucu: $result")
+                        
+                        // İşlem sonrası DataHolder'ı temizle
+                        DataHolder.hasTopraklamaSorunu = false
+                    }
+                } else {
+                    Timber.d("Topraklama sorunu var ama active WebView bulunamadı")
+                }
+            }
+        }
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -1115,11 +1213,10 @@ class MainActivity : AppCompatActivity() {
     }
     
     override fun onBackPressed() {
-        // Handle back navigation in the active WebView
         val currentTab = viewModel.activeTab.value
         val webView = currentTab?.let { activeWebViews[it.id] }
         
-        if (webView != null && webView.canGoBack()) {
+        if (webView?.canGoBack() == true) {
             webView.goBack()
         } else {
             super.onBackPressed()
@@ -1472,7 +1569,7 @@ class MainActivity : AppCompatActivity() {
             showQrResultActionDialog(content)
         }
     }
-    
+
     /**
      * Aksiyon butonlarını ayarla (Ekipman Listesi ve Kontrol Listesi butonları)
      */
@@ -1500,6 +1597,13 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Aktif sekme bulunamadı", Toast.LENGTH_SHORT).show()
             }
+        }
+        
+        // Topraklama butonunu ekle - sağ alt köşe
+        binding.btnRightBottom.setOnClickListener {
+            // Topraklama kontrol sayfasına git
+            val intent = Intent(this, com.asforce.asforcetkf2.ui.topraklama.kotlin.TopraklamaControlActivity::class.java)
+            topraklamaActivityResultLauncher.launch(intent)
         }
     }
 
@@ -2000,5 +2104,98 @@ class MainActivity : AppCompatActivity() {
         
         // Bilgi mesajı göster
         Toast.makeText(this, "Düşük bellek: Önbellek temizleniyor", Toast.LENGTH_SHORT).show()
+    }
+    
+    // Activity yaşam döngüsü yönetimi
+    override fun onResume() {
+        super.onResume()
+        
+        // Topraklama sorunu varsa form güncelleme
+        if (DataHolder.hasTopraklamaSorunu) {
+            Timber.d("onResume: Topraklama sorunu tespit edildi, form güncelleniyor")
+            
+            // WebView'i al
+            val currentTab = viewModel.activeTab.value
+            val webView = currentTab?.let { activeWebViews[it.id] }
+            
+            if (webView != null) {
+                // Seçeneği "Uygun Değil" olarak ayarla ve tickbox'ı işaretle
+                val setTopraklamaSorunScript = """
+                    (function() {
+                        try {
+                            console.log('Topraklama sorununu forma uygulama...');
+                            // Topraklama sorusunu bul (soru 9)
+                            var selectElement = document.querySelector('select[name="Questions[8].Option"]');
+                            if (selectElement) {
+                                console.log('Topraklama seçenek elementi bulundu');
+                                
+                                // "Uygun Değil" (değer: 2) seçeneğini seç
+                                selectElement.value = "2";
+                                
+                                // Change event'i tetikle
+                                var event = new Event('change', { bubbles: true });
+                                selectElement.dispatchEvent(event);
+                                
+                                // Select elementi güncellemek için kullanılan Bootstrap selectpicker'ı güncelle
+                                if (typeof $ !== 'undefined' && $('.selectpicker').length > 0) {
+                                    $('.selectpicker').selectpicker('refresh');
+                                }
+                                
+                                // Switchery elementi bul ve işaretle
+                                var switcheryElements = document.querySelectorAll('.switchery');
+                                for (var i = 0; i < switcheryElements.length; i++) {
+                                    var parentLabel = switcheryElements[i].parentElement;
+                                    var labelText = parentLabel ? parentLabel.textContent.trim() : '';
+                                    
+                                    if (labelText.indexOf('Topraklama direnç değeri ölçülemeyen') !== -1) {
+                                        // Bu, bizim aranan elementimiz
+                                        console.log('Topraklama checkbox elementi bulundu');
+                                        
+                                        // Checkbox'ı kontrol et
+                                        var checkbox = parentLabel.querySelector('input[type="checkbox"]');
+                                        if (checkbox && !checkbox.checked) {
+                                            checkbox.checked = true;
+                                            
+                                            // Change event'i tetikle
+                                            var event = new Event('change', { bubbles: true });
+                                            checkbox.dispatchEvent(event);
+                                            
+                                            // Switchery görsel durumunu güncelle
+                                            var switchery = switcheryElements[i];
+                                            if (switchery && switchery.firstChild) {
+                                                switchery.style.boxShadow = "rgb(100, 189, 99) 0px 0px 0px 0px inset";
+                                                switchery.style.borderColor = "rgb(100, 189, 99)";
+                                                switchery.style.backgroundColor = "rgb(100, 189, 99)";
+                                                
+                                                var handle = switchery.firstChild;
+                                                handle.style.left = "13px";
+                                                handle.style.backgroundColor = "rgb(255, 255, 255)";
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                return { status: 'success', message: 'Topraklama sorunu uygulandı' };
+                            } else {
+                                console.log('Topraklama seçenek elementi bulunamadı');
+                                return { status: 'error', message: 'Topraklama formu bulunamadı' };
+                            }
+                        } catch(e) {
+                            console.error('Topraklama sorunu uygulanırken hata:', e);
+                            return { status: 'error', message: e.toString() };
+                        }
+                    })();
+                """.trimIndent()
+                
+                webView.evaluateJavascript(setTopraklamaSorunScript) { result ->
+                    Timber.d("Topraklama sorunu uygulama sonucu: $result")
+                    
+                    // İşlem sonrası DataHolder'ı temizle
+                    DataHolder.hasTopraklamaSorunu = false
+                }
+            } else {
+                Timber.d("Topraklama sorunu var ama active WebView bulunamadı")
+            }
+        }
     }
 }

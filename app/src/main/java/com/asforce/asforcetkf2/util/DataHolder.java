@@ -15,6 +15,9 @@ public class DataHolder {
     public static String findings = "---";
     public static String cycleImpedance = "EK-TP";
     
+    // Topraklama sorunu var/yok durumu
+    public static boolean hasTopraklamaSorunu = false;
+    
     // Singleton örneği önlemek için özel constructor
     private DataHolder() {}
 }
