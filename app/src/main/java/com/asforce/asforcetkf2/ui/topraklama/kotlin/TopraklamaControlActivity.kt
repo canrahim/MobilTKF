@@ -613,13 +613,13 @@ class TopraklamaControlActivity : AppCompatActivity() {
                 console.log('Row ' + rowIndex + ': TagName="' + tagValue + '", MeasuredValue="' + measureValue + '"');
                 
                 // Değiştirilmiş mantık: Her satır için her zaman fillableRows listesine ekle
-                    // Bu şekilde tüm satırları görebiliriz
+                // Bu şekilde tüm satırları görebiliriz
                 var fillableFields = {
-                    rowIndex: rowIndex,
-                        fillTagName: (!tagValue || tagValue === '' || tagValue === '---'),
-                            // Her durumda MeasuredValue'yu doldurulabilir olarak işaretle (test için)
-                                fillMeasuredValue: true
-                            };
+                rowIndex: rowIndex,
+                fillTagName: (!tagValue || tagValue === '' || tagValue === '---'),
+                // "0" değerini de boş olarak kabul et
+                fillMeasuredValue: (!measureValue || measureValue === '' || measureValue === '---' || measureValue === '0')
+                };
                             
                             console.log('Processing row ' + rowIndex + ': Tag=' + fillableFields.fillTagName + ', Measure=' + fillableFields.fillMeasuredValue);
                             fillableRows.push(fillableFields);
@@ -684,7 +684,7 @@ class TopraklamaControlActivity : AppCompatActivity() {
                                         }
                                     }
                                     
-                                    // MeasuredValue alanını doldur
+                                    // MeasuredValue alanını doldur (sadece boşsa)
                                     // Önce bilinen adı dene
                                     var valueInput = document.querySelector('input[name="MeasuredValue' + rowIndex + '"]');
                                     
@@ -715,16 +715,25 @@ class TopraklamaControlActivity : AppCompatActivity() {
                                         }
                                     }
                                     
-                                    if(valueInput) {
-                                        var randomValue = Math.random() * ($maxValue - $minValue) + $minValue;
-                                        randomValue = Math.round(randomValue * 100) / 100;
-                                        var formattedValue = randomValue.toFixed(2);
-                                        console.log('Setting MeasuredValue' + rowIndex + ' to ' + formattedValue + ' (input name: ' + valueInput.name + ')');
-                                        
-                                        valueInput.value = formattedValue;
-                                        valueInput.dispatchEvent(new Event('input', { bubbles: true }));
-                                        valueInput.dispatchEvent(new Event('change', { bubbles: true }));
-                                        filledValueCount++;
+                                    // Sadece boş olan MeasuredValue alanlarını doldur
+                                    if(valueInput && row.fillMeasuredValue) {
+                                        var currentValue = valueInput.value;
+                                        // Eğer değer boşsa veya 0 ise doldur
+                                        if(!currentValue || currentValue === '' || currentValue === '---' || currentValue === '0') {
+                                            var randomValue = Math.random() * ($maxValue - $minValue) + $minValue;
+                                            randomValue = Math.round(randomValue * 100) / 100;
+                                            var formattedValue = randomValue.toFixed(2);
+                                            console.log('Setting MeasuredValue' + rowIndex + ' to ' + formattedValue + ' (input name: ' + valueInput.name + ')');
+                                            
+                                            valueInput.value = formattedValue;
+                                            valueInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                            valueInput.dispatchEvent(new Event('change', { bubbles: true }));
+                                            filledValueCount++;
+                                        } else {
+                                            console.log('Skipping MeasuredValue' + rowIndex + ' because it already has value: ' + currentValue);
+                                        }
+                                    } else if(valueInput) {
+                                        console.log('Skipping MeasuredValue' + rowIndex + ' as per fillable property');
                                     } else {
                                         console.log('Could not find MeasuredValue input for row ' + rowIndex);
                                     }
