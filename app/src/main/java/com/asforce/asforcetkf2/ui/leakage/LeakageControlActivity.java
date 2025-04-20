@@ -103,8 +103,15 @@ public class LeakageControlActivity extends AppCompatActivity {
         // URL'yi Shared Preferences'tan yükle
         SharedPreferences prefs = getSharedPreferences("LeakageControlPrefs", MODE_PRIVATE);
         String lastUrl = prefs.getString("lastUrl", ""); // Varsayılan olarak boş dize
-        editTextUrl.setText(lastUrl);
+        
+        // DataHolder'dan URL'yi al eğer varsa, yoksa Shared Preferences'tan al
+        if (!DataHolder.url.isEmpty()) {
+            editTextUrl.setText(DataHolder.url);
+        } else {
+            editTextUrl.setText(lastUrl);
+        }
 
+        // Sayfa otomatik olarak yüklensin
         loadWebPage();
     }
     
@@ -346,13 +353,19 @@ public class LeakageControlActivity extends AppCompatActivity {
                 String input = s.toString();
                 DataHolder.url = input;
 
-                if (input.matches(".*\\d{7}$")) {
-                    String lastSixDigits = input.substring(input.length() - 7);
-                    editTextUrl.removeTextChangedListener(this);
-                    editTextUrl.setText(lastSixDigits);
-                    editTextUrl.setSelection(lastSixDigits.length());
-                    editTextUrl.addTextChangedListener(this);
-                    DataHolder.url = lastSixDigits;
+                if (input.matches(".*\\d+$")) {
+                    // Find the trailing digits (any number of digits)
+                    String pattern = "\\d+$";
+                    java.util.regex.Pattern r = java.util.regex.Pattern.compile(pattern);
+                    java.util.regex.Matcher m = r.matcher(input);
+                    if (m.find()) {
+                        String digits = m.group();
+                        editTextUrl.removeTextChangedListener(this);
+                        editTextUrl.setText(digits);
+                        editTextUrl.setSelection(digits.length());
+                        editTextUrl.addTextChangedListener(this);
+                        DataHolder.url = digits;
+                    }
                 }
             }
         });
@@ -362,11 +375,11 @@ public class LeakageControlActivity extends AppCompatActivity {
         String url = editTextUrl.getText().toString().trim();
 
         if (url.isEmpty()) {
-            Toast.makeText(this, "Lütfen bir URL veya 6 haneli kod girin", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Lütfen bir URL veya kod girin", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (url.matches("\\d{7}")) {
+        if (url.matches("\\d+")) {
             url = BASE_URL + url;
         } else if (!url.startsWith("http")) {
             url = "https://" + url;

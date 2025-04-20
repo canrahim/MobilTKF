@@ -382,6 +382,9 @@ class MainActivity : AppCompatActivity() {
         // Update URL bar
         binding.urlInput.setText(tab.url)
         
+        // Aktif tab değiştiğinde, URL'deki sayısal kod varsa DataHolder'a kaydet
+        extractDigitsFromUrl(tab.url)
+        
         // Show active tab's WebView, hide others
         for ((tabId, webView) in activeWebViews) {
             webView.visibility = if (tabId == tab.id) View.VISIBLE else View.GONE
@@ -819,6 +822,26 @@ class MainActivity : AppCompatActivity() {
         // Kaçak Akım aktivitesini başlat
         val intent = Intent(this, LeakageControlActivity::class.java)
         startActivity(intent)
+    }
+    
+    /**
+     * URL'deki sayısal kodu ayıklayıp DataHolder'a kaydeder
+     */
+    private fun extractDigitsFromUrl(url: String) {
+        try {
+            // URL'nin sonundaki sayısal kısmı bul - herhangi bir uzunlukta sayı dizisi
+            val regex = Regex("\\d+$")
+            val matchResult = regex.find(url)
+            
+            matchResult?.let { result ->
+                val digits = result.value
+                // DataHolder'a kaydet
+                com.asforce.asforcetkf2.util.DataHolder.url = digits
+                Timber.d("URL'den çıkarılan sayısal kod: $digits")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "URL'den sayısal kod çıkarılırken hata oluştu")
+        }
     }
     
     private fun handlePanoFonksiyon() {
