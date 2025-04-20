@@ -459,7 +459,8 @@ class PanoFonksiyonActivity : AppCompatActivity(), FormDialogFragment.FormDialog
         
         // Geri butonuna tıklama işlevini ekle
         backButton.setOnClickListener {
-            finish() // Aktiviteyi sonlandır
+            // Ana ekrana geri dön
+            finish()
         }
         
         // Menü iconu tıklanınca menüyü göster/gizle
@@ -500,18 +501,21 @@ class PanoFonksiyonActivity : AppCompatActivity(), FormDialogFragment.FormDialog
                 val input = s.toString()
                 DataHolder.url = input
 
+                // Eğer sonda bir sayı değeri varsa (6 haneli kod gibi)
                 if (input.matches(".*\\d+$".toRegex())) {
-                    // Find the trailing digits (any number of digits)
+                    // Son sayıları bul (herhangi bir sayıda rakam)
                     val pattern = "\\d+$"
                     val r = Pattern.compile(pattern)
                     val m = r.matcher(input)
                     if (m.find()) {
                         val digits = m.group()
+                        // URL'yi sadece kod olarak ayarla
                         editTextUrl.removeTextChangedListener(this)
                         editTextUrl.setText(digits)
                         editTextUrl.setSelection(digits.length)
                         editTextUrl.addTextChangedListener(this)
                         DataHolder.url = digits
+                        Log.d(TAG, "URL kodu olarak ayarlandı: $digits")
                     }
                 }
             }
@@ -526,12 +530,17 @@ class PanoFonksiyonActivity : AppCompatActivity(), FormDialogFragment.FormDialog
             return
         }
 
+        // URL düzenleme ve yönlendirme
         val finalUrl = when {
+            // Sadece sayılardan oluşan bir kod ise BASE_URL ile birleştir
             url.matches("\\d+".toRegex()) -> BASE_URL + url
+            // http ile başlamıyorsa https:// ekle
             !url.startsWith("http") -> "https://$url"
+            // Diğer durumlarda olduğu gibi kullan
             else -> url
         }
 
+        Log.d(TAG, "Yüklenen URL: $finalUrl")
         buttonLoadPage.isEnabled = false
         
         // WebView null kontrolü ekleyelim
@@ -550,7 +559,17 @@ class PanoFonksiyonActivity : AppCompatActivity(), FormDialogFragment.FormDialog
             }
         }
         
+        // URL'yi yükle ve DataHolder'a kaydet
         webView?.loadUrl(finalUrl)
+        DataHolder.url = url
+        
+        // URL'yi SharedPreferences'a kaydet
+        val prefs = getSharedPreferences("PanoFonksiyonPrefs", Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putString("lastUrl", url)
+        editor.apply()
+        
+        // Yükleme düğmesini kısa süreliğine devre dışı bırak
         handler.postDelayed({ buttonLoadPage.isEnabled = true }, 1000)
     }
 

@@ -6,6 +6,7 @@ package com.asforce.asforcetkf2.util;
 public class DataHolder {
     public static String url = "";
     public static String measuredLocation0 = "";
+    public static String topraklama = ""; // Topraklama ekranı için URL
     
     // Form değerleri için alanlar
     public static String continuity = "0.09";

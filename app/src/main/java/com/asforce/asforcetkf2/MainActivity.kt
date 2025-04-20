@@ -879,8 +879,29 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun handleTopraklama() {
-        Toast.makeText(this, "Topraklama işlevi seçildi", Toast.LENGTH_SHORT).show()
-        // Topraklama işlevselliği buraya eklenecek
+        // Aktif sekmeden URL'yi al ve DataHolder'a kaydet
+        val currentTab = viewModel.activeTab.value
+        val currentUrl = currentTab?.url ?: ""
+        
+        // URL'den sayısal değeri çıkar
+        try {
+            val regex = Regex("\\d+$")
+            val matchResult = regex.find(currentUrl)
+            
+            // Sayısal değer varsa kaydet, yoksa boş olarak bırak
+            if (matchResult != null) {
+                val digits = matchResult.value
+                com.asforce.asforcetkf2.util.DataHolder.topraklama = digits
+            } else {
+                com.asforce.asforcetkf2.util.DataHolder.topraklama = ""
+            }
+        } catch (e: Exception) {
+            com.asforce.asforcetkf2.util.DataHolder.topraklama = ""
+        }
+        
+        // Topraklama aktivitesini başlat
+        val intent = Intent(this, com.asforce.asforcetkf2.ui.ground.kotlin.TopraklamaActivity::class.java)
+        startActivity(intent)
     }
     
     private fun handleTermalKamera() {
