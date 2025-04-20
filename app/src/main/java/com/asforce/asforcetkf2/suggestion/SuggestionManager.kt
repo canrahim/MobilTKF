@@ -271,19 +271,12 @@ class SuggestionManager(private val context: Context) {
                         // Son bir şans olarak varsayılan önerileri gösterebilmek için gecikmeyi dene
                         Timber.d("[SUGGESTION] Trying to load default suggestions for empty input")
                         
-                        // Hala boş - varsayılan önerileri yükle
+                        // Hala boş - VARS. ÖNERİLER KALDIRILDI
                         CoroutineScope(Dispatchers.IO).launch {
                             try {
                                 // Anahtar turuyla ilgili varsayılan öneriler
-                                val defaultSuggestions = when {
-                                    inputKey.contains("equip", ignoreCase = true) -> {
-                                        listOf("EQ-12345", "EQ-23456", "KA-12345")
-                                    }
-                                    inputKey.contains("purpose", ignoreCase = true) -> {
-                                        listOf("ENERJİ", "KALİBRASYON", "BAKIM")
-                                    }
-                                    else -> emptyList()
-                                }
+                                // NOT: Tüm varsayılan öneriler kaldırıldı
+                                val defaultSuggestions = emptyList<String>()
                                 
                                 if (defaultSuggestions.isNotEmpty()) {
                                     defaultSuggestions.forEach { saveSuggestion(inputKey, it) }
@@ -1012,111 +1005,80 @@ class SuggestionManager(private val context: Context) {
         Timber.d("[SUGGESTION] Deleting ALL suggestions for key: '$inputKey'")
         
         try {
-            // Ana thread'de kilit tutma süresi - 500ms'yi geçmeyecek
-            val startTime = System.currentTimeMillis()
-            
-            // Ana thread'de başlat, hemen commit() ile kaydet
+            // Ana thread'de başlat, UYGULAMADAN VE CIHAZDAN TAMAMEN SİL
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            
+            // 1. COMMIT ile sil - Senkron
             val success = prefs.edit().remove(inputKey).commit()
+            Timber.d("[SUGGESTION] Initial deletion success: $success")
             
-            if (success) {
-                Timber.d("[SUGGESTION] Initial deletion for key '$inputKey' was successful")
-            } else {
-                Timber.w("[SUGGESTION] Initial deletion failed, will retry asynchronously")
-            }
-            
-            // Önbelleği hemen temizle
+            // 2. Önbelleği tamamen sil
             suggestionCache.remove(inputKey)
+            lastCacheRefreshTime = 0L
 
-            // Bu anahtara ait tüm önerileri görüntüden kaldır
+            // 3. Adaptörü hemen temizle
             val emptyList = emptyList<String>()
             CoroutineScope(Dispatchers.Main).launch {
-                // Görünümü güncelle
+                // Görünümü temizle
                 suggestionView?.let { view ->
                     val recyclerView = view.findViewById<RecyclerView>(R.id.suggestion_recycler_view)
                     val adapter = recyclerView?.adapter as? SuggestionAdapter
                     adapter?.updateSuggestions(emptyList)
                 }
+                
+                // Popupları kapat
+                hideSuggestions()
             }
             
-            // Arka planda tekrar dene ve birden fazla silme yöntemi kullan
+            // 4. DAHA GÜÇLÜ SİLME DENEMELERİ
             executorService.execute {
                 try {
-                    // Yöntem 1: Standart kaldırma
-                    prefs.edit().remove(inputKey).apply()
+                    // 4.1. Dosya sisteminden direkt olarak tercih dosyasını sil
+                    val appContext = context.applicationContext
+                    val xmlFile = java.io.File(appContext.applicationInfo.dataDir, "shared_prefs/${PREFS_NAME}.xml")
+                    if (xmlFile.exists()) {
+                        val deleted = xmlFile.delete()
+                        Timber.d("[SUGGESTION] Preferences file deleted: $deleted")
+                    }
                     
-                    // Yöntem 2: Boş set olarak güncelle
-                    prefs.edit().putStringSet(inputKey, emptySet<String>()).apply()
+                    // 4.2. Yeni SharedPreferences örneği oluştur ve sil
+                    val newPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    newPrefs.edit().remove(inputKey).commit()
                     
-                    // Yöntem 3: Temizleme ve yeniden yükleme
-                    prefs.edit().remove(inputKey).commit()
-                    
-                    // Önbelleği tekrar temizle
-                    suggestionCache.remove(inputKey)
-                    lastCacheRefreshTime = 0L
-                    
-                    // Tutarlılık kontrolü - silme başarılı mı?
-                    val updatedSuggestions = getSuggestionsFromPrefs(prefs, inputKey)
-                    val success = updatedSuggestions.isEmpty()
-                    
-                    // Ana thread'de kullanıcıya bilgi ver
-                    CoroutineScope(Dispatchers.Main).launch {
-                        // Önerileri görünümden kaldır
-                        hideSuggestions()
-                        
-                        if (success) {
-                            // Başarılı silme mesajı
-                            android.widget.Toast.makeText(
-                                context,
-                                "Tüm öneriler silindi",
-                                android.widget.Toast.LENGTH_SHORT
-                            ).show()
-                            Timber.d("[SUGGESTION] Successfully deleted all suggestions for key: $inputKey")
-                        } else {
-                            // Silme hata mesajı - bazı öneriler kalmış olabilir
-                            android.widget.Toast.makeText(
-                                context,
-                                "Bazı öneriler silinirken hata oluştu, tekrar deneyin",
-                                android.widget.Toast.LENGTH_SHORT
-                            ).show()
-                            Timber.w("[SUGGESTION] Some suggestions may remain for key: $inputKey, count: ${updatedSuggestions.size}")
-                            
-                            // Son çare - son bir kez daha ve temiz bir başlangıç
-                            try {
-                                prefs.edit()
-                                    .putStringSet(inputKey, emptySet<String>())
-                                    .remove(inputKey)
-                                    .commit()
-                                suggestionCache.clear()
-                            } catch (e: Exception) {
-                                Timber.e(e, "[SUGGESTION] Final attempt failed")
+                    // 4.3. Uygulama önbelleğini temizle
+                    try {
+                        val cacheDir = context.cacheDir
+                        if (cacheDir.exists()) {
+                            val files = cacheDir.listFiles()
+                            if (files != null) {
+                                for (file in files) {
+                                    file.delete()
+                                }
                             }
                         }
+                    } catch (e: Exception) {
+                        Timber.e(e, "[SUGGESTION] Error clearing cache directory")
                     }
-                } catch (e: Exception) {
-                    Timber.e(e, "[SUGGESTION] Error in background deletion for key: $inputKey")
                     
-                    // Hata mesajı göster
+                    // 4.4. Tüm önbelleği temizle
+                    suggestionCache.clear()
+                    
+                    // 5. Kullanıcıya bilgi ver
                     CoroutineScope(Dispatchers.Main).launch {
                         android.widget.Toast.makeText(
                             context,
-                            "Tüm önerileri silerken hata oluştu, lütfen tekrar deneyin",
+                            "Tüm öneriler silindi",
                             android.widget.Toast.LENGTH_SHORT
                         ).show()
                     }
+                    
+                    Timber.d("[SUGGESTION] All deletion steps completed for key: $inputKey")
+                } catch (e: Exception) {
+                    Timber.e(e, "[SUGGESTION] Error in background deletion process")
                 }
             }
         } catch (e: Exception) {
-            Timber.e(e, "[SUGGESTION] Critical error in deleteAllSuggestions for key: $inputKey")
-            
-            // Hata durumunda kullanıcıya bilgi ver
-            CoroutineScope(Dispatchers.Main).launch {
-                android.widget.Toast.makeText(
-                    context,
-                    "Silme işlemi sırasında hata oluştu, tekrar deneyin",
-                    android.widget.Toast.LENGTH_SHORT
-                ).show()
-            }
+            Timber.e(e, "[SUGGESTION] Critical error in deleteAllSuggestions")
         }
     }
     
@@ -1164,29 +1126,53 @@ class SuggestionManager(private val context: Context) {
         // Anahtar adını normalleştir
         val normalizedKey = normalizeInputKey(inputKey)
         
+        // Ana thread'de hemen önbelleği güncelle
+        synchronized(suggestionCache) {
+            val cachedList = suggestionCache[normalizedKey]?.toMutableList() ?: mutableListOf()
+            if (!cachedList.contains(suggestion.trim())) {
+                cachedList.add(suggestion.trim())
+                suggestionCache[normalizedKey] = cachedList.toList()
+                Timber.d("[SUGGESTION] Updated cache for key: $normalizedKey")
+            }
+        }
+        
         executorService.execute {
             try {
                 val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                val suggestions = getSuggestionsFromPrefs(prefs, normalizedKey).toMutableSet()
                 
-                // Add new suggestion
-                if (suggestions.add(suggestion.trim())) {
-                    // Save updated set
-                    prefs.edit().putStringSet(normalizedKey, suggestions).apply()
-                    
-                    // Cache'i de güncelle
-                    val cachedList = suggestionCache[normalizedKey]?.toMutableList() ?: mutableListOf()
-                    if (!cachedList.contains(suggestion.trim())) {
-                        cachedList.add(suggestion.trim())
-                        suggestionCache[normalizedKey] = cachedList.toList()
-                    }
-                    
-                    Timber.d("[SUGGESTION] Saved suggestion to preferences: '$suggestion' for key $normalizedKey, total count: ${suggestions.size}")
+                // StringSet özel bir duruma sahiptir - yeni bir kopya oluşturmalıyız
+                // Mevcut değerleri oku
+                val currentSet = prefs.getStringSet(normalizedKey, null)
+                
+                // Yeni bir set oluştur (kopya, referans değil)
+                val newSet = mutableSetOf<String>()
+                
+                // Mevcut değerleri ekle
+                if (currentSet != null) {
+                    newSet.addAll(currentSet)
+                }
+                
+                // Yeni öneriyi ekle
+                newSet.add(suggestion.trim())
+                
+                // SENKRON olarak kaydet - commit kullan (apply yerine)
+                val success = prefs.edit().putStringSet(normalizedKey, newSet).commit()
+                
+                if (success) {
+                    Timber.d("[SUGGESTION] Successfully saved suggestion to preferences: '$suggestion' for key $normalizedKey")
                 } else {
-                    Timber.d("[SUGGESTION] Suggestion '$suggestion' already exists, not saving")
+                    // Başarısız olduysa ikinci bir yöntem dene
+                    try {
+                        // Önce temizle sonra yeniden ekle
+                        prefs.edit().remove(normalizedKey).commit()
+                        prefs.edit().putStringSet(normalizedKey, newSet).commit()
+                        Timber.d("[SUGGESTION] Used alternate method to save suggestion")
+                    } catch (e: Exception) {
+                        Timber.e(e, "[SUGGESTION] Error in fallback save method")
+                    }
                 }
             } catch (e: Exception) {
-                Timber.e(e, "Error saving suggestion")
+                Timber.e(e, "[SUGGESTION] Error saving suggestion: $suggestion")
             }
         }
     }
@@ -1212,7 +1198,7 @@ class SuggestionManager(private val context: Context) {
      * Güçlendirilmiş versiyon - veri tutarlılığı için tam bir sıfırlama sağlar
      */
     fun clearAllSuggestionCaches() {
-        Timber.d("[SUGGESTION] Clearing all suggestion caches")
+        Timber.d("[SUGGESTION] TAMAMEN CLEARING all suggestion caches")
         
         try {
             // Önbelleği ana thread'de hemen temizle
@@ -1222,80 +1208,92 @@ class SuggestionManager(private val context: Context) {
             // Popup'ları kapat (eğer varsa)
             hideSuggestions()
             
-            // Arka planda güçlü temizleme yap
+            // TAMAMEN Yeni bir silme yaklaşımı - dosya sistemi seviyesinde
             executorService.execute {
                 try {
+                    // Önce normal silmeyi dene
                     val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    prefs.edit().clear().commit()
                     
-                    // Yöntem 1: Tüm tercihleri sil (en güvenilir yöntem)
-                    val success = prefs.edit().clear().commit()
+                    // Dosya sistemi seviyesinde silme işlemleri
+                    val appContext = context.applicationContext
                     
-                    // Temizleme başarılı mı kontrol et
-                    if (success) {
-                        Timber.d("[SUGGESTION] Successfully cleared all suggestion caches with commit()")
-                        
-                        // Kullanıcıya bilgi mesajı göster
-                        CoroutineScope(Dispatchers.Main).launch {
-                            android.widget.Toast.makeText(
-                                context,
-                                "Öneri önbelleği temizlendi",
-                                android.widget.Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    } else {
-                        Timber.w("[SUGGESTION] Clear using commit() failed, trying alternative methods")
-                        
-                        // Yöntem 2: Tüm anahtarları sil
-                        val allKeys = prefs.all.keys.toList()
-                        val editor = prefs.edit()
-                        for (key in allKeys) {
-                            editor.remove(key)
-                        }
-                        editor.apply()
-                        
-                        // Yöntem 3: Geçici bir dosya aracılığıyla temizleme
-                        try {
-                            val tempPrefs = context.getSharedPreferences("${PREFS_NAME}_clear_temp", Context.MODE_PRIVATE)
-                            tempPrefs.edit().clear().commit()
-                            
-                            // Ana dosyayı senkronize et
-                            prefs.edit().clear().commit()
-                        } catch (e: Exception) {
-                            Timber.e(e, "[SUGGESTION] Error during alternative cleaning")
-                        }
-                        
-                        // Tüm pref dosyasını silmeyi dene (en son çare)
-                        try {
-                            val prefsFile = java.io.File(context.applicationInfo.dataDir, "shared_prefs/${PREFS_NAME}.xml")
-                            if (prefsFile.exists()) {
-                                val deleted = prefsFile.delete()
-                                if (deleted) {
-                                    Timber.d("[SUGGESTION] Deleted preference file directly")
-                                }
+                    // SharedPreferences XML dosyasını tamamen sil
+                    val xmlFile = java.io.File(appContext.applicationInfo.dataDir, "shared_prefs/${PREFS_NAME}.xml")
+                    if (xmlFile.exists()) {
+                        val deleted = xmlFile.delete()
+                        Timber.d("[SUGGESTION] Deleted preference file directly: $deleted")
+                    }
+                    
+                    // Tüm SharedPreferences dizinini temizle
+                    val prefsDir = java.io.File(appContext.applicationInfo.dataDir, "shared_prefs")
+                    if (prefsDir.exists() && prefsDir.isDirectory) {
+                        val files = prefsDir.listFiles { file -> file.name.contains(PREFS_NAME) }
+                        if (files != null) {
+                            for (file in files) {
+                                val deleted = file.delete()
+                                Timber.d("[SUGGESTION] Deleted prefs file: ${file.name}, success: $deleted")
                             }
-                        } catch (e: Exception) {
-                            Timber.e(e, "[SUGGESTION] Error while trying to delete pref file directly")
-                        }
-                        
-                        // Kullanıcıya bilgi mesajı göster
-                        CoroutineScope(Dispatchers.Main).launch {
-                            android.widget.Toast.makeText(
-                                context,
-                                "Öneri önbelleği temizlendi",
-                                android.widget.Toast.LENGTH_SHORT
-                            ).show()
                         }
                     }
-                } catch (e: Exception) {
-                    Timber.e(e, "[SUGGESTION] Error clearing all caches")
                     
-                    // Hata mesajı göster
+                    // Uygulama önbellek dizinini temizle
+                    val cacheDir = context.cacheDir
+                    if (cacheDir.exists()) {
+                        val files = cacheDir.listFiles()
+                        if (files != null) {
+                            for (file in files) {
+                                if (file.name.contains("suggestion", ignoreCase = true)) {
+                                    val deleted = file.delete()
+                                    Timber.d("[SUGGESTION] Deleted cache file: ${file.name}, success: $deleted")
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Yeni bir SharedPreferences nesnesi oluştur (temiz bir başlangıç garanti etmek için)
+                    val newPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    val isEmpty = newPrefs.all.isEmpty()
+                    Timber.d("[SUGGESTION] New SharedPreferences is empty: $isEmpty")
+                    
+                    // Ana thread'de kullanıcıya bilgi ver
                     CoroutineScope(Dispatchers.Main).launch {
+                        // Son kez önbelleği temizle
+                        synchronized(suggestionCache) {
+                            suggestionCache.clear()  
+                        }
+                        
                         android.widget.Toast.makeText(
                             context,
-                            "Öneri önbelleği temizlenirken hata oluştu",
+                            "Öneri önbelleği tamamen temizlendi",
                             android.widget.Toast.LENGTH_SHORT
                         ).show()
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e, "[SUGGESTION] Error during thorough cache cleaning")
+                    
+                    // Son çare - tek tek bilinen anahtarları temizlemeyi dene
+                    try {
+                        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                        val allKeys = prefs.all.keys.toList()
+                        Timber.d("[SUGGESTION] Found ${allKeys.size} keys to delete")
+                        
+                        // Tek tek her anahtarı sil
+                        for (key in allKeys) {
+                            prefs.edit().remove(key).commit()
+                            Timber.d("[SUGGESTION] Removed key: $key")
+                        }
+                        
+                        // Ana thread'de bilgi ver
+                        CoroutineScope(Dispatchers.Main).launch {
+                            android.widget.Toast.makeText(
+                                context,
+                                "Öneri önbelleği temizlendi",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } catch (e2: Exception) {
+                        Timber.e(e2, "[SUGGESTION] Final fallback cleaning failed")
                     }
                 }
             }

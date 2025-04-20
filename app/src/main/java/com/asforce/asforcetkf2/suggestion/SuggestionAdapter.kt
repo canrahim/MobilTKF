@@ -35,6 +35,15 @@ class SuggestionAdapter(
     }
 
     override fun onBindViewHolder(holder: SuggestionViewHolder, position: Int) {
+        // Eğer öneriler boşsa, "hiçbir öneri yok" mesajını göster
+        if (suggestions.isEmpty()) {
+            Timber.d("[SUGGESTION] Showing no suggestions message")
+            holder.suggestionChip.text = context.getString(R.string.no_suggestions)
+            holder.suggestionChip.isCloseIconVisible = false
+            holder.suggestionChip.setOnClickListener(null)
+            return
+        }
+        
         val suggestion = suggestions[position]
         Timber.d("[SUGGESTION] Binding suggestion at position $position: '$suggestion'")
         
@@ -63,7 +72,7 @@ class SuggestionAdapter(
 
     override fun getItemCount(): Int {
         Timber.d("[SUGGESTION] Getting item count: ${suggestions.size}")
-        return suggestions.size
+        return if (suggestions.isEmpty()) 1 else suggestions.size // Boşsa 1 döndür (mesaj için)
     }
     
     /**
