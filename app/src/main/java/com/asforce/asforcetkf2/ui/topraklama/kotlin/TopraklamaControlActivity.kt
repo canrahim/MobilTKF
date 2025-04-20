@@ -48,6 +48,8 @@ class TopraklamaControlActivity : AppCompatActivity() {
         private const val TAG = "TopraklamaControlActivity"
         private const val PREFS_NAME = "topraklama_control_settings"
         private const val KEY_URL = "saved_url"
+        private const val KEY_MIN_VALUE = "min_value"
+        private const val KEY_MAX_VALUE = "max_value"
         private const val BASE_URL = "https://app.szutest.com.tr/EXT/PKControl/EditGrounding/"
         private const val FETCH_DELAY = 1000L
     }
@@ -511,8 +513,15 @@ class TopraklamaControlActivity : AppCompatActivity() {
         val buttonSave = dialogView.findViewById<Button>(R.id.buttonSave)
         val buttonCancel = dialogView.findViewById<Button>(R.id.buttonCancel)
 
+        // Kaydedilmiş değerlerden okuma
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val savedMinValue = prefs.getString(KEY_MIN_VALUE, "3.0")
+        val savedMaxValue = prefs.getString(KEY_MAX_VALUE, "5.0")
+
         // Default değer atama
         editTextTagName.setText("---")
+        editTextMinValue.setText(savedMinValue)
+        editTextMaxValue.setText(savedMaxValue)
 
         // Dialog oluşturma
         val dialog = builder.create()
@@ -520,6 +529,27 @@ class TopraklamaControlActivity : AppCompatActivity() {
 
         // İptal butonuna tıklama
         buttonCancel.setOnClickListener { dialog.dismiss() }
+
+        // Text değişikliği izleyicileri - her değişiklikte değerleri kaydet
+        editTextMinValue.addTextChangedListener(object : SimpleTextWatcher() {
+            override fun afterTextChanged(s: Editable) {
+                val value = s.toString().trim()
+                if (value.isNotEmpty()) {
+                    // Min-Max değerlerini kaydet
+                    saveMinMaxValues(value, editTextMaxValue.text.toString().trim())
+                }
+            }
+        })
+        
+        editTextMaxValue.addTextChangedListener(object : SimpleTextWatcher() {
+            override fun afterTextChanged(s: Editable) {
+                val value = s.toString().trim()
+                if (value.isNotEmpty()) {
+                    // Min-Max değerlerini kaydet
+                    saveMinMaxValues(editTextMinValue.text.toString().trim(), value)
+                }
+            }
+        })
 
         // Kaydet butonuna tıklama
         buttonSave.setOnClickListener {
@@ -1167,6 +1197,17 @@ class TopraklamaControlActivity : AppCompatActivity() {
                 Log.d(TAG, "MeasuredLocation0 değeri alınamadı")
             }
         }
+    }
+    
+    /**
+     * Minimum ve Maksimum değerleri kaydeder
+     */
+    private fun saveMinMaxValues(minValue: String, maxValue: String) {
+        val editor = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+        editor.putString(KEY_MIN_VALUE, minValue)
+        editor.putString(KEY_MAX_VALUE, maxValue)
+        editor.apply()
+        Log.d(TAG, "Min-Max değerleri kaydedildi: $minValue-$maxValue")
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
