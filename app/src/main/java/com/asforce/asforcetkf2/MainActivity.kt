@@ -763,20 +763,34 @@ class MainActivity : AppCompatActivity() {
             "Ayarlar"
         )
         
-        // Show dialog menu
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Ana Menü")
-            .setItems(items) { _, which ->
-                when (which) {
-                    0 -> loadUrl("https://www.google.com")
-                    1 -> Toast.makeText(this, "Favoriler henüz uygulanmadı", Toast.LENGTH_SHORT).show()
-                    2 -> Toast.makeText(this, "Geçmiş henüz uygulanmadı", Toast.LENGTH_SHORT).show()
-                    3 -> Toast.makeText(this, "İndirilenler henüz uygulanmadı", Toast.LENGTH_SHORT).show()
-                    4 -> clearSuggestionCache()
-                    5 -> showMenu() // Standart ayarlar menüsünü göster
-                }
+        // PopupMenu kullanarak menüyü butonun altında göster
+        val menuBtn = binding.btnMainMenu
+        val popup = android.widget.PopupMenu(this, menuBtn)
+        
+        // Menü öğelerini ekle
+        for (i in items.indices) {
+            popup.menu.add(android.view.Menu.NONE, i, i, items[i])
+        }
+        
+        // Tıklama olaylarını yönet
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                0 -> loadUrl("https://www.google.com")
+                1 -> Toast.makeText(this, "Favoriler henüz uygulanmadı", Toast.LENGTH_SHORT).show()
+                2 -> Toast.makeText(this, "Geçmiş henüz uygulanmadı", Toast.LENGTH_SHORT).show()
+                3 -> Toast.makeText(this, "İndirilenler henüz uygulanmadı", Toast.LENGTH_SHORT).show()
+                4 -> clearSuggestionCache()
+                5 -> showMenu() // Standart ayarlar menüsünü göster
             }
-            .show()
+            true
+        }
+        
+        // Menü konumunu ayarla - butonun altında göstermek için
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            popup.setForceShowIcon(true)
+        }
+        
+        popup.show()
     }
     
     /**
@@ -803,18 +817,32 @@ class MainActivity : AppCompatActivity() {
             "Termal Kamera"
         )
         
-        // Show dialog menu
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Menü")
-            .setItems(items) { _, which ->
-                when (which) {
-                    0 -> handleKacakAkim()
-                    1 -> handlePanoFonksiyon()
-                    2 -> handleTopraklama()
-                    3 -> handleTermalKamera()
-                }
+        // PopupMenu kullanarak menüyü butonun altında göster
+        val menuBtn = binding.btnMenu
+        val popup = android.widget.PopupMenu(this, menuBtn)
+        
+        // Menü öğelerini ekle
+        for (i in items.indices) {
+            popup.menu.add(android.view.Menu.NONE, i, i, items[i])
+        }
+        
+        // Tıklama olaylarını yönet
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                0 -> handleKacakAkim()
+                1 -> handlePanoFonksiyon()
+                2 -> handleTopraklama()
+                3 -> handleTermalKamera()
             }
-            .show()
+            true
+        }
+        
+        // Menü konumunu ayarla - butonun altında göstermek için
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            popup.setForceShowIcon(true)
+        }
+        
+        popup.show()
     }
     
     // Yeni menü işlevleri
