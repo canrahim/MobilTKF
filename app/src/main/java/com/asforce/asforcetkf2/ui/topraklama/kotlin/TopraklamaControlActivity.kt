@@ -570,39 +570,72 @@ class TopraklamaControlActivity : AppCompatActivity() {
 
         Log.d(TAG, "Starting form fill operation with parameters: tagName=$tagName, minValue=$minValue, maxValue=$maxValue")
         
-        // Boş form alanlarını bul
-        val findEmptyRowsScript = """
-            (function() {
-                try {
-                    console.log('Searching for empty TagName fields...');
-                    var allInputs = document.querySelectorAll('input[name^="TagName"]');
-                    console.log('Total TagName fields found: ' + allInputs.length);
-                    
-                    var emptyRows = [];
-                    for(var i = 0; i < allInputs.length; i++) {
-                        var input = allInputs[i];
-                        console.log('Checking input: ' + input.name + ', value: "' + input.value + '"');
-                        
-                        if(!input.value || input.value === '' || input.value === '---') {
-                            var indexMatch = input.name.match(/\d+$/);
-                            if(indexMatch) {
-                                var rowIndex = indexMatch[0];
-                                console.log('Found empty row with index: ' + rowIndex);
-                                emptyRows.push(rowIndex);
-                            }
+        // Form alanlarını kontrol et ve doldurulabilir satırları bul
+        val findFillableRowsScript = """
+        (function() {
+        try {
+        console.log('Analyzing form fields...');
+        var tagNameInputs = document.querySelectorAll('input[name^="TagName"]');
+        console.log('Total TagName fields found: ' + tagNameInputs.length);
+        
+        // Önce tüm MeasuredValue alanlarını kontrol edelim
+        var allMeasuredValueInputs = document.querySelectorAll('input[name^="MeasuredValue"]');
+        console.log('Total MeasuredValue fields found: ' + allMeasuredValueInputs.length);
+        
+        // Yük sayfadaki tüm input alanlarını da kontrol edelim
+        var allInputs = document.querySelectorAll('input');
+        console.log('Total input fields on page: ' + allInputs.length);
+        
+        // Input alanlarının adlarını kontrol edelim
+        var inputNames = [];
+        for(var i = 0; i < Math.min(allInputs.length, 20); i++) {
+        inputNames.push(allInputs[i].name);
+        }
+        console.log('Sample input names: ' + inputNames.join(', '));
+        
+        var fillableRows = [];
+        
+        for(var i = 0; i < tagNameInputs.length; i++) {
+        var tagInput = tagNameInputs[i];
+        var indexMatch = tagInput.name.match(/\d+$/);
+        
+        if(indexMatch) {
+        var rowIndex = indexMatch[0];
+        var measureInput = document.querySelector('input[name="MeasuredValue' + rowIndex + '"]');
+        
+        // Kontrol amaçlı log ekleyelim
+        console.log('Row ' + rowIndex + ', MeasuredValue input exists: ' + (measureInput ? 'yes' : 'no'));
+        
+        // Her iki alanın değerlerini kontrol et
+        var tagValue = tagInput.value;
+            var measureValue = measureInput ? measureInput.value : '';
+                
+                console.log('Row ' + rowIndex + ': TagName="' + tagValue + '", MeasuredValue="' + measureValue + '"');
+                
+                // Değiştirilmiş mantık: Her satır için her zaman fillableRows listesine ekle
+                    // Bu şekilde tüm satırları görebiliriz
+                var fillableFields = {
+                    rowIndex: rowIndex,
+                        fillTagName: (!tagValue || tagValue === '' || tagValue === '---'),
+                            // Her durumda MeasuredValue'yu doldurulabilir olarak işaretle (test için)
+                                fillMeasuredValue: true
+                            };
+                            
+                            console.log('Processing row ' + rowIndex + ': Tag=' + fillableFields.fillTagName + ', Measure=' + fillableFields.fillMeasuredValue);
+                            fillableRows.push(fillableFields);
                         }
                     }
                     
-                    console.log('Total empty rows found: ' + emptyRows.length);
-                    return JSON.stringify(emptyRows);
+                    console.log('Total fillable rows found: ' + fillableRows.length);
+                    return JSON.stringify(fillableRows);
                 } catch(e) {
-                    console.error('Error in findEmptyRowsScript:', e);
+                    console.error('Error in findFillableRowsScript:', e);
                     return JSON.stringify({error: e.toString()});
                 }
             })();
         """.trimIndent()
 
-        webView?.evaluateJavascript(findEmptyRowsScript) { result ->
+        webView?.evaluateJavascript(findFillableRowsScript) { result ->
             Log.d(TAG, "FindEmptyRows result: $result")
             
             if (result != null && result != "null" && result != "\"\"" && !result.contains("error")) {
@@ -611,80 +644,137 @@ class TopraklamaControlActivity : AppCompatActivity() {
                     val cleanResult = result.replace("^\"|\"$".toRegex(), "")
                     Log.d(TAG, "Clean result: $cleanResult")
 
-                    // Fill the empty rows one by one to avoid complex JavaScript
-                    val fillTagNamesScript = """
+                    // Form alanlarını doldur, seçici olarak uygun alanları doldur
+                    val fillFormFieldsScript = """
                         (function() {
                             try {
-                                console.log('Starting to fill TagName fields');
-                                var rowIndexes = JSON.parse('$cleanResult');
-                                console.log('Rows to fill: ' + rowIndexes.length + ', indexes: ' + rowIndexes.join(', '));
+                                console.log('Starting to fill form fields');
+                                var rows = JSON.parse('$cleanResult');
+                                console.log('Rows to fill: ' + rows.length);
+                                var filledTagCount = 0;
+                                var filledValueCount = 0;
                                 
-                                for(var i = 0; i < rowIndexes.length; i++) {
-                                    var rowIndex = rowIndexes[i];
-                                    var tagInput = document.querySelector('input[name="TagName' + rowIndex + '"]');
-                                    console.log('Processing row: ' + rowIndex + ', found input: ' + (tagInput ? 'yes' : 'no'));
-                                    
-                                    if(tagInput) {
-                                        console.log('Setting TagName' + rowIndex + ' to "$tagName"');
-                                        tagInput.value = '$tagName';
-                                        tagInput.dispatchEvent(new Event('input', { bubbles: true }));
-                                        tagInput.dispatchEvent(new Event('change', { bubbles: true }));
+                                // Önce sayım ekleyelim
+                                var measureValueInputCount = document.querySelectorAll('input[name^="MeasuredValue"]').length;
+                                console.log('MeasuredValue input count (before filling): ' + measureValueInputCount);
+                                
+                                // Örnek olarak birkaç input alanının adını kontrol edelim
+                                var allInputs = document.querySelectorAll('input');
+                                var inputNames = [];
+                                for(var i = 0; i < Math.min(allInputs.length, 30); i++) {
+                                    if(allInputs[i].name) {
+                                        inputNames.push(allInputs[i].name);
                                     }
                                 }
-                                return "completed_tags";
+                                console.log('Input names sample: ' + inputNames.join(', '));
+                                
+                                for(var i = 0; i < rows.length; i++) {
+                                    var row = rows[i];
+                                    var rowIndex = row.rowIndex;
+                                    
+                                    // Eğer TagName alanı doldurulabilir ise
+                                    if(row.fillTagName) {
+                                        var tagInput = document.querySelector('input[name="TagName' + rowIndex + '"]');
+                                        if(tagInput) {
+                                            console.log('Setting TagName' + rowIndex + ' to "$tagName"');
+                                            tagInput.value = '$tagName';
+                                            tagInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                            tagInput.dispatchEvent(new Event('change', { bubbles: true }));
+                                            filledTagCount++;
+                                        }
+                                    }
+                                    
+                                    // MeasuredValue alanını doldur
+                                    // Önce bilinen adı dene
+                                    var valueInput = document.querySelector('input[name="MeasuredValue' + rowIndex + '"]');
+                                    
+                                    // Eğer bulunamadıysa alternatif yazımları dene
+                                    if(!valueInput) {
+                                        valueInput = document.querySelector('input[name="measuredValue' + rowIndex + '"]'); // küçük harf versiyonu
+                                    }
+                                    if(!valueInput) {
+                                        valueInput = document.querySelector('input[name="measured_value' + rowIndex + '"]'); // alt çizgi versiyonu
+                                    }
+                                    
+                                    // Düzenlenebilir text alanını da dene
+                                    if(!valueInput) {
+                                        valueInput = document.querySelector('[name="MeasuredValue' + rowIndex + '"]');
+                                    }
+                                    
+                                    // Gerçek ID'ye göre bulmayı dene
+                                    if(!valueInput) {
+                                        // TagName'in yanındaki sütunda olabilir
+                                        var tagElement = document.querySelector('input[name="TagName' + rowIndex + '"]');
+                                        if(tagElement && tagElement.parentElement && tagElement.parentElement.nextElementSibling) {
+                                            var nextCell = tagElement.parentElement.nextElementSibling;
+                                            valueInput = nextCell.querySelector('input');
+                                            
+                                            if(valueInput) {
+                                                console.log('Found MeasuredValue by DOM traversal, name=' + valueInput.name);
+                                            }
+                                        }
+                                    }
+                                    
+                                    if(valueInput) {
+                                        var randomValue = Math.random() * ($maxValue - $minValue) + $minValue;
+                                        randomValue = Math.round(randomValue * 100) / 100;
+                                        var formattedValue = randomValue.toFixed(2);
+                                        console.log('Setting MeasuredValue' + rowIndex + ' to ' + formattedValue + ' (input name: ' + valueInput.name + ')');
+                                        
+                                        valueInput.value = formattedValue;
+                                        valueInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                        valueInput.dispatchEvent(new Event('change', { bubbles: true }));
+                                        filledValueCount++;
+                                    } else {
+                                        console.log('Could not find MeasuredValue input for row ' + rowIndex);
+                                    }
+                                }
+                                
+                                return JSON.stringify({
+                                    status: 'success',
+                                    filledTagCount: filledTagCount,
+                                    filledValueCount: filledValueCount
+                                });
                             } catch(e) {
-                                console.error('Error in fillTagNamesScript:', e);
+                                console.error('Error in fillFormFieldsScript:', e);
                                 return JSON.stringify({error: e.toString()});
                             }
                         })();
                     """.trimIndent()
 
-                    webView?.evaluateJavascript(fillTagNamesScript) { tagResult ->
-                        Log.d(TAG, "FillTagNames result: $tagResult")
+                    webView?.evaluateJavascript(fillFormFieldsScript) { result ->
+                        Log.d(TAG, "FillFormFields result: $result")
                         
-                        // MeasuredValue alanlarını doldur
-                        val fillMeasuredValuesScript = """
-                            (function() {
-                                try {
-                                    console.log('Starting to fill MeasuredValue fields');
-                                    var rowIndexes = JSON.parse('$cleanResult');
-                                    console.log('Rows to fill: ' + rowIndexes.length);
-                                    
-                                    for(var i = 0; i < rowIndexes.length; i++) {
-                                        var rowIndex = rowIndexes[i];
-                                        var valueInput = document.querySelector('input[name="MeasuredValue' + rowIndex + '"]');
-                                        console.log('Processing MeasuredValue' + rowIndex + ', found input: ' + (valueInput ? 'yes' : 'no'));
-                                        
-                                        if(valueInput) {
-                                            var randomValue = Math.random() * ($maxValue - $minValue) + $minValue;
-                                            randomValue = Math.round(randomValue * 100) / 100;
-                                            var formattedValue = randomValue.toFixed(2);
-                                            console.log('Setting MeasuredValue' + rowIndex + ' to ' + formattedValue);
-                                            
-                                            valueInput.value = formattedValue;
-                                            valueInput.dispatchEvent(new Event('input', { bubbles: true }));
-                                            valueInput.dispatchEvent(new Event('change', { bubbles: true }));
-                                        }
-                                    }
-                                    return "completed_values";
-                                } catch(e) {
-                                    console.error('Error in fillMeasuredValuesScript:', e);
-                                    return JSON.stringify({error: e.toString()});
-                                }
-                            })();
-                        """.trimIndent()
-
-                        webView?.evaluateJavascript(fillMeasuredValuesScript) { valueResult ->
-                            Log.d(TAG, "FillMeasuredValues result: $valueResult")
+                        try {
+                            // Temizlenmiş sonuç al
+                            val cleanFillResult = result.trim().replace("^\"|\"$".toRegex(), "").replace("\\\"", "\"").replace("\\\\", "\\")
+                            
+                            // JSON olarak işle
+                            val jsonResult = org.json.JSONObject(cleanFillResult)
+                            
+                            // Hata durumunu kontrol et
+                            if (jsonResult.has("error")) {
+                                val errorMessage = jsonResult.optString("error", "Bilinmeyen hata")
+                                Log.e(TAG, "Form doldurma hatası: $errorMessage")
+                                Toast.makeText(this, "Form doldurma hatası: $errorMessage", Toast.LENGTH_SHORT).show()
+                                return@evaluateJavascript
+                            }
+                            
+                            // Başarılı durum için özet bilgileri al
+                            val filledTagCount = jsonResult.optInt("filledTagCount", 0)
+                            val filledValueCount = jsonResult.optInt("filledValueCount", 0)
                             
                             // Sonucu bildir
-                            val successMessage = if (valueResult?.contains("completed_values") == true) {
-                                "Form başarıyla dolduruldu"
+                            val successMessage = if (filledTagCount > 0 || filledValueCount > 0) {
+                                "Form başarıyla dolduruldu: $filledTagCount etiket, $filledValueCount ölçüm değeri"
                             } else {
-                                "Form dolduruldu, ancak bazı alanlar işlenemedi"
+                                "Doldurulacak form alanı bulunamadı"
                             }
                             
                             Toast.makeText(this, successMessage, Toast.LENGTH_SHORT).show()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Result parsing error: ${e.message}")
+                            Toast.makeText(this, "Form dolduruldu, ancak sonuç işlenemedi", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } catch (e: Exception) {
