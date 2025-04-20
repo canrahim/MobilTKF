@@ -85,6 +85,16 @@
             android:theme="@style/Theme.AsforceTKF2">
         </activity>
         
+        <!-- Topraklama Kontrol Aktivitesi -->
+        <activity
+            android:name=".ui.topraklama.kotlin.TopraklamaControlActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.AsforceTKF2">
+        </activity>
+        
         <!-- FileProvider için -->        
         <provider
             android:name="androidx.core.content.FileProvider"

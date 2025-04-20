@@ -899,8 +899,8 @@ class MainActivity : AppCompatActivity() {
             com.asforce.asforcetkf2.util.DataHolder.topraklama = ""
         }
         
-        // Topraklama aktivitesini başlat
-        val intent = Intent(this, com.asforce.asforcetkf2.ui.ground.kotlin.TopraklamaActivity::class.java)
+        // Topraklama Kontrol aktivitesini başlat
+        val intent = Intent(this, com.asforce.asforcetkf2.ui.topraklama.kotlin.TopraklamaControlActivity::class.java)
         startActivity(intent)
     }
     
