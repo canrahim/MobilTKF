@@ -699,26 +699,41 @@ class TabWebView @JvmOverloads constructor(
                     if (url == currentLoadingUrl) {
                         Timber.w("Sayfa yükleme zaman aşımı oluştu: $url")
                         
-                        // Acil durum tamamlama scripti çalıştır
-                        evaluateJavascript("""
-                            (function() {
-                                console.log('TKF Browser: Zaman aşımı kurtarma başlatılıyor');
-                                // Yükleme olaylarını manuel olarak tetikle
-                                if (document.readyState !== 'complete') {
-                                    try {
-                                        window.dispatchEvent(new Event('DOMContentLoaded'));
-                                        window.dispatchEvent(new Event('load'));
-                                        document.dispatchEvent(new Event('readystatechange'));
-                                        console.log('TKF Browser: Zorunlu yükleme olayları tetiklendi');
-                                    } catch(e) {
-                                        console.error('Yükleme olayları hatası:', e);
+                        // WebView hala geçerli mi kontrol et
+                        if (isAttachedToWindow && !isDestroyed()) {
+                            try {
+                                // Acil durum tamamlama scripti çalıştır
+                                evaluateJavascript("""
+                                    (function() {
+                                        console.log('TKF Browser: Zaman aşımı kurtarma başlatılıyor');
+                                        // Yükleme olaylarını manuel olarak tetikle
+                                        if (document.readyState !== 'complete') {
+                                            try {
+                                                window.dispatchEvent(new Event('DOMContentLoaded'));
+                                                window.dispatchEvent(new Event('load'));
+                                                document.dispatchEvent(new Event('readystatechange'));
+                                                console.log('TKF Browser: Zorunlu yükleme olayları tetiklendi');
+                                            } catch(e) {
+                                                console.error('Yükleme olayları hatası:', e);
+                                            }
+                                        }
+                                        return 'timeout_recovery_triggered';
+                                    })();
+                                """.trimIndent()) { _ ->
+                                    // Sayfa yükleme olayını manuel olarak çağır - önce WebView durumunu kontrol et
+                                    if (isAttachedToWindow && !isDestroyed()) {
+                                        onPageFinished?.invoke(tabId, url, null)
                                     }
                                 }
-                                return 'timeout_recovery_triggered';
-                            })();
-                        """.trimIndent()) { _ ->
-                            // Sayfa yükleme olayını manuel olarak çağır
-                            onPageFinished?.invoke(tabId, url, null)
+                            } catch (e: Exception) {
+                                Timber.e(e, "Zaman aşımı kurtarma sırasında hata")
+                                loadTimeoutHandler?.removeCallbacksAndMessages(null)
+                                currentLoadingUrl = null
+                            }
+                        } else {
+                            Timber.w("WebView yok edilmiş veya ayrılmış, zaman aşımı kurtarma atlanıyor")
+                            loadTimeoutHandler?.removeCallbacksAndMessages(null)
+                            currentLoadingUrl = null
                         }
                     }
                 }, LOAD_TIMEOUT_MS)
@@ -733,22 +748,31 @@ class TabWebView @JvmOverloads constructor(
                 onPageFinished?.invoke(tabId, url, favicon)
                 
                 // DOM hazır olduğundan emin olmak için kısa bir gecikme ekle
-                postDelayed({
-                    // Sayfa yüklendiğinde form işleyicilerini enjekte et
-                    injectFormHandlers()
-                    // Girdi alanı izleme scriptini enjekte et
-                    injectInputTracking()
-                    // Manual focus handling
-                    injectManualFocusHandling()
-                    // Enhance input detection
-                    enhanceInputFocusDetection()
-                    // Fix toast message visibility issues
-                    fixToastVisibility()
-                    // Yükleme sonrası performans optimizasyonu yap
-                    optimizer.optimizeAfterPageLoad(this@TabWebView)
-                    // Çerezleri kalıcı hale getir
-                    CookieManager.getInstance().flush()
-                }, 100) // DOM işlemleri için kısa gecikme
+                if (isAttachedToWindow && !isDestroyed()) {
+                    postDelayed({
+                        // WebView hala geçerli mi kontrol et
+                        if (isAttachedToWindow && !isDestroyed()) {
+                            try {
+                                // Sayfa yüklendiğinde form işleyicilerini enjekte et
+                                injectFormHandlers()
+                                // Girdi alanı izleme scriptini enjekte et
+                                injectInputTracking()
+                                // Manual focus handling
+                                injectManualFocusHandling()
+                                // Enhance input detection
+                                enhanceInputFocusDetection()
+                                // Fix toast message visibility issues
+                                fixToastVisibility()
+                                // Yükleme sonrası performans optimizasyonu yap
+                                optimizer.optimizeAfterPageLoad(this@TabWebView)
+                                // Çerezleri kalıcı hale getir
+                                CookieManager.getInstance().flush()
+                            } catch (e: Exception) {
+                                Timber.e(e, "Sayfa yüklendikten sonra script enjeksiyonu sırasında hata")
+                            }
+                        }
+                    }, 100) // DOM işlemleri için kısa gecikme
+                }
             },
             onReceivedError = { errorCode, description, failingUrl ->
                 // Hata durumunda zaman aşımını iptal et
@@ -879,63 +903,80 @@ class TabWebView @JvmOverloads constructor(
                 Timber.w("Sayfa yükleme zaman aşımı: $formattedUrl")
                 
                 // Takılmış sayfayı kurtarmak için acil durum scripti çalıştır
-                evaluateJavascript("""
-                    (function() {
-                        // Eğer sayfa takılmışsa document readyState'i force complete yap
-                        if (document.readyState !== 'complete') {
-                            // Sentetik yükleme olaylarını tetikle
-                            try {
-                                window.dispatchEvent(new Event('DOMContentLoaded'));
-                                window.dispatchEvent(new Event('load'));
-                                document.dispatchEvent(new Event('readystatechange'));
-                                console.log('TKF Browser: Zaman aşımı sonrası zorunlu yükleme olayları tetiklendi');
-                                
-                                // WebView'e sayfa yükleme bitti sinyali gönder
-                                setTimeout(function() {
-                                    document.dispatchEvent(new Event('webviewready'));
-                                }, 100);
-                            } catch(e) {
-                                console.error('Yükleme olaylarını zorlama hatası:', e);
-                            }
-                        }
-                        
-                        // Bekleyen kaynakları engellemeyi kaldır
-                        try {
-                            // Bekleyen görüntü yüklemelerini bul ve iptal et
-                            var images = document.querySelectorAll('img');
-                            for (var i = 0; i < images.length; i++) {
-                                if (!images[i].complete && images[i].src) {
-                                    // Yeniden denemek için orijinal src'yi kaydet
-                                    var originalSrc = images[i].src;
-                                    images[i].setAttribute('data-original-src', originalSrc);
-                                    // Yüklemeyi iptal et
-                                    images[i].src = '';
-                                    // Yedek görüntü göster
-                                    images[i].alt = 'Görüntü yüklenemedi';
+                try {
+                    // WebView'in hala aktif olup olmadığını kontrol et
+                    if (!isDestroyed() && isAttachedToWindow) {
+                        evaluateJavascript("""
+                            (function() {
+                                // Eğer sayfa takılmışsa document readyState'i force complete yap
+                                if (document.readyState !== 'complete') {
+                                    // Sentetik yükleme olaylarını tetikle
+                                    try {
+                                        window.dispatchEvent(new Event('DOMContentLoaded'));
+                                        window.dispatchEvent(new Event('load'));
+                                        document.dispatchEvent(new Event('readystatechange'));
+                                        console.log('TKF Browser: Zaman aşımı sonrası zorunlu yükleme olayları tetiklendi');
+                                        
+                                        // WebView'e sayfa yükleme bitti sinyali gönder
+                                        setTimeout(function() {
+                                            document.dispatchEvent(new Event('webviewready'));
+                                        }, 100);
+                                    } catch(e) {
+                                        console.error('Yükleme olaylarını zorlama hatası:', e);
+                                    }
                                 }
-                            }
+                                
+                                // Bekleyen kaynakları engellemeyi kaldır
+                                try {
+                                    // Bekleyen görüntü yüklemelerini bul ve iptal et
+                                    var images = document.querySelectorAll('img');
+                                    for (var i = 0; i < images.length; i++) {
+                                        if (!images[i].complete && images[i].src) {
+                                            // Yeniden denemek için orijinal src'yi kaydet
+                                            var originalSrc = images[i].src;
+                                            images[i].setAttribute('data-original-src', originalSrc);
+                                            // Yüklemeyi iptal et
+                                            images[i].src = '';
+                                            // Yedek görüntü göster
+                                            images[i].alt = 'Görüntü yüklenemedi';
+                                        }
+                                    }
+                                    
+                                    // Mümkünse bekleyen XHR isteklerini iptal et
+                                    if (window.XMLHttpRequest) {
+                                        console.log('TKF Browser: XHR istekleri zaman aşımı nedeniyle durduruldu');
+                                    }
+                                    
+                                    // Form alanlarını aktif et (en azından kullanıcı veri girebilsin)
+                                    var forms = document.querySelectorAll('form');
+                                    for (var j = 0; j < forms.length; j++) {
+                                        forms[j].setAttribute('data-tkf-timeouted', 'true');
+                                    }
+                                    
+                                    return 'TKF_TIMEOUT_RECOVERY_COMPLETED';
+                                } catch(e) {
+                                    return 'TKF_TIMEOUT_RECOVERY_ERROR: ' + e.message;
+                                }
+                            })();
+                        """.trimIndent()) { result ->
+                            Timber.d("Zaman aşımı kurtarma sonucu: $result")
                             
-                            // Mümkünse bekleyen XHR isteklerini iptal et
-                            if (window.XMLHttpRequest) {
-                                console.log('TKF Browser: XHR istekleri zaman aşımı nedeniyle durduruldu');
+                            // Sayfa yükleme bitti olayını manuel olarak tetikle
+                            if (tab != null && isAttachedToWindow && !isDestroyed()) {
+                                onPageFinished?.invoke(tab?.id ?: "", formattedUrl, null)
                             }
-                            
-                            // Form alanlarını aktif et (en azından kullanıcı veri girebilsin)
-                            var forms = document.querySelectorAll('form');
-                            for (var j = 0; j < forms.length; j++) {
-                                forms[j].setAttribute('data-tkf-timeouted', 'true');
-                            }
-                            
-                            return 'TKF_TIMEOUT_RECOVERY_COMPLETED';
-                        } catch(e) {
-                            return 'TKF_TIMEOUT_RECOVERY_ERROR: ' + e.message;
                         }
-                    })();
-                """.trimIndent()) { result ->
-                    Timber.d("Zaman aşımı kurtarma sonucu: $result")
-                    
-                    // Sayfa yükleme bitti olayını manuel olarak tetikle
-                    onPageFinished?.invoke(tab?.id ?: "", formattedUrl, null)
+                    } else {
+                        Timber.w("WebView zaman aşımı sırasında yok edilmiş veya ayrılmış, JavaScript çalıştırma atlanıyor")
+                        // Temizlik yapılıyor
+                        loadTimeoutHandler?.removeCallbacksAndMessages(null)
+                        currentLoadingUrl = null
+                    }
+                } catch (e: Exception) {
+                    // JavaScript hata durumunu yakala ve logla
+                    Timber.e(e, "Zaman aşımı sırasında JavaScript çalıştırma hatası")
+                    loadTimeoutHandler?.removeCallbacksAndMessages(null)
+                    currentLoadingUrl = null
                 }
             }
         }, LOAD_TIMEOUT_MS)
@@ -1070,6 +1111,11 @@ class TabWebView @JvmOverloads constructor(
             
             console.log('TKF Browser: Injecting manual touch handling');
             
+            // Check if we're on Google search page
+            const isGoogleSearch = function() {
+                return window.location.hostname.indexOf('google') !== -1;
+            };
+            
             // For all touch events on the document
             document.addEventListener('touchstart', function(event) {
                 // Get the touched element
@@ -1080,8 +1126,10 @@ class TabWebView @JvmOverloads constructor(
                 if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
                     console.log('TKF Browser: Touch on input field: ' + el.tagName + '#' + el.id);
                     
-                    // Focus the element
-                    el.focus();
+                    // Focus the element but don't trigger suggestion selection on Google
+                    if (!isGoogleSearch()) {
+                        el.focus();
+                    }
                     
                     // Get the input key
                     var key = el.getAttribute('data-tkf-key');
@@ -1092,17 +1140,67 @@ class TabWebView @JvmOverloads constructor(
                         el.setAttribute('data-tkf-key', key);
                     }
                     
-                    // Notify SuggestionHandler
-                    if (window.SuggestionHandler) {
+                    // Notify SuggestionHandler - but be careful not to trigger Google suggestions
+                    if (window.SuggestionHandler && !isGoogleSearch()) {
                         console.log('TKF Browser: Manually notifying SuggestionHandler for key: ' + key);
                         window.SuggestionHandler.onInputFocused(key);
                     } else {
-                        console.warn('TKF Browser: SuggestionHandler not available for manual focus');
+                        console.warn('TKF Browser: SuggestionHandler not available for manual focus or on Google page');
                     }
                 }
             }, { passive: true });
             
-            return 'Manual touch handling injected';
+            // Special handling for Google search
+            if (isGoogleSearch()) {
+                console.log('TKF Browser: Adding Google search specific handlers');
+                
+                // Add a click listener to make sure selection is explicit
+                document.addEventListener('click', function(event) {
+                    // Only process real user clicks (not synthetic events)
+                    if (!event.isTrusted) return;
+                    
+                    var el = event.target;
+                    // If user explicitly clicks on a suggestion, let it work normally
+                    if (el && el.closest('[role="option"], .sbct')) {
+                        console.log('TKF Browser: User clicked on Google search suggestion');
+                    }
+                }, true);
+                
+                // Prevent auto-selection by intercepting focus
+                const originalFocus = HTMLInputElement.prototype.focus;
+                HTMLInputElement.prototype.focus = function() {
+                    const result = originalFocus.apply(this, arguments);
+                    
+                    // If this is a Google search input
+                    if (isGoogleSearch() && (this.id === 'lst-ib' || this.name === 'q' || this.autocomplete === 'off')) {
+                        console.log('TKF Browser: Google search input focused, preventing auto-selection');
+                        // Stop propagation of any synthetic events
+                        setTimeout(() => {
+                            const searchForm = document.querySelector('form');
+                            if (searchForm) {
+                                // Temporarily disable form submission
+                                const originalSubmit = searchForm.submit;
+                                searchForm.submit = function() {
+                                    console.log('TKF Browser: Intercepted automatic form submission');
+                                    setTimeout(() => {
+                                        searchForm.submit = originalSubmit;
+                                    }, 100);
+                                    return false;
+                                };
+                                
+                                // Restore after short delay
+                                setTimeout(() => {
+                                    searchForm.submit = originalSubmit;
+                                }, 500);
+                            }
+                        }, 0);
+                    }
+                    
+                    return result;
+                };
+            }
+            
+            return 'Manual touch handling injected with Google search fix';
         })();
         """
         
@@ -1673,5 +1771,12 @@ class TabWebView @JvmOverloads constructor(
         evaluateJavascript(script) { result ->
             Timber.d("Toast visibility fix result: $result")
         }
+    }
+
+    /**
+     * Check if WebView is destroyed or not usable
+     */
+    private fun isDestroyed(): Boolean {
+        return !isAttachedToWindow || windowVisibility == View.GONE || windowToken == null
     }
 }
