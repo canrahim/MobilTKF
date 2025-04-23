@@ -742,6 +742,8 @@ class TabWebView @JvmOverloads constructor(
                     injectManualFocusHandling()
                     // Enhance input detection
                     enhanceInputFocusDetection()
+                    // Fix toast message visibility issues
+                    fixToastVisibility()
                     // Yükleme sonrası performans optimizasyonu yap
                     optimizer.optimizeAfterPageLoad(this@TabWebView)
                     // Çerezleri kalıcı hale getir
@@ -1578,6 +1580,98 @@ class TabWebView @JvmOverloads constructor(
             Timber.d("Completed WebView cleanup process")
         } catch (e: Exception) {
             Timber.e(e, "Error during WebView cleanup")
+        }
+    }
+
+    /**
+     * Fix for toast message visibility issues
+     * This ensures toast-container elements and notifications remain visible
+     */
+    fun fixToastVisibility() {
+        val script = """
+        (function() {
+            // Check if already injected
+            if (window._tkfToastFixInjected) return 'Already injected';
+            window._tkfToastFixInjected = true;
+            
+            console.log('TKF Browser: Injecting toast message visibility fix');
+            
+            // 1. Preserve toast container during DOM manipulations
+            const preserveToastElements = function() {
+                // Find toast container elements
+                const toastContainers = document.querySelectorAll('.toast-container, #toast-container, [aria-live="polite"], [role="alert"]');
+                
+                if (toastContainers.length > 0) {
+                    console.log('TKF Browser: Found ' + toastContainers.length + ' toast containers to preserve');
+                    
+                    // Make sure toast containers are always visible
+                    toastContainers.forEach(function(container) {
+                        // Ensure toast container stays visible
+                        container.style.setProperty('display', 'block', 'important');
+                        container.style.setProperty('visibility', 'visible', 'important');
+                        container.style.setProperty('opacity', '1', 'important');
+                        container.style.setProperty('pointer-events', 'auto', 'important');
+                        
+                        // Ensure any toast messages inside are visible
+                        const toasts = container.querySelectorAll('.toast, .toast-info, .toast-success, .toast-error, .toast-warning');
+                        toasts.forEach(function(toast) {
+                            toast.style.setProperty('display', 'block', 'important');
+                            toast.style.setProperty('visibility', 'visible', 'important');
+                            toast.style.setProperty('opacity', '1', 'important');
+                        });
+                        
+                        console.log('TKF Browser: Preserved toast container visibility');
+                    });
+                    
+                    return true;
+                }
+                return false;
+            };
+            
+            // 2. Monitor DOM for dynamic toast elements
+            const observeToasts = function() {
+                // Create a mutation observer to watch for toast elements
+                const toastObserver = new MutationObserver(function(mutations) {
+                    // Check for toast elements on DOM changes
+                    setTimeout(preserveToastElements, 50);  // Small delay to allow toast to render
+                });
+                
+                // Start observing the body for toast-related changes
+                if (document.body) {
+                    toastObserver.observe(document.body, { 
+                        childList: true, 
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ['style', 'class']
+                    });
+                    console.log('TKF Browser: Toast observer attached to document body');
+                }
+            };
+            
+            // 3. Fix any existing toast elements immediately
+            preserveToastElements();
+            
+            // 4. Start observing for future toast elements
+            observeToasts();
+            
+            // 5. Override any cleanup functions that might hide toasts
+            if (window.TKF_cleanupEvents) {
+                const originalCleanup = window.TKF_cleanupEvents;
+                window.TKF_cleanupEvents = function() {
+                    // Run the original cleanup
+                    originalCleanup();
+                    // Restore toast visibility after cleanup
+                    preserveToastElements();
+                };
+                console.log('TKF Browser: Cleanup function patched to preserve toasts');
+            }
+            
+            return 'Toast visibility fix injected';
+        })();
+        """
+        
+        evaluateJavascript(script) { result ->
+            Timber.d("Toast visibility fix result: $result")
         }
     }
 }

@@ -2196,4 +2196,22 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    // Initialize view listeners
+    private fun setupListeners() {
+        // Other existing listener code here...
+        
+        // Reload button click listener
+        binding.reloadButton.setOnClickListener {
+            val currentTab = viewModel.activeTab.value ?: return@setOnClickListener
+            val webView = activeWebViews[currentTab.id] ?: return@setOnClickListener
+
+            webView.reload()
+            
+            // Fix toast visibility issues after reload
+            webView.postDelayed({
+                webView.fixToastVisibility()
+            }, 500)  // Slight delay to ensure page has loaded
+        }
+    }
 }
