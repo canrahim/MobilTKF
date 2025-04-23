@@ -60,9 +60,9 @@ class SuggestionDialogFragment : DialogFragment() {
         
         // Apply styling to make it look like the normal suggestion bar
         val backgroundDrawable = android.graphics.drawable.GradientDrawable().apply {
-            setColor(android.graphics.Color.WHITE)
-            setStroke(2, android.graphics.Color.parseColor("#4285f4"))
-            cornerRadius = 12f
+            setColor(android.graphics.Color.TRANSPARENT)
+            setStroke(0, android.graphics.Color.TRANSPARENT)
+            cornerRadius = 0f
         }
         view.background = backgroundDrawable
         view.setPadding(16, 8, 16, 8)

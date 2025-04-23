@@ -321,7 +321,9 @@ class SuggestionManager(private val context: Context) {
             val inflater = LayoutInflater.from(context)
             val suggestionView = inflater.inflate(R.layout.layout_suggestion_bar, null)
             
-            // Style the suggestion view - improved dark background
+            // Style the suggestion view - MODIFY: Remove background, keep only chip backgrounds
+            // REMOVE THIS ENTIRE BLOCK - No background for the entire bar
+            /*
             val backgroundDrawable = android.graphics.drawable.GradientDrawable().apply {
                 setColor(android.graphics.Color.parseColor("#1d1b30")) // dark blue background
                 cornerRadius = 16f // yuvarlak köşeler
@@ -329,6 +331,11 @@ class SuggestionManager(private val context: Context) {
             }
             suggestionView.background = backgroundDrawable 
             suggestionView.elevation = 24f
+            */
+            
+            // Set background to transparent
+            suggestionView.background = android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+            suggestionView.elevation = 0f // No elevation for the container
         
             // Set up RecyclerView
             val recyclerView = suggestionView.findViewById<RecyclerView>(R.id.suggestion_recycler_view)
@@ -353,7 +360,7 @@ class SuggestionManager(private val context: Context) {
             recyclerView.adapter = suggestionAdapter
             
             // Create popup window - USING POPUP WINDOW APPROACH like in Menu5Activity
-            val popupHeight = (75 * context.resources.displayMetrics.density).toInt() // Daha yüksek bir çubuk (65'ten 75'e)
+            val popupHeight = (60 * context.resources.displayMetrics.density).toInt() // Daha alçak bir çubuk (75'ten 60'a)
             
             val popup = PopupWindow(
                 suggestionView,
@@ -362,7 +369,7 @@ class SuggestionManager(private val context: Context) {
                 false // NOT focusable - this is important to not steal focus
             ).apply {
                 isOutsideTouchable = true
-                elevation = 24f
+                elevation = 0f // No elevation for transparent background
                 animationStyle = android.R.style.Animation_InputMethod // Klavye animasyonu gibi
                 setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
                 
@@ -379,18 +386,22 @@ class SuggestionManager(private val context: Context) {
             val screenHeight = metrics.heightPixels
             
             // Try a better positioning algorithm for popup placement
-            // 1. Eğer klavye yüksekliği algılanabiliyorsa, klavyenin hemen üstüne yerleştir
+            // 1. Eğer klavye yüksekliği algılanabiliyorsa, klavyenin üstündeki otomatik öneri çubuğunun üzerine yerleştir
             val keyboardHeight = getKeyboardHeight()
             var yPosition = 0
             
+            // Klavyenin kendi otomatik öneri çubuğu için gereken yükseklik (dp cinsinden)
+            val keyboardSuggestionBarHeightDp = 45 // 60'tan 45'e düşürüldü - daha az boşluk bırakmak için
+            val keyboardSuggestionBarHeightPx = (keyboardSuggestionBarHeightDp * context.resources.displayMetrics.density).toInt()
+            
             if (keyboardHeight > 100) { // Gerçek bir klavye yüksekliği
-                // Klavyenin hemen üzerine yerleştir
-                yPosition = screenHeight - keyboardHeight - popupHeight - 10 // biraz boşluk bırak
-                Timber.d("[SUGGESTION] Keyboard detected, positioning above keyboard at y=$yPosition")
+                // Klavyenin otomatik öneri çubuğunun üzerine yerleştir - ek boşluk azaltıldı
+                yPosition = screenHeight - keyboardHeight - keyboardSuggestionBarHeightPx - 2 // popupHeight kaldırıldı
+                Timber.d("[SUGGESTION] Keyboard detected, positioning closer to keyboard at y=$yPosition")
             } else {
-                // Klavye yüksekliği algılanamadıysa ekranın alt kısmında %30 oranında göster
-                yPosition = (screenHeight * 0.70).toInt() - popupHeight
-                Timber.d("[SUGGESTION] No keyboard height, using fixed position y=$yPosition")
+                // Klavye yüksekliği algılanamadıysa ekranın alt kısmında %90 oranında göster (daha aşağı)
+                yPosition = (screenHeight * 0.90).toInt() - popupHeight
+                Timber.d("[SUGGESTION] No keyboard height, using lower fixed position y=$yPosition")
             }
             
             // Show popup at calculated position
