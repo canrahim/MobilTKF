@@ -1232,7 +1232,15 @@ class TopraklamaControlActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Sayfa Yenileme")
             .setMessage("Ayarları uygulamak için sayfa yenilenecektir. Onaylıyor musunuz?")
-            .setPositiveButton("Evet") { dialog, which -> webView?.reload() }
+            .setPositiveButton("Evet") { dialog, which -> 
+                // Önbelleği devre dışı bırakarak zorla yenileme yap
+                webView?.settings?.cacheMode = WebSettings.LOAD_NO_CACHE
+                webView?.reload()
+                // Yenileme sonrası önbellek modunu eski haline döndür
+                webView?.postDelayed({
+                    webView?.settings?.cacheMode = WebSettings.LOAD_DEFAULT
+                }, 1000)
+            }
             .setNegativeButton("Hayır", null)
             .setIcon(android.R.drawable.ic_dialog_alert)
             .show()

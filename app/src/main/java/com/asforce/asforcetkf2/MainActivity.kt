@@ -22,6 +22,7 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.JsResult
 import android.webkit.URLUtil
 import android.webkit.ValueCallback
+import android.webkit.WebSettings
 import android.widget.EditText
 import android.widget.Toast
 import com.asforce.asforcetkf2.suggestion.SuggestionManager
@@ -405,12 +406,15 @@ class MainActivity : AppCompatActivity() {
             val currentTab = viewModel.activeTab.value ?: return@setOnClickListener
             val webView = activeWebViews[currentTab.id] ?: return@setOnClickListener
             
+            // Önbelleği devre dışı bırakarak sayfayı yenile (force refresh)
+            webView.settings.cacheMode = WebSettings.LOAD_NO_CACHE
             webView.reload()
             
-            // Fix toast visibility issues after reload
+            // Yenileme sonrası önbellek modunu eski haline döndür
             webView.postDelayed({
+                webView.settings.cacheMode = WebSettings.LOAD_DEFAULT
                 webView.fixToastVisibility()
-            }, 500)  // Slight delay to ensure page has loaded
+            }, 1000)  // Slight delay to ensure page has loaded
         }
         
         // Menu button
