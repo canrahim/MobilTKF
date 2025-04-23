@@ -240,34 +240,15 @@ class SuggestionManager(private val context: Context) {
                 val filteredSuggestions = loadAndFilterSuggestions(inputKey, filterText)
                 
                 withContext(Dispatchers.Main) {
-                    // If no suggestions, try loading without filter first
-                    if (filteredSuggestions.isEmpty() && filterText.isNotBlank()) {
-                        Timber.d("[SUGGESTION] No matching suggestions with filter, trying without filter")
-                        
-                        // Try in background without filter
-                        CoroutineScope(Dispatchers.IO).launch {
-                            val allSuggestions = loadAndFilterSuggestions(inputKey, "")
-                            
-                            if (allSuggestions.isNotEmpty()) {
-                                withContext(Dispatchers.Main) {
-                                    // Boş filtreyle göster ve kullanıcıya filtrelenmiş sonuç olmadığını bildirmek için toast göster
-                                    showSuggestionsInPopup(anchorView, inputKey, allSuggestions)
-                                }
-                            } else {
-                                // Popup'u gizle
-                                withContext(Dispatchers.Main) {
-                                    hideSuggestions()
-                                }
-                            }
+                    // If no suggestions with filter and filter text is not blank, don't fallback to showing all
+                    if (filteredSuggestions.isEmpty()) {
+                        if (filterText.isNotBlank()) {
+                            // Don't show anything when filtering with no matches
+                            Timber.d("[SUGGESTION] No matching suggestions with filter, hiding suggestions")
+                            hideSuggestions()
+                            return@withContext
                         }
                         
-                        // Mevcut boş listeyle devam et (popup gösterme)
-                        hideSuggestions()
-                        return@withContext
-                    }
-                    
-                    // Öneriler boş olsa bile göstermeyi dene (varsayılan değerler)
-                    if (filteredSuggestions.isEmpty()) {
                         // Son bir şans olarak varsayılan önerileri gösterebilmek için gecikmeyi dene
                         Timber.d("[SUGGESTION] Trying to load default suggestions for empty input")
                         
@@ -787,8 +768,7 @@ class SuggestionManager(private val context: Context) {
             if (cachedList != null && (now - lastCacheRefreshTime < CACHE_TTL)) {
                 Timber.d("[SUGGESTION] Using cached suggestions for key $normalizedKey: ${cachedList.size} items")
                 
-                // Tüm önerileri almak için yeni değişiklik
-                // Boş metinlerde bile tüm sonuçlar gösterilmeli
+                // Apply filter to cached suggestions
                 return@withContext filterSuggestions(cachedList, filterText)
             }
             
