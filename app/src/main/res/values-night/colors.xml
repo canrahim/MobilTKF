@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Night mode specific colors -->
+    <color name="selected_item_bg">#1A3F5AFE</color> <!-- Semi-transparent primary color for selections -->
+    <color name="highlighted_item_bg">#1AFFAB00</color> <!-- Semi-transparent warning color for highlights -->
+    
+    <!-- Text colors for night mode -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B3FFFFFF</color>
+    <color name="text_tertiary">#80FFFFFF</color>
+
+    <!-- Card colors for dark mode -->
+    <color name="card_background">#252525</color>
+</resources> 

@@ -1,0 +1,1 @@
+var measuredLocation0: String? = null 

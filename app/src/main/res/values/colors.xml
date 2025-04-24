@@ -40,6 +40,14 @@
     <color name="text_secondary_dark">#B3FFFFFF</color> <!-- %70 beyaz -->
     <color name="text_disabled_dark">#66FFFFFF</color> <!-- %40 beyaz -->
     
+    <!-- Text colors for light mode -->
+    <color name="text_primary">#000000</color>
+    <color name="text_secondary">#DE000000</color> <!-- 87% black -->
+    <color name="text_tertiary">#99000000</color> <!-- 60% black -->
+    
+    <!-- Card colors for light mode -->
+    <color name="card_background">#FFFFFF</color>
+    
     <!-- Sekme Renkleri - Koyu Mod İçin -->
     <color name="tab_background">#252525</color> <!-- Koyu sekme arka planı -->
     <color name="tab_selected">#3D5AFE</color> <!-- Parlak mavi seçili -->
@@ -60,4 +68,7 @@
     <!-- Nav Bar ve Diğer Sistem Elementleri -->
     <color name="nav_bar_color">#000000</color> <!-- Siyah navigasyon çubuğu -->
     <color name="ripple_color">#404040</color> <!-- Dokun efekti -->
+    
+    <color name="selected_item_bg">#E3F2FD</color>
+    <color name="highlighted_item_bg">#FFF9C4</color>
 </resources>

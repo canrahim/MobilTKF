@@ -95,6 +95,13 @@
             android:theme="@style/Theme.AsforceTKF2">
         </activity>
         
+        <!-- Menu4Activity -->
+        <activity
+            android:name=".ui.termal.kotlin.Menu4Activity"
+            android:exported="true"
+            android:theme="@style/Theme.AsforceTKF2"
+            android:windowSoftInputMode="adjustResize" />
+        
         <!-- FileProvider için -->        
         <provider
             android:name="androidx.core.content.FileProvider"

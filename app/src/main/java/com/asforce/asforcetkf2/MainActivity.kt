@@ -1012,8 +1012,9 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun handleTermalKamera() {
-        Toast.makeText(this, "Termal Kamera işlevi seçildi", Toast.LENGTH_SHORT).show()
-        // Termal Kamera işlevselliği buraya eklenecek
+        // Termal Kamera aktivitesini başlat
+        val intent = Intent(this, com.asforce.asforcetkf2.ui.termal.kotlin.Menu4Activity::class.java)
+        startActivity(intent)
     }
     
     private fun toggleResourceMonitoring() {
