@@ -15,7 +15,7 @@ import com.asforce.asforcetkf2.webview.WebViewPool
 import com.asforce.asforcetkf2.webview.TabWebView
 import java.util.concurrent.ConcurrentHashMap
 import java.lang.ref.WeakReference
-import timber.log.Timber
+// import timber.log.Timber - removed for performance
 
 /**
  * TKF Tarayıcı bileşenleri için tüm optimizasyon sınıflarını bir araya getiren ana optimizatör
@@ -66,10 +66,10 @@ class TKFBrowserOptimizer(private val context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             try {
                 WebView.startSafeBrowsing(context, { success ->
-                    Timber.d("SafeBrowsing initialization: $success")
+                    // SafeBrowsing initialization: $success
                 })
             } catch (e: Exception) {
-                Timber.e(e, "SafeBrowsing initialization failed")
+                // SafeBrowsing initialization error
             }
         }
         
@@ -83,13 +83,12 @@ class TKFBrowserOptimizer(private val context: Context) {
                 // WebView havuzunu ön ısıt
                 webViewPool.preloadWebViews(2) // En çok 2 WebView önceden yükle
             } catch (e: Exception) {
-                Timber.e(e, "Background optimization error")
+                // Background optimization error
             }
         }.start()
         
         // İstatistikleri kaydet
         val duration = System.currentTimeMillis() - startTime
-        Timber.d("Enhanced app startup optimization completed in $duration ms, mode: $optimizationLevel")
     }
     
     /**
@@ -112,9 +111,9 @@ class TKFBrowserOptimizer(private val context: Context) {
                 // Bellek optimizasyon seviyesine göre işlem yap
                 performanceManager.optimizeMemory(optimizationLevel)
                 
-                Timber.d("Async memory optimization completed, level: $optimizationLevel")
+                // Async memory optimization completed
             } catch (e: Exception) {
-                Timber.e(e, "Async memory optimization error")
+                // Async memory optimization error
             }
         }.start()
     }
@@ -142,7 +141,7 @@ class TKFBrowserOptimizer(private val context: Context) {
             else -> if (tab.isActive) "normal" else "moderate"
         }
         
-        Timber.d("Tab $tabId optimization started with level: $optimizationLevel, memory: $memoryStatus")
+        // Tab optimization started
         
         // Optimizasyon öncesi performans ölçümü başlat
         val startTime = System.currentTimeMillis()
@@ -183,15 +182,15 @@ class TKFBrowserOptimizer(private val context: Context) {
             when {
                 tab.url.contains("szutest.com.tr") -> {
                     optimizer.optimizeForSzutest(optimizedWebView)
-                    Timber.d("Applied SzuTest specific optimizations")
+                    // Applied site-specific optimizations
                 }
                 tab.url.contains("tkf", ignoreCase = true) -> {
                     // Spesifik TKF optimizasyonları burada uygulanabilir
-                    Timber.d("Applied general optimizations for TKF URL")
+                    // Applied general optimizations
                 }
                 tab.url.contains("google.com") -> {
                     // Google spesifik optimizasyonlar
-                    Timber.d("Applied general optimizations for Google URL")
+                    // Applied general optimizations
                 }
             }
         }
@@ -220,24 +219,24 @@ class TKFBrowserOptimizer(private val context: Context) {
                 imageOptimizer.optimizeImages()
                 // Agresif DOM optimizasyonu
                 optimizer.enhancedDomOptimization(optimizedWebView)
-                Timber.w("Extreme optimization applied for tab $tabId - images optimized")
+                // Extreme optimization applied
             }
             "aggressive" -> {
                 // Agresif bellek tasarrufu - düşük kalite resimler
                 imageOptimizer.optimizeImages()
                 // DOM optimizasyonu
                 optimizer.enhancedDomOptimization(optimizedWebView)
-                Timber.d("Aggressive optimization applied for tab $tabId")
+                // Aggressive optimization applied
             }
             "moderate" -> {
                 // Orta seviye bellek tasarrufu - normal optimizasyon
                 imageOptimizer.optimizeImages()
-                Timber.d("Moderate optimization applied for tab $tabId")
+                // Moderate optimization applied
             }
             else -> {
                 // Normal optimizasyon - kullanıcı deneyimini korur
                 imageOptimizer.optimizeImages()
-                Timber.d("Normal optimization applied for tab $tabId")
+                // Normal optimization applied
             }
         }
         
@@ -266,7 +265,7 @@ class TKFBrowserOptimizer(private val context: Context) {
         // Optimizasyon süresini ölç ve kaydet
         val duration = System.currentTimeMillis() - startTime
         performanceManager.recordOptimizationTime("tab_optimize", duration)
-        Timber.d("Tab $tabId optimization completed in $duration ms, level: $optimizationLevel")
+        // Tab optimization completed
     }
     
     /**
@@ -302,7 +301,7 @@ class TKFBrowserOptimizer(private val context: Context) {
             val imageOptimizer = imageOptimizers[tabId]
             imageOptimizer?.optimizeImages()
             
-            Timber.d("Tab $tabId activated and optimized")
+            // Tab activated and optimized
         } else {
             // Sekme arka plana alındığında bellek tasarrufu
             if (performanceManager.isInLowMemoryMode()) {
@@ -310,7 +309,7 @@ class TKFBrowserOptimizer(private val context: Context) {
                 imageOptimizer?.optimizeImages()
             }
             
-            Timber.d("Tab $tabId deactivated and hibernated")
+            // Tab deactivated and hibernated
         }
     }
     
@@ -321,7 +320,7 @@ class TKFBrowserOptimizer(private val context: Context) {
     fun performMemoryOptimization() {
         // Optimizasyon başlangıcını ölç
         val startTime = System.currentTimeMillis()
-        Timber.d("Starting memory optimization with level: $optimizationLevel")
+        // Starting memory optimization
         
         // Bellek durumunu kontrol et ve optimizasyon seviyesini belirle
         val memStatus = performanceManager.getMemoryStatus()
@@ -463,7 +462,7 @@ class TKFBrowserOptimizer(private val context: Context) {
                             estimatedMemorySaved += 15000 // ~15MB
                             tabsOptimized++
                             
-                            Timber.w("EXTREME memory optimization for tab $tabId")
+                            // EXTREME memory optimization applied
                         }
                         "aggressive" -> {
                             // Agresif - optimizasyon
@@ -512,7 +511,7 @@ class TKFBrowserOptimizer(private val context: Context) {
                             estimatedMemorySaved += 8000 // ~8MB
                             tabsOptimized++
                             
-                            Timber.d("AGGRESSIVE memory optimization for tab $tabId")
+                            // AGGRESSIVE memory optimization applied
                         }
                         "moderate" -> {
                             // Orta seviye - uzun süre kullanılmayan sekmeleri hiberne et
@@ -521,7 +520,6 @@ class TKFBrowserOptimizer(private val context: Context) {
                             if (shouldHibernate && webView is TabWebView) {
                                 webView.hibernate()
                                 tabsHibernated++
-                                Timber.d("Tab $tabId hibernated due to inactivity")
                             }
                             
                             // Görüntü optimizasyonu
@@ -552,7 +550,7 @@ class TKFBrowserOptimizer(private val context: Context) {
                             estimatedMemorySaved += if (shouldHibernate) 5000 else 2000 // ~5MB veya ~2MB
                             tabsOptimized++
                             
-                            Timber.d("MODERATE memory optimization for tab $tabId")
+                            // MODERATE memory optimization applied
                         }
                         else -> {
                             // Normal - minimal optimizasyon
@@ -562,7 +560,7 @@ class TKFBrowserOptimizer(private val context: Context) {
                             estimatedMemorySaved += 500 // ~0.5MB
                             tabsOptimized++
                             
-                            Timber.d("NORMAL memory optimization for tab $tabId")
+                            // NORMAL memory optimization applied
                         }
                     }
                 }
@@ -606,8 +604,7 @@ class TKFBrowserOptimizer(private val context: Context) {
             tabsHibernated = tabsHibernated
         )
         
-        Timber.d("Memory optimization completed in $duration ms, level: $optimizationLevel, " +
-                 "saved ~$memSavedMB MB, optimized $tabsOptimized tabs, hibernated $tabsHibernated tabs")
+        // Memory optimization completed
     }
     
     /**
@@ -629,7 +626,7 @@ class TKFBrowserOptimizer(private val context: Context) {
         // İstatistikleri kaydet
         val runtime = Runtime.getRuntime()
         val usedMemInMB = (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024)
-        Timber.d("After cleanup: Used memory: $usedMemInMB MB")
+        // Cleanup completed
     }
     
     /**
@@ -657,7 +654,7 @@ class TKFBrowserOptimizer(private val context: Context) {
             imageOptimizers.remove(tabId)
             tabReferences.remove(tabId)
             
-            Timber.d("Cleaned up managers for inactive tab $tabId")
+            // Cleaned up managers for inactive tab
         }
     }
     
@@ -679,7 +676,7 @@ class TKFBrowserOptimizer(private val context: Context) {
      * Geliştirilmiş versiyon 2.0 - Daha derin temizleme ve havuz optimizasyonu
      */
     fun cleanupTab(tabId: String) {
-        Timber.d("Starting cleanup for tab $tabId")
+        // Starting cleanup for tab
         
         // Tab referansını al ve sil
         val tabRef = tabReferences[tabId]
@@ -727,7 +724,7 @@ class TKFBrowserOptimizer(private val context: Context) {
                         }
                     })();
                 """.trimIndent()) { result ->
-                    Timber.d("Tab $tabId JS pre-cleanup result: $result")
+                    // Tab JS pre-cleanup completed
                     
                     // JS temizlikten sonra native temizliği tamamla
                     // Optimize edici referansları temizle
@@ -740,7 +737,7 @@ class TKFBrowserOptimizer(private val context: Context) {
                     webViewPool.releaseWebView(tabId, true)
                     view.cleanup()
                     
-                    Timber.d("Tab $tabId resources fully cleaned up")
+                    // Tab resources fully cleaned up
                 }
             } else {
                 // Normal WebView - standart temizlik
@@ -752,7 +749,7 @@ class TKFBrowserOptimizer(private val context: Context) {
                 // WebView havuzuna iade et
                 webViewPool.releaseWebView(tabId)
                 
-                Timber.d("Tab $tabId resources cleaned up (standard way)")
+                // Tab resources cleaned up
             }
         }
         
@@ -763,7 +760,7 @@ class TKFBrowserOptimizer(private val context: Context) {
         val memStatus = performanceManager.getMemoryStatus()
         if (memStatus == "critical" || memStatus == "low") {
             webViewPool.trimToSize(2) // En fazla 2 WebView tut
-            Timber.w("Trimmed WebView pool due to low memory")
+            // Trimmed WebView pool due to low memory
         }
     }
     
@@ -772,7 +769,7 @@ class TKFBrowserOptimizer(private val context: Context) {
      * Weak reference kontrolü ve kaynak temizliği içerir
      */
     private fun checkForMemoryLeaks() {
-        Timber.d("Checking for memory leaks...")
+        // Checking for memory leaks...
         
         // 1. Runtime bellek istatistiklerini kontrol et
         val runtime = Runtime.getRuntime()
@@ -780,7 +777,7 @@ class TKFBrowserOptimizer(private val context: Context) {
         val maxHeapSizeInMB = runtime.maxMemory() / (1024 * 1024)
         val usedMemoryPercentage = usedMemInMB.toFloat() / maxHeapSizeInMB.toFloat() * 100
         
-        Timber.d("Memory usage: $usedMemInMB MB used ($usedMemoryPercentage% of max $maxHeapSizeInMB MB)")
+        // Memory usage checked
         
         // 2. WebView sızıntılarını kontrol et - weak reference temizliği
         val validTabIds = mutableSetOf<String>()
@@ -814,13 +811,13 @@ class TKFBrowserOptimizer(private val context: Context) {
             // WebView havuzunu da temizle
             webViewPool.releaseWebView(tabId)
             
-            Timber.w("Cleaned up potential memory leak for tab $tabId")
+            // Cleaned up potential memory leak
         }
         
         // 4. Bellek kullanımına göre agresif temizleme
         val isMemoryCritical = usedMemoryPercentage > 80 // %80 üzeri kullanım kritiktir
         if (isMemoryCritical) {
-            Timber.w("Critical memory usage detected! Triggering emergency cleanup")
+            // Critical memory usage detected
             
             // Emergency bellek temizliği
             webViewPool.emergencyCleanup()
@@ -835,8 +832,7 @@ class TKFBrowserOptimizer(private val context: Context) {
         }
         
         // 5. Sonuçları logla
-        Timber.d("Memory leak check completed: $invalidReferences invalid references cleaned, " + 
-                 "${managersToClean.size} managers cleaned, memory status: ${if (isMemoryCritical) "CRITICAL" else "OK"}")
+        // Memory leak check completed
     }
     
     /**

@@ -11,7 +11,6 @@ import android.os.Looper
 import android.text.Editable
 import android.text.InputType
 import android.text.TextUtils
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -131,7 +130,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
         runOnUiThread {
             val progressBar = findViewById<View>(R.id.progressBar)
             progressBar?.visibility = View.GONE
-            Log.d(TAG, "Progress bar gizlendi")
         }
     }
 
@@ -142,7 +140,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
         runOnUiThread {
             val progressBar = findViewById<View>(R.id.progressBar)
             progressBar?.visibility = View.VISIBLE
-            Log.d(TAG, "Progress bar gösterildi")
         }
     }
     
@@ -198,7 +195,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
         
         // WebView varsa görünürlüğünü kontrol et
         webView?.let { view ->
-            Log.d(TAG, "Found WebView from XML layout")
             view.visibility = View.VISIBLE
             
             // WebView container görünürlüğünü kontrol et
@@ -206,7 +202,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
             webViewContainer.visibility = View.VISIBLE
         } ?: run {
             // XML'de tanımlı webview bulunamadıysa yeni oluştur
-            Log.d(TAG, "WebView not found in XML, creating new one")
             webView = WebView(this)
             
             webView?.let { view ->
@@ -230,8 +225,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
             }
         }
         
-        // Debug bilgisi
-        Log.d(TAG, "WebView initialized: ${webView != null}, Visibility: ${webView?.visibility}")
     }
 
     private fun setupSharedPreferences() {
@@ -250,7 +243,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
     private fun setupWebView() {
         // WebView null ise yeni bir tane oluştur
         if (webView == null) {
-            Log.d(TAG, "WebView is null in setupWebView, creating new one")
             webView = WebView(this)
             
             // WebView'i container'a ekle
@@ -272,7 +264,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
                     view.requestLayout()
                 }
             } else {
-                Log.e(TAG, "WebViewContainer not found")
                 return
             }
         }
@@ -327,14 +318,11 @@ class TopraklamaControlActivity : AppCompatActivity() {
             setWebChromeClient(object : android.webkit.WebChromeClient() {
                 // Konsol mesajlarını yakala
                 override fun onConsoleMessage(consoleMessage: android.webkit.ConsoleMessage): Boolean {
-                    Log.d(TAG, "JS Console ${consoleMessage.messageLevel()}: ${consoleMessage.message()}" +
-                            " -- line ${consoleMessage.lineNumber()} of ${consoleMessage.sourceId()}")
                     return true
                 }
                 
                 // Javascript iletileri gösterme kabiliyeti
                 override fun onJsAlert(view: WebView?, url: String?, message: String?, result: android.webkit.JsResult?): Boolean {
-                    Log.d(TAG, "JS Alert: $message")
                     result?.confirm()
                     return true
                 }
@@ -355,7 +343,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
                     // Web sayfası yüklenme işlemi tamamlandığında, WebView kontrolü
                     // Aktivite kapanırken WebView null olabilir, bu durumda işlemi atlayarak çöküşü önleyelim
                     if (webView == null) {
-                        Log.w(TAG, "WebView is null in onPageFinished, skipping operations")
                         return
                     }
                     
@@ -404,7 +391,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
                         // Kesinlikle progress bar'ı gizle
                         hideProgressBar()
                     } catch (e: Exception) {
-                        Log.e(TAG, "Error in onPageFinished: ${e.message}")
                     }
                 }
                 
@@ -412,7 +398,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
                     super.onPageStarted(view, url, favicon)
                     // WebView kontrolü
                     if (webView == null) {
-                        Log.w(TAG, "WebView is null in onPageStarted, skipping operations")
                         return
                     }
                     
@@ -477,14 +462,12 @@ class TopraklamaControlActivity : AppCompatActivity() {
         
         // WebView null kontrolü ekleyelim
         if (webView == null) {
-            Log.e(TAG, "WebView is null before loadUrl, trying to recover...")
             webView = webViewPool.acquireWebView()
             val webViewContainer = findViewById<LinearLayout>(R.id.webViewContainer)
             if (webViewContainer != null && webView != null) {
                 webViewContainer.addView(webView)
                 setupWebView() // WebView client'i yeniden ayarlayalım
             } else {
-                Log.e(TAG, "Could not recover WebView, cannot load URL")
                 Toast.makeText(this, "Sayfa yüklenemedi, lütfen tekrar deneyin", Toast.LENGTH_SHORT).show()
                 buttonLoadPage.isEnabled = true
                 return
@@ -590,7 +573,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
     private fun fillForm(tagName: String, minValue: Float, maxValue: Float) {
         // WebView null kontrolü ekleyelim
         if (webView == null) {
-            Log.e(TAG, "WebView is null in fillForm")
             Toast.makeText(this, "Form doldurulamadı, lütfen sayfayı yeniden yükleyin", Toast.LENGTH_SHORT).show()
             return
         }
@@ -598,7 +580,7 @@ class TopraklamaControlActivity : AppCompatActivity() {
         // Daha önce doldurma işlemi yapılıp yapılmadığını haber ver
         Toast.makeText(this, "Form doldurma işlemi başlatılıyor...", Toast.LENGTH_SHORT).show()
 
-        Log.d(TAG, "Starting form fill operation with parameters: tagName=$tagName, minValue=$minValue, maxValue=$maxValue")
+        // Form doldurma işlemi başlatılıyor
         
         // Form alanlarını kontrol et ve doldurulabilir satırları bul
         val findFillableRowsScript = """
@@ -666,13 +648,11 @@ class TopraklamaControlActivity : AppCompatActivity() {
         """.trimIndent()
 
         webView?.evaluateJavascript(findFillableRowsScript) { result ->
-            Log.d(TAG, "FindEmptyRows result: $result")
             
             if (result != null && result != "null" && result != "\"\"" && !result.contains("error")) {
                 try {
                     // Remove quotes from the JSON string result
                     val cleanResult = result.replace("^\"|\"$".toRegex(), "")
-                    Log.d(TAG, "Clean result: $cleanResult")
 
                     // Form alanlarını doldur, seçici olarak uygun alanları doldur
                     val fillFormFieldsScript = """
@@ -782,8 +762,7 @@ class TopraklamaControlActivity : AppCompatActivity() {
                     """.trimIndent()
 
                     webView?.evaluateJavascript(fillFormFieldsScript) { result ->
-                        Log.d(TAG, "FillFormFields result: $result")
-                        
+                                    
                         try {
                             // Temizlenmiş sonuç al
                             val cleanFillResult = result.trim().replace("^\"|\"$".toRegex(), "").replace("\\\"", "\"").replace("\\\\", "\\")
@@ -794,8 +773,7 @@ class TopraklamaControlActivity : AppCompatActivity() {
                             // Hata durumunu kontrol et
                             if (jsonResult.has("error")) {
                                 val errorMessage = jsonResult.optString("error", "Bilinmeyen hata")
-                                Log.e(TAG, "Form doldurma hatası: $errorMessage")
-                                Toast.makeText(this, "Form doldurma hatası: $errorMessage", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(this, "Form doldurma hatası: $errorMessage", Toast.LENGTH_SHORT).show()
                                 return@evaluateJavascript
                             }
                             
@@ -812,17 +790,15 @@ class TopraklamaControlActivity : AppCompatActivity() {
                             
                             Toast.makeText(this, successMessage, Toast.LENGTH_SHORT).show()
                         } catch (e: Exception) {
-                            Log.e(TAG, "Result parsing error: ${e.message}")
                             Toast.makeText(this, "Form dolduruldu, ancak sonuç işlenemedi", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error filling form: ${e.message}")
+                    // Error handling
                     Toast.makeText(this, "Form doldurma hatası: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             } else {
                 // No empty rows found or error occurred
-                Log.d(TAG, "No empty rows found or error in script")
                 Toast.makeText(this, "Doldurulacak boş satır bulunamadı", Toast.LENGTH_SHORT).show()
             }
         }
@@ -831,7 +807,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
     private fun saveItems() {
         // WebView null kontrolü ekleyelim
         if (webView == null) {
-            Log.e(TAG, "WebView is null in saveItems")
             Toast.makeText(this, "Değişiklikler kaydedilemedi, lütfen sayfayı yeniden yükleyin", Toast.LENGTH_SHORT).show()
             return
         }
@@ -875,7 +850,7 @@ class TopraklamaControlActivity : AppCompatActivity() {
         """.trimIndent()
         
         webView?.evaluateJavascript(checkTPStatusScript) { result ->
-            Log.d(TAG, "CheckTPStatus result: $result")
+            // Process TPStatus check result
             
             try {
                 // Temizlenmiş sonuç al
@@ -887,7 +862,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
                 // Hata durumunu kontrol et
                 if (jsonResult.has("error")) {
                     val errorMessage = jsonResult.optString("error", "Bilinmeyen hata")
-                    Log.e(TAG, "TPStatus kontrolü hatası: $errorMessage")
                 } else {
                     // "Yok" değeri bulundu mu kontrol et
                     val yokFound = jsonResult.optBoolean("yokFound", false)
@@ -896,19 +870,16 @@ class TopraklamaControlActivity : AppCompatActivity() {
                     if (yokFound) {
                         // "Yok" değeri bulundu, DataHolder'a kaydet
                         DataHolder.hasTopraklamaSorunu = true
-                        Log.d(TAG, "Topraklama sorunu tespit edildi, DataHolder.hasTopraklamaSorunu = true")
                         Toast.makeText(this, "Topraklama sorunu tespit edildi!", Toast.LENGTH_SHORT).show()
                     } else {
                         // "Yok" değeri bulunamadı
                         DataHolder.hasTopraklamaSorunu = false
-                        Log.d(TAG, "Topraklama sorunu tespit edilmedi, toplamda $tpStatusCount adet TPStatus kontrol edildi")
                     }
                 }
                 
                 // Devam et ve formu kaydet
                 proceedWithSave()
             } catch (e: Exception) {
-                Log.e(TAG, "TPStatus kontrolünde hata: ${e.message}")
                 
                 // Hata olsa bile formu kaydetmeye devam et
                 proceedWithSave()
@@ -1002,7 +973,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
         """.trimIndent()
                 
         webView?.evaluateJavascript(saveScript) { result ->
-            Log.d(TAG, "SaveItems result: $result")
             
             try {
                 // Temizlenmiş sonuç al
@@ -1025,7 +995,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
                     Toast.makeText(this, "Kaydetme başarısız: $errorMessage", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error parsing save result: ${e.message}")
                 
                 // Basit kontrol ile geribildirim verelim
                 if (result.contains("success")) {
@@ -1040,7 +1009,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
     private fun applyColumnWidths() {
         // WebView null kontrolü ekleyelim
         if (webView == null) {
-            Log.e(TAG, "WebView is null in applyColumnWidths")
             return
         }
 
@@ -1067,17 +1035,14 @@ class TopraklamaControlActivity : AppCompatActivity() {
                     }
                     retryCount < MAX_RETRY_COUNT -> {
                         retryCount++
-                        Log.d(TAG, "Retrying column width application. Attempt: $retryCount")
-                        handler.postDelayed({ applyColumnWidths() }, RETRY_DELAY_MS)
+                                    handler.postDelayed({ applyColumnWidths() }, RETRY_DELAY_MS)
                     }
                     else -> {
-                        Log.e(TAG, "Failed to apply column widths after $MAX_RETRY_COUNT attempts")
                         retryCount = 0 // Reset for next time
                     }
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error in applyColumnWidths: ${e.message}")
             retryCount = 0 // Reset for next time
         }
     }
@@ -1085,7 +1050,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
     private fun applyWidthsToColumns() {
         // WebView null kontrolü ekleyelim
         if (webView == null) {
-            Log.e(TAG, "WebView is null in applyWidthsToColumns")
             return
         }
         
@@ -1160,13 +1124,10 @@ class TopraklamaControlActivity : AppCompatActivity() {
 
             webView?.evaluateJavascript(jsBuilder.toString()) { result ->
                 if ("\"applied\"" == result) {
-                    Log.d(TAG, "Column widths applied successfully")
                 } else {
-                    Log.e(TAG, "Error applying column widths: $result")
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error in applyWidthsToColumns: ${e.message}")
         }
     }
 
@@ -1267,7 +1228,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
     private fun fetchAndSaveMeasuredLocation0() {
         // WebView null kontrolü ekleyelim
         if (webView == null) {
-            Log.e(TAG, "WebView is null in fetchAndSaveMeasuredLocation0")
             return
         }
         
@@ -1281,9 +1241,7 @@ class TopraklamaControlActivity : AppCompatActivity() {
         webView?.evaluateJavascript(script) { value ->
             if (value != null && value != "null" && value != "\"\"") {
                 DataHolder.measuredLocation0 = value.replace("^\"|\"$".toRegex(), "")
-                Log.d(TAG, "MeasuredLocation0: ${DataHolder.measuredLocation0}")
             } else {
-                Log.d(TAG, "MeasuredLocation0 değeri alınamadı")
             }
         }
     }
@@ -1296,7 +1254,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
         editor.putString(KEY_MIN_VALUE, minValue)
         editor.putString(KEY_MAX_VALUE, maxValue)
         editor.apply()
-        Log.d(TAG, "Min-Max değerleri kaydedildi: $minValue-$maxValue")
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
@@ -1350,7 +1307,6 @@ class TopraklamaControlActivity : AppCompatActivity() {
         // WebView yeniden başlatma işlemlerini yap
         webView?.onResume() ?: run {
             // WebView yoksa yeniden oluşturmayı dene
-            Log.w(TAG, "WebView is null in onResume, trying to recover")
             initializeViews()
             setupWebView()
         }
@@ -1376,10 +1332,8 @@ class TopraklamaControlActivity : AppCompatActivity() {
                 view.destroy()
                 webView = null
                 
-                Log.d(TAG, "WebView successfully cleaned up and destroyed")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error cleaning up WebView in onDestroy", e)
         }
         super.onDestroy()
     }

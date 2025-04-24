@@ -6,7 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.webkit.WebView
-import timber.log.Timber
+// import timber.log.Timber - removed for performance
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -77,7 +77,7 @@ class TKFPerformanceManager private constructor(context: Context) {
         Thread {
             try {
                 val startTime = SystemClock.elapsedRealtime()
-                Timber.d("DNS Warmup started")
+                // DNS Warmup started
                 
                 // Popüler domainlerin listesi (uygulamanın sık ziyaret ettiği siteler)
                 val domains = listOf(
@@ -91,18 +91,18 @@ class TKFPerformanceManager private constructor(context: Context) {
                 domains.forEach { domain ->
                     try {
                         val result = java.net.InetAddress.getAllByName(domain)
-                        Timber.d("DNS Warmup: $domain -> ${result.firstOrNull()?.hostAddress}")
+                        // DNS Warmup: $domain -> ${result.firstOrNull()?.hostAddress}
                     } catch (e: Exception) {
-                        Timber.w("DNS Warmup failed for $domain: ${e.message}")
+                        // DNS Warmup failed for $domain: ${e.message}
                     }
                 }
                 
                 val duration = SystemClock.elapsedRealtime() - startTime
-                Timber.d("DNS Warmup completed in $duration ms")
+                // DNS Warmup completed in $duration ms
                 metrics["dns_warmup"] = duration
                 
             } catch (e: Exception) {
-                Timber.e("DNS Warmup error: ${e.message}")
+                // DNS Warmup error: ${e.message}
             } finally {
                 isDnsWarmupActive.set(false)
             }
@@ -133,7 +133,7 @@ class TKFPerformanceManager private constructor(context: Context) {
             }
         }, checkInterval)
         
-        Timber.d("Low memory monitoring started")
+        // Low memory monitoring started
     }
     
     /**
@@ -149,7 +149,7 @@ class TKFPerformanceManager private constructor(context: Context) {
                 val cpuUsage = getCpuUsage()
                 
                 if (cpuUsage > 80) { // %80'den fazla CPU kullanımı
-                    Timber.w("High CPU usage detected: $cpuUsage%")
+                    // High CPU usage detected: $cpuUsage%
                     // Yüksek CPU kullanımında yapacak işlemler
                     // Örneğin animasyon ve görsel işlemlerini azalt
                 }
@@ -191,7 +191,7 @@ class TKFPerformanceManager private constructor(context: Context) {
             // Ortalama CPU kullanım oranı
             return if (processCount > 0) cpuTotal / processCount else 0f
         } catch (e: Exception) {
-            Timber.e("Error getting CPU usage: ${e.message}")
+            // Error getting CPU usage: ${e.message}
             return 0f
         }
     }
@@ -217,7 +217,7 @@ class TKFPerformanceManager private constructor(context: Context) {
         // Güncel bellek kullanımını kaydet
         prefs.edit().putInt("last_memory_usage_percent", memoryUsagePercent.toInt()).apply()
         
-        Timber.d("Memory check: $availableMemMB MB available ($memoryUsagePercent% used, change: $memoryIncreaseRate%)")
+        // Memory check: $availableMemMB MB available ($memoryUsagePercent% used, change: $memoryIncreaseRate%)
         
         // Bellek durumu kontrolleri:
         // 1. Sistem zaten düşük bellek bildirdi mi?
@@ -233,14 +233,14 @@ class TKFPerformanceManager private constructor(context: Context) {
             isLowMemoryMode = newLowMemoryMode
             
             if (isLowMemoryMode) {
-                Timber.w("Low memory mode activated (usage: $memoryUsagePercent%, trend: $memoryIncreaseRate%)")
+                // Low memory mode activated (usage: $memoryUsagePercent%, trend: $memoryIncreaseRate%)
                 prefs.edit().putBoolean("low_memory_mode", true).apply()
                 
                 // Bellek temizleme
                 System.gc()
                 optimizeMemory()
             } else {
-                Timber.d("Exiting low memory mode")
+                // Exiting low memory mode
                 prefs.edit().putBoolean("low_memory_mode", false).apply()
             }
         }
@@ -262,7 +262,7 @@ class TKFPerformanceManager private constructor(context: Context) {
         val duration = endTime - startTime
         
         metrics[key] = duration
-        Timber.d("Performance: $key completed in $duration ms")
+        // Performance: $key completed in $duration ms
         
         return duration
     }
@@ -328,7 +328,7 @@ class TKFPerformanceManager private constructor(context: Context) {
         """.trimIndent()
         
         webView.evaluateJavascript(script) { result ->
-            Timber.d("WebView optimization result: $result")
+            // WebView optimization result: $result
         }
         
         // Görüntülerin yüklenmesine izin vermek için kısa bir gecikmeden sonra blockNetworkImage'i kaldır
@@ -347,7 +347,7 @@ class TKFPerformanceManager private constructor(context: Context) {
         
         // Şüpheli yavaş sayfaları logla
         if (loadTime > 5000) { // 5 saniyeden uzun süren sayfalar
-            Timber.w("Slow page load: $url took $loadTime ms with $resourceCount resources")
+            // Slow page load: $url took $loadTime ms with $resourceCount resources
         }
         
         // Sayfa yükleme süresini kalıcı istatistiklere ekle
@@ -394,7 +394,7 @@ class TKFPerformanceManager private constructor(context: Context) {
             // Kullanılmayan kaynak resimlerini temizle
             clearImageCache()
             
-            Timber.d("Performed aggressive memory optimization")
+            // Performed aggressive memory optimization
         }
     }
     
@@ -433,9 +433,9 @@ class TKFPerformanceManager private constructor(context: Context) {
             System.runFinalization()
             System.gc()
             
-            Timber.d("Application memory trimmed")
+            // Application memory trimmed
         } catch (e: Exception) {
-            Timber.e("Error trimming application memory: ${e.message}")
+            // Error trimming application memory: ${e.message}
         }
     }
     
@@ -450,10 +450,10 @@ class TKFPerformanceManager private constructor(context: Context) {
             // Bitmap havuzunu boşalt
             val bitmapCount = android.graphics.BitmapFactory.Options().inBitmap?.let { 1 } ?: 0
             if (bitmapCount > 0) {
-                Timber.d("Bitmap pool cleared")
+                // Bitmap pool cleared
             }
         } catch (e: Exception) {
-            Timber.e("Error clearing image cache: ${e.message}")
+            // Error clearing image cache: ${e.message}
         }
     }
     
@@ -469,7 +469,7 @@ class TKFPerformanceManager private constructor(context: Context) {
             val cacheDir = appContext.cacheDir
             clearDirectory(cacheDir, 7) // 7 günden eski dosyaları temizle
         } catch (e: Exception) {
-            Timber.e("Error clearing cache: ${e.message}")
+            // Error clearing cache: ${e.message}
         }
     }
     
@@ -542,7 +542,7 @@ class TKFPerformanceManager private constructor(context: Context) {
      */
     fun optimizeMemory(level: String) {
         // Bellek optimizasyon seviyesini logla
-        Timber.d("Memory optimization requested at level: $level")
+        // Memory optimization requested at level: $level
         
         // Temel temizlik her seviyede uygulanır
         trimApplicationMemory()
@@ -560,14 +560,14 @@ class TKFPerformanceManager private constructor(context: Context) {
                 try {
                     android.webkit.WebStorage.getInstance().deleteAllData()
                 } catch (e: Exception) {
-                    Timber.e("Error clearing WebStorage: ${e.message}")
+
                 }
                 
                 // Garbage collection'ı ikinci kez zorla 
                 System.runFinalization()
                 System.gc()
                 
-                Timber.w("Extreme memory optimization applied")
+                // Extreme memory optimization applied
             }
             "aggressive" -> {
                 // Agresif temizlik
@@ -575,17 +575,17 @@ class TKFPerformanceManager private constructor(context: Context) {
                 clearUnusedCache()
                 clearImageCache()
                 
-                Timber.d("Aggressive memory optimization applied")
+                // Aggressive memory optimization applied
             }
             "moderate" -> {
                 // Orta düzey temizlik
                 clearUnusedCache()
                 
-                Timber.d("Moderate memory optimization applied")
+                // Moderate memory optimization applied
             }
             else -> {
                 // Normal düzey - minimal temizlik
-                Timber.d("Normal memory optimization applied")
+                // Normal memory optimization applied
             }
         }
     }
@@ -617,7 +617,7 @@ class TKFPerformanceManager private constructor(context: Context) {
      * Kritik düşük bellek durumlarında çağrılır
      */
     fun emergencyMemoryCleanup() {
-        Timber.w("Emergency memory cleanup initiated")
+        // Emergency memory cleanup initiated
         
         // Maksimum seviyede bellek temizliği yap
         optimizeMemory("extreme")
@@ -632,7 +632,7 @@ class TKFPerformanceManager private constructor(context: Context) {
             WebView(appContext).clearCache(true)
             android.webkit.WebStorage.getInstance().deleteAllData()
         } catch (e: Exception) {
-            Timber.e("Error during emergency cleanup: ${e.message}")
+            // Error during emergency cleanup: ${e.message}
         }
         
         // Son çare: Bitmaps ve diğer native kaynakları temizle
@@ -680,7 +680,7 @@ class TKFPerformanceManager private constructor(context: Context) {
                 false
             }
         } catch (e: Exception) {
-            Timber.e("Error checking data saver mode: ${e.message}")
+            // Error checking data saver mode: ${e.message}
             false
         }
     }
@@ -717,7 +717,6 @@ class TKFPerformanceManager private constructor(context: Context) {
             val domainKey = "domain_${domain.replace(".", "_")}"
             metrics[domainKey] = (metrics[domainKey] ?: 0) + 1
         } catch (e: Exception) {
-            Timber.e("Error parsing URL for stats: ${e.message}")
         }
     }
     
@@ -753,7 +752,7 @@ class TKFPerformanceManager private constructor(context: Context) {
      * Sistem kaynaklarını optimize et
      */
     fun optimizeSystemResources() {
-        Timber.d("System resources optimization initiated")
+        // System resources optimization initiated
         
         // CPU ve bellek sınırlamalarını uygula
         Thread.currentThread().priority = Thread.MIN_PRIORITY
@@ -797,7 +796,7 @@ class TKFPerformanceManager private constructor(context: Context) {
             val isDataSaverOn = isDataSaverEnabled()
             
             if (isDataSaverOn) {
-                Timber.d("Data Saver mode is active, optimizing network usage")
+                // Data Saver mode is active, optimizing network usage
                 
                 // Veri tasarrufu ayarlarını güncelle
                 prefs.edit().putBoolean("data_saving_mode", true).apply()
@@ -805,7 +804,7 @@ class TKFPerformanceManager private constructor(context: Context) {
                 prefs.edit().putBoolean("data_saving_mode", false).apply()
             }
         } catch (e: Exception) {
-            Timber.e("Error optimizing network usage: ${e.message}")
+            // Error optimizing network usage: ${e.message}
         }
     }
 }

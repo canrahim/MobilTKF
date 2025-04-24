@@ -460,10 +460,20 @@ class Menu4Activity : AppCompatActivity() {
     }
 
     private fun performAction(action: String, id: String?) {
+        Log.d(TAG, "performAction başladı - action: $action, id: $id")
+        Log.d(TAG, "Gönderilen veriler - value1: ${etValue1.text}, value2: ${etValue2.text}, value3: ${etValue3.text}")
+        
         val stringRequest = object : StringRequest(
             Request.Method.POST, API_URL,
-            Response.Listener { fetchAndDisplayData() },
-            Response.ErrorListener { error -> Log.e(TAG, "Hata: $error") }
+            Response.Listener { 
+                Log.d(TAG, "Sunucu yanıtı: $it")
+                fetchAndDisplayData() 
+            },
+            Response.ErrorListener { error -> 
+                Log.e(TAG, "Sunucu hatası: ${error.message}")
+                Log.e(TAG, "Hata detayı: ${error.networkResponse?.data?.toString(Charsets.UTF_8)}")
+                Toast.makeText(this, "İşlem sırasında hata oluştu: ${error.message}", Toast.LENGTH_LONG).show()
+            }
         ) {
             override fun getParams(): MutableMap<String, String> {
                 val params = HashMap<String, String>()
@@ -476,6 +486,7 @@ class Menu4Activity : AppCompatActivity() {
                 if ("update" == action || "delete" == action) {
                     params["id"] = id ?: ""
                 }
+                Log.d(TAG, "Gönderilen parametreler: $params")
                 return params
             }
         }

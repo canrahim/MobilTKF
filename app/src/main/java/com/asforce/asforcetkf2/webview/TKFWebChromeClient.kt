@@ -7,7 +7,7 @@ import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import com.asforce.asforcetkf2.model.Tab
-import timber.log.Timber
+// import timber.log.Timber - removed for performance
 
 /**
  * Custom WebChromeClient for handling JavaScript dialogs, console messages, and file uploads
@@ -82,15 +82,12 @@ class TKFWebChromeClient(
         //    normal mesajlar için daha az bilgi (sourceId ve lineNumber gibi)
         if (tab.isActive) {
             when (consoleMessage.messageLevel()) {
-                ConsoleMessage.MessageLevel.ERROR -> {
-                    Timber.e("Console ERROR: ${consoleMessage.message()} at ${consoleMessage.sourceId()}:${consoleMessage.lineNumber()}")
-                }
-                ConsoleMessage.MessageLevel.WARNING -> {
-                    Timber.w("Console WARNING: ${consoleMessage.message()} at ${consoleMessage.sourceId()}")
-                }
-                else -> {
-                    // Sadece mesajı kaydet, kaynak ve satır numarası gerekmez
-                    Timber.d("Console: ${consoleMessage.message()}")
+                ConsoleMessage.MessageLevel.TIP,
+                ConsoleMessage.MessageLevel.LOG,
+                ConsoleMessage.MessageLevel.WARNING,
+                ConsoleMessage.MessageLevel.ERROR,
+                ConsoleMessage.MessageLevel.DEBUG -> {
+                    // Console message handling removed for performance
                 }
             }
         }

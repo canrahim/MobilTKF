@@ -104,7 +104,7 @@ class SuggestionManager(private val context: Context) {
      * Initialize suggestion tracking for an EditText
      */
     fun trackEditText(editText: EditText, inputKey: String, webView: WebView? = null) {
-        Timber.d("[SUGGESTION] Tracking EditText with key: $inputKey, webView: ${webView != null}")
+        // Tracking EditText with key: $inputKey
         
         // Update WebView reference if provided
         if (webView != null) {
@@ -119,12 +119,12 @@ class SuggestionManager(private val context: Context) {
                 
                 // Show suggestions for this field
                 val text = editText.text.toString()
-                Timber.d("[SUGGESTION] EditText focused, showing suggestions for key: $inputKey, text: $text")
+                // EditText focused, showing suggestions
                 showSuggestions(editText, inputKey, text)
             } else {
                 // Only hide if this is the current field losing focus
                 if (currentEditText == editText) {
-                    Timber.d("[SUGGESTION] EditText lost focus, hiding suggestions")
+                    // EditText lost focus, hiding suggestions
                     hideSuggestions()
                 }
             }
@@ -134,7 +134,7 @@ class SuggestionManager(private val context: Context) {
         editText.doAfterTextChanged { text ->
             if (editText.hasFocus() && text != null) {
                 // Filter suggestions based on current text
-                Timber.d("[SUGGESTION] Text changed: ${text.toString()}, filtering suggestions")
+                // Text changed, filtering suggestions
                 showSuggestions(editText, inputKey, text.toString())
             }
         }
@@ -165,7 +165,7 @@ class SuggestionManager(private val context: Context) {
                 
                 if (keyboardNowVisible) {
                     // Klavye görünür olduğunda
-                    Timber.d("[SUGGESTION] Keyboard visible detected (height: $keyboardHeight)")
+                    // Keyboard visible detected
                     
                     // Klavye göründüğünde öneri çubuğunu hemen göster
                     currentEditText?.let { editText ->
@@ -202,7 +202,7 @@ class SuggestionManager(private val context: Context) {
                     }
                 } else {
                     // Klavye gizli olduğunda
-                    Timber.d("[SUGGESTION] Keyboard hidden detected, hiding suggestions")
+                    // Keyboard hidden detected, hiding suggestions
                     
                     // Önerileri gizle ama kısa bir gecikmeyle (klavye hareketinden sonra)
                     Handler(Looper.getMainLooper()).postDelayed({
@@ -221,7 +221,7 @@ class SuggestionManager(private val context: Context) {
      * Güçlendirilmiş versiyon - boş metin için bile tüm önerileri gösterir
      */
     fun showSuggestions(anchorView: View, inputKey: String, filterText: String) {
-        Timber.d("[SUGGESTION] Showing suggestions for key: $inputKey, filter text: '$filterText'")
+        // Showing suggestions for key: $inputKey
         
         // Aktif WebView veya EditText'i güncelle
         if (anchorView is EditText) {
@@ -244,13 +244,13 @@ class SuggestionManager(private val context: Context) {
                     if (filteredSuggestions.isEmpty()) {
                         if (filterText.isNotBlank()) {
                             // Don't show anything when filtering with no matches
-                            Timber.d("[SUGGESTION] No matching suggestions with filter, hiding suggestions")
+                            // No matching suggestions with filter, hiding suggestions
                             hideSuggestions()
                             return@withContext
                         }
                         
                         // Son bir şans olarak varsayılan önerileri gösterebilmek için gecikmeyi dene
-                        Timber.d("[SUGGESTION] Trying to load default suggestions for empty input")
+                        // Trying to load default suggestions for empty input
                         
                         // Hala boş - VARS. ÖNERİLER KALDIRILDI
                         CoroutineScope(Dispatchers.IO).launch {
@@ -277,7 +277,7 @@ class SuggestionManager(private val context: Context) {
                             }
                         }
                     } else {
-                        Timber.d("[SUGGESTION] Found ${filteredSuggestions.size} matching suggestions")
+                        // Found matching suggestions
                         
                         // Klavye göründüğünde, öneri çubuğunu göster
                         if (isKeyboardVisible) {
@@ -286,12 +286,12 @@ class SuggestionManager(private val context: Context) {
                         } else {
                             // Klavye gizli ise önce önerileri hazırla sonra popup'ı gösterme
                             // Klavye açılana kadar bekle
-                            Timber.d("[SUGGESTION] Keyboard not visible yet, waiting")
+                            // Keyboard not visible yet, waiting
                         }
                     }
                 }
             } catch (e: Exception) {
-                Timber.e(e, "[SUGGESTION] Error loading suggestions")
+                // Error loading suggestions
                 withContext(Dispatchers.Main) {
                     hideSuggestions()
                 }
@@ -309,7 +309,7 @@ class SuggestionManager(private val context: Context) {
             
             if (suggestionPopup?.isShowing == true && currentAdapter != null) {
                 // Update existing popup instead of recreating
-                Timber.d("[SUGGESTION] Updating existing popup with ${suggestions.size} suggestions")
+                // Updating existing popup with suggestions
                 currentAdapter.updateSuggestions(suggestions)
                 return
             }
@@ -418,9 +418,9 @@ class SuggestionManager(private val context: Context) {
             // Save reference to view
             this.suggestionView = suggestionView
             
-            Timber.d("[SUGGESTION] Showing popup with ${suggestions.size} suggestions at y-position: $yPosition")
+            // Showing popup with suggestions
         } catch (e: Exception) {
-            Timber.e(e, "[SUGGESTION] Error showing suggestions popup")
+            // Error showing suggestions popup
         }
     }
     
@@ -454,7 +454,7 @@ class SuggestionManager(private val context: Context) {
      * Handle when a suggestion is selected
      */
     private fun handleSuggestionSelected(suggestion: String) {
-        Timber.d("[SUGGESTION] Suggestion selected: '$suggestion'")
+        // Suggestion selected: '$suggestion'
         
         try {
             // Save to preferences IMMEDIATELY regardless of insertion success
@@ -655,13 +655,13 @@ class SuggestionManager(private val context: Context) {
                 webView.evaluateJavascript(enhancedScript) { result ->
                     // Sonucu temizle (tırnak işaretlerini ve kaçış karakterlerini kaldır)
                     val cleanResult = result.trim().removeSurrounding("\"").replace("\\\"", "\"").replace("\\\\", "\\")
-                    Timber.d("[SUGGESTION] JS insertion result: $cleanResult")
+                    // JS insertion result
                     
                     try {
                         val jsonResult = org.json.JSONObject(cleanResult)
                         val status = jsonResult.optString("status", "")
                         jsSuccess = (status == "SUCCESS" || status == "PARTIAL_SUCCESS")
-                        Timber.d("[SUGGESTION] JS insertion ${if (jsSuccess) "successful" else "failed"}")
+                        // JS insertion result status
                     } catch (e: Exception) {
                         Timber.e(e, "[SUGGESTION] Error parsing JS result")
                     }
@@ -680,13 +680,13 @@ class SuggestionManager(private val context: Context) {
                 // Simulasyon yaklaşımını kullan (TabWebView ise)
                 if (useSimulation) {
                     (webView as com.asforce.asforcetkf2.webview.TabWebView).simulateKeyboardInput(suggestion)
-                    Timber.d("[SUGGESTION] Using TabWebView.simulateKeyboardInput with '$suggestion'")
+                    // Using TabWebView.simulateKeyboardInput
                     simulationSuccess = true
                 }
                 
                 // En az bir tane yaklaşım başarılı olursa, klavyeyi korumak için kısa bir gecikme ver
                 Handler(Looper.getMainLooper()).postDelayed({
-                    Timber.d("[SUGGESTION] Insertion summary: JS success=$jsSuccess, Simulation success=$simulationSuccess")
+                    // Insertion summary complete
                 }, 500)
                 
                 return@let // Kısa bir çıkış yap
@@ -726,9 +726,9 @@ class SuggestionManager(private val context: Context) {
                     Handler(Looper.getMainLooper()).post {
                         try {
                             popup.dismiss()
-                            Timber.d("[SUGGESTION] Dismissed suggestion popup")
+                            // Dismissed suggestion popup
                         } catch (e: Exception) {
-                            Timber.e(e, "[SUGGESTION] Error dismissing popup")
+                            // Error dismissing popup
                         }
                     }
                 }
@@ -742,14 +742,14 @@ class SuggestionManager(private val context: Context) {
                         (view.parent as? ViewGroup)?.removeView(view)
                         suggestionView = null
                     } catch (e: Exception) {
-                        Timber.e(e, "[SUGGESTION] Error removing suggestion view")
+                        // Error removing suggestion view
                     }
                 }
             }
             
-            Timber.d("[SUGGESTION] Hidden suggestions")
+            // Hidden suggestions
         } catch (e: Exception) {
-            Timber.e(e, "[SUGGESTION] Error in hideSuggestions")
+            // Error in hideSuggestions
             suggestionPopup = null
             suggestionView = null
         }
@@ -777,7 +777,7 @@ class SuggestionManager(private val context: Context) {
             val cachedList = suggestionCache[normalizedKey]
             
             if (cachedList != null && (now - lastCacheRefreshTime < CACHE_TTL)) {
-                Timber.d("[SUGGESTION] Using cached suggestions for key $normalizedKey: ${cachedList.size} items")
+                // Using cached suggestions
                 
                 // Apply filter to cached suggestions
                 return@withContext filterSuggestions(cachedList, filterText)
@@ -794,7 +794,7 @@ class SuggestionManager(private val context: Context) {
             }
             
             // Önerileri birleştirerek tek bir liste oluştur ve cache'e kaydet
-            Timber.d("[SUGGESTION] Loading fresh suggestions for key $normalizedKey: found ${allSuggestions.size} total suggestions")
+            // Loading fresh suggestions
             
             // Normalize edilmiş anahtar için cache'i güncelle
             val suggestionsList = allSuggestions.toList()
@@ -812,7 +812,7 @@ class SuggestionManager(private val context: Context) {
     private fun filterSuggestions(suggestions: List<String>, filterText: String): List<String> {
         if (filterText.isEmpty()) {
             // Boş metin durumlarında tüm önerileri göster
-            Timber.d("[SUGGESTION] No filter applied, returning all suggestions (${suggestions.size})")
+            // No filter applied, returning all suggestions
             return suggestions.sortedBy { it.lowercase() } // Sıralı sonuçlar
         } else {
             // Filtreleme mantığını güçlendir
@@ -826,7 +826,7 @@ class SuggestionManager(private val context: Context) {
                     // Son olarak alfabetik sıralama
                     { it.lowercase() }
                 ))
-            Timber.d("[SUGGESTION] Applied filter '$filterText': found ${filtered.size} matching suggestions")
+            // Applied filter, found matching suggestions
             return filtered
         }
     }
@@ -838,12 +838,12 @@ class SuggestionManager(private val context: Context) {
     private fun deleteSuggestion(inputKey: String, suggestion: String, position: Int) {
         // Özel "tümünü sil" işaretleyicisini kontrol et
         if (suggestion == "__DELETE_ALL_SUGGESTIONS__") {
-            Timber.d("[SUGGESTION] Deleting ALL suggestions for key: '$inputKey'")
+            // Deleting ALL suggestions for key: '$inputKey'
             deleteAllSuggestions(inputKey)
             return
         }
         
-        Timber.d("[SUGGESTION] Deleting suggestion: '$suggestion' at position $position")
+        // Deleting suggestion: '$suggestion'
         
         try {
             // Hemen bazı işlemleri ana thread'de yap - kritik UI güncellemesi
@@ -855,7 +855,7 @@ class SuggestionManager(private val context: Context) {
                     val newList = cachedList.toMutableList()
                     newList.remove(suggestion)
                     suggestionCache[inputKey] = newList
-                    Timber.d("[SUGGESTION] Removed from cache: '$suggestion'")
+                    // Removed from cache: '$suggestion'
                     
                     // Adapter'a da bildiriyoruz
                     adapter?.updateSuggestions(newList)
@@ -877,7 +877,7 @@ class SuggestionManager(private val context: Context) {
                         val success = prefs.edit().putStringSet(inputKey, suggestions).commit()
                         
                         if (success) {
-                            Timber.d("[SUGGESTION] Successfully removed suggestion using commit()")
+                            // Successfully removed suggestion
                         } else {
                             // Yöntem 2: Birden fazla silme yöntemi dene
                             // Yöntem 2a: apply() ile kaydet (asenkron)
@@ -903,7 +903,7 @@ class SuggestionManager(private val context: Context) {
                         
                         // Kontrol et: Gerçekten silindi mi?
                         val actuallyRemoved = !suggestions.contains(suggestion)
-                        Timber.d("[SUGGESTION] After verification, suggestion removed=${actuallyRemoved}, new size=${suggestions.size}, original size=$originalSize")
+                        // Verification complete
                         
                         // Silme işlemi başarılıysa bildirim göster
                         if (actuallyRemoved) {
@@ -918,7 +918,7 @@ class SuggestionManager(private val context: Context) {
                             }
                         } else {
                             // Silme başarısız olduysa son çare
-                            Timber.w("[SUGGESTION] Suggestion still exists after deletion attempts, using last resort")
+                            // Using last resort deletion method
                             
                             // Son çare: Diğerleri haricindekileri ekle
                             suggestions = getSuggestionsFromPrefs(prefs, inputKey).toMutableSet()
@@ -952,7 +952,7 @@ class SuggestionManager(private val context: Context) {
                         }
                     } else {
                         // Zaten kaldırılmışsa (belki başka bir yerden)
-                        Timber.d("[SUGGESTION] Suggestion was already removed from preferences")
+                        // Suggestion was already removed from preferences
                         
                         // Adapter'a bildir
                         val updatedList = suggestions.toList()
@@ -961,7 +961,7 @@ class SuggestionManager(private val context: Context) {
                         }
                     }
                 } catch (e: Exception) {
-                    Timber.e(e, "[SUGGESTION] Error deleting suggestion: $suggestion")
+                    // Error deleting suggestion
                     
                     // Hataya rağmen kullanıcıya mesaj göster - kafa karışıklığını önlemek için
                     CoroutineScope(Dispatchers.Main).launch {
@@ -975,7 +975,7 @@ class SuggestionManager(private val context: Context) {
                 }
             }
         } catch (e: Exception) {
-            Timber.e(e, "[SUGGESTION] Critical error in deleteSuggestion for: $suggestion")
+            // Critical error in deleteSuggestion
             
             // Hataya rağmen kullanıcıya mesaj göster
             CoroutineScope(Dispatchers.Main).launch {
@@ -993,7 +993,7 @@ class SuggestionManager(private val context: Context) {
      * Güçlendirilmiş versiyon - birden fazla yöntem kullanır ve senkronizasyon ile tutarlılık sağlar
      */
     private fun deleteAllSuggestions(inputKey: String) {
-        Timber.d("[SUGGESTION] Deleting ALL suggestions for key: '$inputKey'")
+        // Deleting ALL suggestions for key: '$inputKey'
         
         try {
             // Ana thread'de başlat, UYGULAMADAN VE CIHAZDAN TAMAMEN SİL
@@ -1001,7 +1001,7 @@ class SuggestionManager(private val context: Context) {
             
             // 1. COMMIT ile sil - Senkron
             val success = prefs.edit().remove(inputKey).commit()
-            Timber.d("[SUGGESTION] Initial deletion success: $success")
+            // Initial deletion success
             
             // 2. Önbelleği tamamen sil
             suggestionCache.remove(inputKey)
@@ -1029,7 +1029,7 @@ class SuggestionManager(private val context: Context) {
                     val xmlFile = java.io.File(appContext.applicationInfo.dataDir, "shared_prefs/${PREFS_NAME}.xml")
                     if (xmlFile.exists()) {
                         val deleted = xmlFile.delete()
-                        Timber.d("[SUGGESTION] Preferences file deleted: $deleted")
+                        // Preferences file deleted
                     }
                     
                     // 4.2. Yeni SharedPreferences örneği oluştur ve sil
@@ -1063,13 +1063,13 @@ class SuggestionManager(private val context: Context) {
                         ).show()
                     }
                     
-                    Timber.d("[SUGGESTION] All deletion steps completed for key: $inputKey")
+                    // All deletion steps completed
                 } catch (e: Exception) {
-                    Timber.e(e, "[SUGGESTION] Error in background deletion process")
+                    // Error in background deletion process
                 }
             }
         } catch (e: Exception) {
-            Timber.e(e, "[SUGGESTION] Critical error in deleteAllSuggestions")
+            // Critical error in deleteAllSuggestions
         }
     }
     
@@ -1086,7 +1086,7 @@ class SuggestionManager(private val context: Context) {
                 // Önbellek hala verileri içeriyorsa - bu bir hata olabilir
                 val cachedSuggestions = suggestionCache[inputKey] ?: emptyList()
                 if (cachedSuggestions.isNotEmpty()) {
-                    Timber.w("[SUGGESTION] Cached suggestions exist (${cachedSuggestions.size}) but prefs are empty for key: $inputKey")
+                    // Cached suggestions exist but prefs are empty
                     
                     // Hemen yeniden kaydetmeyi dene (veriler daha önce kaydedilememiş olabilir)
                     val suggestionSet = cachedSuggestions.toSet()
@@ -1102,7 +1102,7 @@ class SuggestionManager(private val context: Context) {
             
             return suggestions
         } catch (e: Exception) {
-            Timber.e(e, "[SUGGESTION] Error getting suggestions from prefs for key: $inputKey")
+            // Error getting suggestions from prefs
             return setOf()
         }
     }
@@ -1119,12 +1119,12 @@ class SuggestionManager(private val context: Context) {
         
         // Ana thread'de hemen önbelleği güncelle
         synchronized(suggestionCache) {
-            val cachedList = suggestionCache[normalizedKey]?.toMutableList() ?: mutableListOf()
-            if (!cachedList.contains(suggestion.trim())) {
-                cachedList.add(suggestion.trim())
-                suggestionCache[normalizedKey] = cachedList.toList()
-                Timber.d("[SUGGESTION] Updated cache for key: $normalizedKey")
-            }
+        val cachedList = suggestionCache[normalizedKey]?.toMutableList() ?: mutableListOf()
+        if (!cachedList.contains(suggestion.trim())) {
+        cachedList.add(suggestion.trim())
+        suggestionCache[normalizedKey] = cachedList.toList()
+        // Updated cache for key
+        }
         }
         
         executorService.execute {
@@ -1150,20 +1150,20 @@ class SuggestionManager(private val context: Context) {
                 val success = prefs.edit().putStringSet(normalizedKey, newSet).commit()
                 
                 if (success) {
-                    Timber.d("[SUGGESTION] Successfully saved suggestion to preferences: '$suggestion' for key $normalizedKey")
+                    // Successfully saved suggestion to preferences
                 } else {
                     // Başarısız olduysa ikinci bir yöntem dene
                     try {
                         // Önce temizle sonra yeniden ekle
                         prefs.edit().remove(normalizedKey).commit()
                         prefs.edit().putStringSet(normalizedKey, newSet).commit()
-                        Timber.d("[SUGGESTION] Used alternate method to save suggestion")
+                        // Used alternate method to save suggestion
                     } catch (e: Exception) {
-                        Timber.e(e, "[SUGGESTION] Error in fallback save method")
+                        // Error in fallback save method
                     }
                 }
             } catch (e: Exception) {
-                Timber.e(e, "[SUGGESTION] Error saving suggestion: $suggestion")
+                // Error saving suggestion
             }
         }
     }
@@ -1172,14 +1172,14 @@ class SuggestionManager(private val context: Context) {
      * Clear suggestion cache for a specific input key
      */
     fun clearSuggestionCache(inputKey: String) {
-        Timber.d("[SUGGESTION] Clearing suggestion cache for key: $inputKey")
+        // Clearing suggestion cache for key: $inputKey
         executorService.execute {
             try {
                 val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 prefs.edit().remove(inputKey).apply()
-                Timber.d("[SUGGESTION] Cache cleared for key: $inputKey")
+                // Cache cleared for key: $inputKey
             } catch (e: Exception) {
-                Timber.e(e, "[SUGGESTION] Error clearing cache for key: $inputKey")
+                // Error clearing cache for key: $inputKey
             }
         }
     }
@@ -1189,7 +1189,7 @@ class SuggestionManager(private val context: Context) {
      * Güçlendirilmiş versiyon - veri tutarlılığı için tam bir sıfırlama sağlar
      */
     fun clearAllSuggestionCaches() {
-        Timber.d("[SUGGESTION] TAMAMEN CLEARING all suggestion caches")
+        // Clearing all suggestion caches
         
         try {
             // Önbelleği ana thread'de hemen temizle
@@ -1306,7 +1306,7 @@ class SuggestionManager(private val context: Context) {
      * Should be called from Activity/Fragment onLowMemory
      */
     fun onLowMemory() {
-        Timber.w("[SUGGESTION] Low memory warning received, clearing suggestion cache")
+        // Low memory warning received, clearing suggestion cache
         suggestionCache.clear()
         lastCacheRefreshTime = 0L
         
@@ -1320,7 +1320,7 @@ class SuggestionManager(private val context: Context) {
      * Cleanup resources
      */
     fun cleanup() {
-        Timber.d("[SUGGESTION] Cleaning up suggestion manager resources")
+        // Cleaning up suggestion manager resources
         // Immediately hide suggestions to prevent leaks
         try {
             suggestionPopup?.dismiss()
@@ -1333,7 +1333,7 @@ class SuggestionManager(private val context: Context) {
             rootViewRef = null
             suggestionCache.clear() // Clear the cache as well
         } catch (e: Exception) {
-            Timber.e(e, "[SUGGESTION] Error during view cleanup")
+            // Error during view cleanup
         }
         
         // Shutdown executor gracefully
@@ -1344,11 +1344,11 @@ class SuggestionManager(private val context: Context) {
                 executorService.shutdownNow()
             }
         } catch (e: Exception) {
-            Timber.e(e, "[SUGGESTION] Error during executor shutdown")
+            // Error during executor shutdown
             executorService.shutdownNow()
         }
         
-        Timber.d("[SUGGESTION] Suggestion manager cleanup complete")
+        // Suggestion manager cleanup complete
     }
 
     /**
@@ -1365,25 +1365,23 @@ class SuggestionManager(private val context: Context) {
             val contentView = decorView?.findViewById<ViewGroup>(android.R.id.content)
             val rootView = contentView?.getChildAt(0) as? ViewGroup
             
-            Timber.d("[SUGGESTION] Creating SuggestionManager - decorView: ${decorView?.javaClass?.simpleName}, " +
-                    "contentView: ${contentView?.javaClass?.simpleName}, " +
-                    "rootView: ${rootView?.javaClass?.simpleName}")
+            // Creating SuggestionManager
             
             // Create manager
             val manager = SuggestionManager(activity)
             
             // Initialize with the root view (try all possible containers)
             if (rootView != null) {
-                Timber.d("[SUGGESTION] Initializing with root view: ${rootView.javaClass.simpleName}")
+                // Initializing with root view
                 manager.initialize(rootView)
             } else if (contentView != null) {
-                Timber.d("[SUGGESTION] Initializing with content view: ${contentView.javaClass.simpleName}")
+                // Initializing with content view
                 manager.initialize(contentView)
             } else if (decorView != null) {
-                Timber.d("[SUGGESTION] Initializing with decor view: ${decorView.javaClass.simpleName}")
+                // Initializing with decor view
                 manager.initialize(decorView)
             } else {
-                Timber.e("[SUGGESTION] Could not find a suitable view container!")
+                // Could not find a suitable view container!
             }
             
             // Ensure keyboard visibility is monitored
@@ -1404,12 +1402,12 @@ class SuggestionManager(private val context: Context) {
                 val webView = webViewField.get(activity) as? WebView
                 
                 webView?.let { view ->
-                    Timber.d("[SUGGESTION] Found TabWebView in activity, setting up special keyboard handling")
+                    // Found TabWebView in activity, setting up special keyboard handling
                     
                     // Monitor focus changes on WebView
                     view.setOnFocusChangeListener { v, hasFocus ->
                         if (hasFocus) {
-                            Timber.d("[SUGGESTION] TabWebView gained focus")
+                            // TabWebView gained focus
                             // Force keyboard to show for input fields
                             val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                             imm?.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
@@ -1418,7 +1416,7 @@ class SuggestionManager(private val context: Context) {
                 }
             } catch (e: Exception) {
                 // Expected if the activity doesn't have tabWebView field
-                Timber.d("[SUGGESTION] No TabWebView field found in activity: ${e.message}")
+                // No TabWebView field found in activity
             }
         }
     }

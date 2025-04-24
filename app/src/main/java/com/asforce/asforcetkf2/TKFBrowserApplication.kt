@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Process
 import android.webkit.WebView
 import com.asforce.asforcetkf2.util.TKFPerformanceManager
-import timber.log.Timber
+// import timber.log.Timber - removed for performance
 import java.io.File
 
 /**
@@ -46,14 +46,9 @@ class TKFBrowserApplication : Application() {
         // Uygulama başlangıcı
         super.onCreate()
         
-        // Initialize Timber for logging
-        if (DEBUG_MODE) {
-            Timber.plant(Timber.DebugTree())
-        }
+        // Logging disabled for performance
         
-        // Uygulama başlatma mesajı - PID ve bellek bilgisi ile
-        Timber.i("TKF Browser Application starting - PID: ${Process.myPid()}")
-        logMemoryInfo()
+        // Application startup - no logging
         
         // Browser Optimizer'ı başlat
         initializeBrowserOptimizer()
@@ -72,9 +67,7 @@ class TKFBrowserApplication : Application() {
         // Uzun süren işlemleri arka planda başlat
         startBackgroundTasks()
         
-        // Başlangıç süresini ölç
-        val duration = System.currentTimeMillis() - startTime
-        Timber.i("TKF Browser Application started in $duration ms")
+        // Application startup completed - no logging
     }
     
     /**
@@ -100,7 +93,7 @@ class TKFBrowserApplication : Application() {
             // API 21+ için yöntem
             cookieManager.setAcceptThirdPartyCookies(WebView(this), true)
         } catch (e: Exception) {
-            Timber.w("Third party cookies may not be supported: ${e.message}")
+            // Third party cookies may not be supported
         }
         
         // Gizli mod yerine normal mod kullanarak oturum bilgilerinin saklanmasını sağla
@@ -112,17 +105,13 @@ class TKFBrowserApplication : Application() {
             val createInstance = cookieSyncMgr.getMethod("createInstance", Context::class.java)
             createInstance.invoke(null, this)
         } catch (e: Exception) {
-            Timber.d("Modern cookie manager in use, sync manager not needed: ${e.message}")
+            // Modern cookie manager in use
         }
         
         // Çerezlerin kalıcı olarak depolanması için flush işlemi
         cookieManager.flush()
         
-        Timber.d("Cookie Manager initialized with enhanced persistence")
-        
-        // Kalıcı depolama modunu kontrol et
-        val acceptCookie = cookieManager.acceptCookie()
-        Timber.d("Cookie acceptance status: $acceptCookie")
+        // Cookie manager initialized - no logging
     }
     
     /**
@@ -133,7 +122,7 @@ class TKFBrowserApplication : Application() {
         Thread {
             try {
                 val startTime = System.currentTimeMillis()
-                Timber.d("Pre-warming WebView...")
+                // Pre-warming WebView...
                 
                 // WebView'i oluştur ve temel ayarlarını yap - sadece isınma amaçlı
                 val webView = WebView(this)
@@ -154,10 +143,10 @@ class TKFBrowserApplication : Application() {
                 webView.destroy()
                 
                 val duration = System.currentTimeMillis() - startTime
-                Timber.d("WebView pre-warmed in $duration ms")
+                // WebView pre-warmed
                 
             } catch (e: Exception) {
-                Timber.e("WebView pre-warming failed: ${e.message}")
+                // WebView pre-warming failed
             }
         }.start()
     }
@@ -185,7 +174,7 @@ class TKFBrowserApplication : Application() {
         // İşlemi ayrı bir thread'de çalıştır - UI bloklanmasını önler
         Thread {
             try {
-                Timber.d("Preparing application folders...")
+                // Preparing application folders...
                 val startTime = System.currentTimeMillis()
                 
                 // Gerekli klasörleri hazırla
@@ -208,9 +197,9 @@ class TKFBrowserApplication : Application() {
                     dir?.let {
                         if (!it.exists()) {
                             if (it.mkdirs()) {
-                                Timber.d("Created directory: ${it.absolutePath}")
+                                // Created directory
                             } else {
-                                Timber.w("Failed to create directory: ${it.absolutePath}")
+                                // Failed to create directory
                             }
                         }
                     }
@@ -249,7 +238,7 @@ class TKFBrowserApplication : Application() {
                                 failedDeletes++
                             }
                         } catch (e: Exception) {
-                            Timber.w("Could not delete cache file: ${file.name}, error: ${e.message}")
+                            // Could not delete cache file
                             failedDeletes++
                         }
                     }
@@ -257,7 +246,7 @@ class TKFBrowserApplication : Application() {
                 
                 // Önbellek durumunu logla
                 val deletedMB = deletedSize / (1024 * 1024)
-                Timber.d("Cache cleanup: deleted $deletedFiles files ($deletedMB MB), failed: $failedDeletes")
+                // Cache cleanup completed
                 
                 // WebView-spesifik önbellekleri temizlemeyi dene
                 try {
@@ -271,13 +260,13 @@ class TKFBrowserApplication : Application() {
                         }
                     }
                 } catch (e: Exception) {
-                    Timber.w("WebView cache cleanup error: ${e.message}")
+                    // WebView cache cleanup error
                 }
                 
                 val duration = System.currentTimeMillis() - startTime
-                Timber.d("Application folders prepared in $duration ms")
+                // Application folders prepared
             } catch (e: Exception) {
-                Timber.e("Error preparing application folders: ${e.message}")
+                // Error preparing application folders
             }
         }.start()
     }
@@ -291,7 +280,7 @@ class TKFBrowserApplication : Application() {
         val maxMemoryMB = runtime.maxMemory() / 1048576L
         val availableMemoryMB = runtime.freeMemory() / 1048576L
         
-        Timber.d("Memory - Used: $usedMemoryMB MB, Max: $maxMemoryMB MB, Available: $availableMemoryMB MB")
+        // Memory info logging removed
     }
     
     /**
@@ -301,7 +290,7 @@ class TKFBrowserApplication : Application() {
     override fun onLowMemory() {
         super.onLowMemory()
         val startTime = System.currentTimeMillis()
-        Timber.w("CRITICAL: System reports low memory - emergency cleanup initiated")
+        // System reports low memory - performing cleanup
         
         // Olay başlamadan önce bellek durumunu logla
         logMemoryInfo()
@@ -339,14 +328,14 @@ class TKFBrowserApplication : Application() {
             Runtime.getRuntime().gc()
             
         } catch (e: Exception) {
-            Timber.e("Error during emergency memory cleanup: ${e.message}")
+            // Error during emergency memory cleanup
         }
 
         // Son bellek durumunu logla
         logMemoryInfo()
         
         val duration = System.currentTimeMillis() - startTime
-        Timber.d("Emergency memory cleanup completed in $duration ms")
+        // Emergency memory cleanup completed
     }
     
     /**
@@ -369,7 +358,7 @@ class TKFBrowserApplication : Application() {
             else -> "UNKNOWN"
         }
         
-        Timber.d("onTrimMemory: $levelStr ($level)")
+        // onTrimMemory handler executed
         
         // Bellek durumunu logla
         logMemoryInfo()
@@ -403,7 +392,7 @@ class TKFBrowserApplication : Application() {
                             System.gc()
                             Runtime.getRuntime().gc()
                         } catch (e: Exception) {
-                            Timber.w("Could not clear WebView cache: ${e.message}")
+                            // Could not clear WebView cache
                         }
                     }
                 }
@@ -418,10 +407,10 @@ class TKFBrowserApplication : Application() {
                 }
                 
                 val duration = System.currentTimeMillis() - startTime
-                Timber.d("Memory optimization (${optimizationLevel}) completed in $duration ms")
+                // Memory optimization completed
                 
             } catch (e: Exception) {
-                Timber.e("Error during memory optimization: ${e.message}")
+                // Error during memory optimization
             }
         }.start()
     }

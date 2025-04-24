@@ -10,7 +10,6 @@ import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.text.InputType
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -123,7 +122,6 @@ class LeakageControlActivity : AppCompatActivity() {
         runOnUiThread {
             val progressBar = findViewById<View>(R.id.progressBar)
             progressBar?.visibility = View.GONE
-            Log.d(TAG, "Progress bar gizlendi")
         }
     }
 
@@ -134,7 +132,6 @@ class LeakageControlActivity : AppCompatActivity() {
         runOnUiThread {
             val progressBar = findViewById<View>(R.id.progressBar)
             progressBar?.visibility = View.VISIBLE
-            Log.d(TAG, "Progress bar gösterildi")
         }
     }
     
@@ -190,7 +187,6 @@ class LeakageControlActivity : AppCompatActivity() {
         // WebView'in mevcut bir parent'i varsa önce ondan kaldır
         val parent = webView?.parent
         if (parent is ViewGroup) {
-            Log.d(TAG, "WebView already has a parent, removing from parent first")
             parent.removeView(webView)
         }
         
@@ -222,14 +218,12 @@ class LeakageControlActivity : AppCompatActivity() {
     private fun setupWebView() {
         // WebView null kontrolü ekleyelim
         if (webView == null) {
-            Log.e(TAG, "WebView is null in setupWebView")
             // Tekrar webview havuzundan almayı deneyelim
             webView = webViewPool.acquireWebView()
             
             // WebView'in mevcut bir parent'i varsa önce ondan kaldır
             val parent = webView?.parent
             if (parent is ViewGroup) {
-                Log.d(TAG, "WebView already has a parent in setupWebView, removing it first")
                 parent.removeView(webView)
             }
             
@@ -237,7 +231,6 @@ class LeakageControlActivity : AppCompatActivity() {
             if (webViewContainer != null && webView != null) {
                 webViewContainer.addView(webView)
             } else {
-                Log.e(TAG, "Could not recover WebView in setupWebView")
                 return
             }
         }
@@ -289,7 +282,6 @@ class LeakageControlActivity : AppCompatActivity() {
                     // Web sayfası yüklenme işlemi tamamlandığında, WebView kontrolü
                     // Aktivite kapanırken WebView null olabilir, bu durumda işlemi atlayarak çöküşü önleyelim
                     if (webView == null) {
-                        Log.w(TAG, "WebView is null in onPageFinished, skipping operations")
                         return
                     }
                     
@@ -338,7 +330,6 @@ class LeakageControlActivity : AppCompatActivity() {
                         // Kesinlikle progress bar'ı gizle
                         hideProgressBar()
                     } catch (e: Exception) {
-                        Log.e(TAG, "Error in onPageFinished: ${e.message}")
                     }
                 }
                 
@@ -346,7 +337,6 @@ class LeakageControlActivity : AppCompatActivity() {
                     super.onPageStarted(view, url, favicon)
                     // WebView kontrolü
                     if (webView == null) {
-                        Log.w(TAG, "WebView is null in onPageStarted, skipping operations")
                         return
                     }
                     
@@ -411,14 +401,12 @@ class LeakageControlActivity : AppCompatActivity() {
         
         // WebView null kontrolü ekleyelim
         if (webView == null) {
-            Log.e(TAG, "WebView is null before loadUrl, trying to recover...")
             webView = webViewPool.acquireWebView()
             val webViewContainer = findViewById<LinearLayout>(R.id.webViewContainer)
             if (webViewContainer != null && webView != null) {
                 webViewContainer.addView(webView)
                 setupWebView() // WebView client'i yeniden ayarlayalım
             } else {
-                Log.e(TAG, "Could not recover WebView, cannot load URL")
                 Toast.makeText(this, "Sayfa yüklenemedi, lütfen tekrar deneyin", Toast.LENGTH_SHORT).show()
                 buttonLoadPage.isEnabled = true
                 return
@@ -433,7 +421,6 @@ class LeakageControlActivity : AppCompatActivity() {
     private fun fillForm() {
         // WebView null kontrolü ekleyelim
         if (webView == null) {
-            Log.e(TAG, "WebView is null in fillForm")
             Toast.makeText(this, "Form doldurulamadı, lütfen sayfayı yeniden yükleyin", Toast.LENGTH_SHORT).show()
             return
         }
@@ -498,7 +485,6 @@ class LeakageControlActivity : AppCompatActivity() {
     private fun saveItems() {
         // WebView null kontrolü ekleyelim
         if (webView == null) {
-            Log.e(TAG, "WebView is null in saveItems")
             Toast.makeText(this, "Değişiklikler kaydedilemedi, lütfen sayfayı yeniden yükleyin", Toast.LENGTH_SHORT).show()
             return
         }
@@ -526,10 +512,10 @@ class LeakageControlActivity : AppCompatActivity() {
                 
                 if (saveButton) { 
                     saveButton.click();
-                    console.log('Kaydet butonu bulundu ve tıklandı');
+                    // Kaydet butonu bulundu ve tıklandı
                     return 'saved';
                 } else {
-                    console.error('Kaydet butonu bulunamadı');
+                    // Kaydet butonu bulunamadı
                     return 'save-button-not-found';
                 }
             })();
@@ -547,7 +533,6 @@ class LeakageControlActivity : AppCompatActivity() {
     private fun applyColumnWidths() {
         // WebView null kontrolü ekleyelim
         if (webView == null) {
-            Log.e(TAG, "WebView is null in applyColumnWidths")
             return
         }
 
@@ -574,17 +559,14 @@ class LeakageControlActivity : AppCompatActivity() {
                     }
                     retryCount < MAX_RETRY_COUNT -> {
                         retryCount++
-                        Log.d(TAG, "Retrying column width application. Attempt: $retryCount")
-                        handler.postDelayed({ applyColumnWidths() }, RETRY_DELAY_MS)
+                                    handler.postDelayed({ applyColumnWidths() }, RETRY_DELAY_MS)
                     }
                     else -> {
-                        Log.e(TAG, "Failed to apply column widths after $MAX_RETRY_COUNT attempts")
                         retryCount = 0 // Reset for next time
                     }
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error in applyColumnWidths: ${e.message}")
             retryCount = 0 // Reset for next time
         }
     }
@@ -592,7 +574,6 @@ class LeakageControlActivity : AppCompatActivity() {
     private fun applyWidthsToColumns() {
         // WebView null kontrolü ekleyelim
         if (webView == null) {
-            Log.e(TAG, "WebView is null in applyWidthsToColumns")
             return
         }
         
@@ -661,19 +642,16 @@ class LeakageControlActivity : AppCompatActivity() {
                     .append("    attributes: true")
                     .append("});")
 
-                    .append("} catch(e) { console.error('Error applying column widths:', e); }")
+                    .append("} catch(e) { /* Error applying column widths */ }")
                     .append("return 'applied';")
                     .append("})()")
 
             webView?.evaluateJavascript(jsBuilder.toString()) { result ->
                 if ("\"applied\"" == result) {
-                    Log.d(TAG, "Column widths applied successfully")
                 } else {
-                    Log.e(TAG, "Error applying column widths: $result")
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error in applyWidthsToColumns: ${e.message}")
         }
     }
 
@@ -748,7 +726,6 @@ class LeakageControlActivity : AppCompatActivity() {
     private fun fetchAndSaveMeasuredLocation0() {
         // WebView null kontrolü ekleyelim
         if (webView == null) {
-            Log.e(TAG, "WebView is null in fetchAndSaveMeasuredLocation0")
             return
         }
         
@@ -762,9 +739,7 @@ class LeakageControlActivity : AppCompatActivity() {
         webView?.evaluateJavascript(script) { value ->
             if (value != null && value != "null" && value != "\"\"") {
                 DataHolder.measuredLocation0 = value.replace("^\"|\"$".toRegex(), "")
-                Log.d(TAG, "MeasuredLocation0: ${DataHolder.measuredLocation0}")
             } else {
-                Log.d(TAG, "MeasuredLocation0 değeri alınamadı")
             }
         }
     }
@@ -833,7 +808,6 @@ class LeakageControlActivity : AppCompatActivity() {
         // WebView yeniden başlatma işlemlerini yap
         webView?.onResume() ?: run {
             // WebView yoksa yeniden oluşturmayı dene
-            Log.w(TAG, "WebView is null in onResume, trying to recover")
             initializeViews()
             setupWebView()
         }
@@ -860,7 +834,6 @@ class LeakageControlActivity : AppCompatActivity() {
                 webView = null
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error cleaning up WebView in onDestroy", e)
         }
         super.onDestroy()
     }

@@ -19,7 +19,7 @@ import android.webkit.WebView
 import com.asforce.asforcetkf2.suggestion.SuggestionManager
 import com.asforce.asforcetkf2.suggestion.WebViewSuggestionInterface
 import com.asforce.asforcetkf2.model.Tab
-import timber.log.Timber
+// import timber.log.Timber - removed for performance
 
 /**
  * Custom WebView component that represents a browser tab with all necessary functionality
@@ -92,13 +92,13 @@ class TabWebView @JvmOverloads constructor(
             val privateMode = WebView::class.java.getMethod("setPrivateBrowsingEnabled", Boolean::class.javaPrimitiveType)
             privateMode.invoke(this, false)
         } catch (e: Exception) {
-            Timber.e("Error configuring WebView privacy mode: ${e.message}")
+            // Error configuring WebView privacy mode: ${e.message}
         }
         
         // Çerez ayarlarının gücellendiğinden emin olmak için tekrar flush yap
         cookieManager.flush()
         
-        Timber.d("WebView configuration applied with enhanced cookie management")
+        // WebView configuration applied with enhanced cookie management
     }
     
     /**
@@ -418,7 +418,7 @@ class TabWebView @JvmOverloads constructor(
         // Script'i asenkron olarak çalıştır ve sonucu logla
         post {
             this.evaluateJavascript(script) { result ->
-                Timber.d("Form handlers injection result: $result")
+                // Form handlers injection result: $result
             }
         }
     }
@@ -535,23 +535,19 @@ class TabWebView @JvmOverloads constructor(
         })();
         """
         
-        evaluateJavascript(script) { result ->
-            Timber.d("Input tracking injection result: $result")
-        }
+        evaluateJavascript(script) { _ -> }
     }
 
     /**
      * Set suggestion manager for this WebView
      */
     fun setSuggestionManager(suggestionManager: SuggestionManager) {
-        Timber.d("[SUGGESTION] Setting suggestion manager on WebView")
         // Add JavaScript interface for suggestions
         val suggestionInterface = WebViewSuggestionInterface(suggestionManager, this)
         addJavascriptInterface(suggestionInterface, "SuggestionHandler")
         
         // If tab is already initialized, inject the form handlers immediately
         if (tab != null) {
-            Timber.d("[SUGGESTION] Tab already initialized, injecting handlers")
             // Immediate injection for faster response
             injectFormHandlers()
             injectInputTracking()
@@ -594,9 +590,7 @@ class TabWebView @JvmOverloads constructor(
                 })();
                 """.trimIndent()
                 
-                evaluateJavascript(findInputScript) { result ->
-                    Timber.d("[SUGGESTION] Initial input field search result: $result")
-                }
+                evaluateJavascript(findInputScript) { _ -> }
             }
         }
     }
@@ -669,9 +663,7 @@ class TabWebView @JvmOverloads constructor(
         })();
         """
         
-        evaluateJavascript(script) { result ->
-            Timber.d("[SUGGESTION] Enhanced input focus detection result: $result")
-        }
+        evaluateJavascript(script) { _ -> }
     }
     
     /**
@@ -697,7 +689,7 @@ class TabWebView @JvmOverloads constructor(
                 loadTimeoutHandler = Handler(Looper.getMainLooper())
                 loadTimeoutHandler?.postDelayed({
                     if (url == currentLoadingUrl) {
-                        Timber.w("Sayfa yükleme zaman aşımı oluştu: $url")
+                        // Sayfa yükleme zaman aşımı oluştu: $url
                         
                         // WebView hala geçerli mi kontrol et
                         if (isAttachedToWindow && !isDestroyed()) {
@@ -726,12 +718,12 @@ class TabWebView @JvmOverloads constructor(
                                     }
                                 }
                             } catch (e: Exception) {
-                                Timber.e(e, "Zaman aşımı kurtarma sırasında hata")
+                                // Error during timeout recovery
                                 loadTimeoutHandler?.removeCallbacksAndMessages(null)
                                 currentLoadingUrl = null
                             }
                         } else {
-                            Timber.w("WebView yok edilmiş veya ayrılmış, zaman aşımı kurtarma atlanıyor")
+                            // WebView has been destroyed or detached, skipping timeout recovery
                             loadTimeoutHandler?.removeCallbacksAndMessages(null)
                             currentLoadingUrl = null
                         }
@@ -768,7 +760,7 @@ class TabWebView @JvmOverloads constructor(
                                 // Çerezleri kalıcı hale getir
                                 CookieManager.getInstance().flush()
                             } catch (e: Exception) {
-                                Timber.e(e, "Sayfa yüklendikten sonra script enjeksiyonu sırasında hata")
+                                // Sayfa yüklendikten sonra script enjeksiyonu sırasında hata
                             }
                         }
                     }, 100) // DOM işlemleri için kısa gecikme
@@ -785,7 +777,7 @@ class TabWebView @JvmOverloads constructor(
                 
                 // Kritik hata - sayfa yüklenemedi, acil durum kurtarma dene
                 if (errorCode < 0) { // Negatif hata kodları genellikle ağ hatalarıdır
-                    Timber.e("Kritik sayfa yükleme hatası: $errorCode, $description")
+                    // Kritik sayfa yükleme hatası: $errorCode, $description
                     
                     // Hata mesajını göster ve kullanıcıya bilgi ver
                     post {
@@ -888,7 +880,7 @@ class TabWebView @JvmOverloads constructor(
         settings.databaseEnabled = true
         
         // URL'i yükle
-        Timber.d("Yüksek performans modunda yükleniyor: $formattedUrl")
+        // Yüksek performans modunda yükleniyor: $formattedUrl
         super.loadUrl(formattedUrl)
         
         // Sayfa yüklendikten 300ms sonra resimlere izin ver
@@ -900,7 +892,7 @@ class TabWebView @JvmOverloads constructor(
         loadTimeoutHandler = Handler(Looper.getMainLooper())
         loadTimeoutHandler?.postDelayed({
             if (formattedUrl == currentLoadingUrl) {
-                Timber.w("Sayfa yükleme zaman aşımı: $formattedUrl")
+                // Sayfa yükleme zaman aşımı: $formattedUrl
                 
                 // Takılmış sayfayı kurtarmak için acil durum scripti çalıştır
                 try {
@@ -959,7 +951,7 @@ class TabWebView @JvmOverloads constructor(
                                 }
                             })();
                         """.trimIndent()) { result ->
-                            Timber.d("Zaman aşımı kurtarma sonucu: $result")
+                            // Zaman aşımı kurtarma sonucu: $result
                             
                             // Sayfa yükleme bitti olayını manuel olarak tetikle
                             if (tab != null && isAttachedToWindow && !isDestroyed()) {
@@ -967,14 +959,14 @@ class TabWebView @JvmOverloads constructor(
                             }
                         }
                     } else {
-                        Timber.w("WebView zaman aşımı sırasında yok edilmiş veya ayrılmış, JavaScript çalıştırma atlanıyor")
+                        // WebView zaman aşımı sırasında yok edilmiş veya ayrılmış, JavaScript çalıştırma atlanıyor
                         // Temizlik yapılıyor
                         loadTimeoutHandler?.removeCallbacksAndMessages(null)
                         currentLoadingUrl = null
                     }
                 } catch (e: Exception) {
                     // JavaScript hata durumunu yakala ve logla
-                    Timber.e(e, "Zaman aşımı sırasında JavaScript çalıştırma hatası")
+                    // Zaman aşımı sırasında JavaScript çalıştırma hatası
                     loadTimeoutHandler?.removeCallbacksAndMessages(null)
                     currentLoadingUrl = null
                 }
@@ -1029,7 +1021,7 @@ class TabWebView @JvmOverloads constructor(
                 // Görüntüleme katmanını sistemle aynı hizaya getir
                 setLayerType(View.LAYER_TYPE_NONE, null)
                 
-                Timber.d("Hibernated WebView for tab ${it.id}")
+                // Hibernated WebView for tab ${it.id}
             }
         }
     }
@@ -1058,7 +1050,7 @@ class TabWebView @JvmOverloads constructor(
                 // Çerez ayarlarını tekrar kontrol et
                 applyWebViewConfig()
                 
-                Timber.d("Woke up WebView for tab ${it.id}")
+                // Woke up WebView for tab ${it.id}
             }
         }
     }
@@ -1204,17 +1196,13 @@ class TabWebView @JvmOverloads constructor(
         })();
         """
         
-        evaluateJavascript(script) { result ->
-            Timber.d("[SUGGESTION] Manual focus handling injection result: $result")
-        }
+        evaluateJavascript(script) { _ -> }
     }
     
     /**
      * WebView'e doğrudan klavye girdisi simüle eden bir metod
      */
     fun simulateKeyboardInput(text: String) {
-        Timber.d("[DIRECT INPUT] Attempting direct keyboard simulation for: '$text'")
-        
         // Hemen odakla
         requestFocus()
         post { requestFocus() } // İkinci bir odaklama garantisi
@@ -1493,20 +1481,15 @@ class TabWebView @JvmOverloads constructor(
                 // Sonuç stringini temizle (tırnak işaretlerini ve kaçış karakterlerini kaldır)
                 val cleanResult = result.trim().removeSurrounding("\"").replace("\\\"(", "\"(").replace("\\\"", "\"").replace("\\\\", "\\")
                 
-                // Log çıktısını oluştur
-                Timber.d("[DIRECT INPUT] Enhanced input script completed")
-                
                 try {
                     // JSON sonucunu ayrıştırmaya çalış
                     val jsonResult = org.json.JSONObject(cleanResult)
                     val success = jsonResult.optBoolean("success", false)
-                    Timber.d("[DIRECT INPUT] Success: $success, Message: ${jsonResult.optString("message")}")
                     
                     // Başarısız olduysa, son çare olarak tekrar dene
                     if (!success) {
                         // Bir süre bekleyip son çare yaklaşımını dene
                         Handler(Looper.getMainLooper()).postDelayed({
-                            Timber.d("[DIRECT INPUT] Trying last resort method")
                             // Super güçlü son çare yaklaşımı - en basit ve kaba yöntem
                             val finalResortScript = """
                             (function() {
@@ -1552,16 +1535,14 @@ class TabWebView @JvmOverloads constructor(
                             })();
                             """.trimIndent()
                             
-                            evaluateJavascript(finalResortScript) { emergencyResult ->
-                                Timber.d("[DIRECT INPUT] Last resort result: $emergencyResult")
-                            }
+                            evaluateJavascript(finalResortScript) { _ -> }
                         }, 200) // Son çare denemesi için kısa bir gecikme
                     }
                 } catch (e: Exception) {
-                    Timber.e(e, "[DIRECT INPUT] Error parsing result: $cleanResult")
+                    // Error parsing JSON result
                 }
             } catch (e: Exception) {
-                Timber.e(e, "[DIRECT INPUT] Error processing result")
+                // Error processing result
             }
         }
     }
@@ -1620,7 +1601,7 @@ class TabWebView @JvmOverloads constructor(
                 })();
             """.trimIndent()) { result ->
                 // Temizlik sonucunu logla
-                Timber.d("WebView JS cleanup result: $result")
+                // WebView JS cleanup result: $result
                 
                 // JavaScript tamamlandıktan sonra ana temizlik işlemlerini yap
                 completeCleanup()
@@ -1630,7 +1611,7 @@ class TabWebView @JvmOverloads constructor(
             postDelayed({ completeCleanup() }, 300)
         } catch (e: Exception) {
             // JavaScript çalıştırma hatası - doğrudan temizliğe geç
-            Timber.e(e, "Error during JS cleanup")
+            // Error during JS cleanup
             completeCleanup()
         }
     }
@@ -1675,9 +1656,9 @@ class TabWebView @JvmOverloads constructor(
             // WebView'i yok et
             destroy()
             
-            Timber.d("Completed WebView cleanup process")
+            // Completed WebView cleanup process
         } catch (e: Exception) {
-            Timber.e(e, "Error during WebView cleanup")
+            // Error during WebView cleanup
         }
     }
 
@@ -1768,9 +1749,7 @@ class TabWebView @JvmOverloads constructor(
         })();
         """
         
-        evaluateJavascript(script) { result ->
-            Timber.d("Toast visibility fix result: $result")
-        }
+        evaluateJavascript(script) { _ -> }
     }
 
     /**

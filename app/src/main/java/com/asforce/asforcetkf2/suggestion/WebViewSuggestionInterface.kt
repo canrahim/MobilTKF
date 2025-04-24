@@ -24,15 +24,12 @@ class WebViewSuggestionInterface(
      */
     @JavascriptInterface
     fun onInputFocused(inputKey: String) {
-        Timber.d("Input focused in WebView: $inputKey")
         currentInputKey = sanitizeKey(inputKey)
         
         // Show suggestions immediately on UI thread
         mainHandler.post {
             // Check if webView is still active and visible
             if (webView.visibility == View.VISIBLE) {
-                Timber.d("[SUGGESTION] WebView input focused with key: $currentInputKey")
-                
                 // Get active element info to ensure suggestions are relevant
                 webView.evaluateJavascript(
                     """
@@ -61,7 +58,6 @@ class WebViewSuggestionInterface(
                             // Update current value from active element
                             if (json.has("value")) {
                                 currentInputValue = json.getString("value")
-                                Timber.d("[SUGGESTION] Got current value from active element: '$currentInputValue'")
                             }
                             
                             // Güçlü öneri gösterimi
@@ -83,8 +79,6 @@ class WebViewSuggestionInterface(
                                 }, 100)
                             }
                         } catch (e: Exception) {
-                            Timber.e(e, "[SUGGESTION] Error processing active element info")
-                            
                             // Still show suggestions with empty filter as fallback
                             suggestionManager.showSuggestions(webView, currentInputKey, "")
                             
@@ -95,8 +89,6 @@ class WebViewSuggestionInterface(
                         }
                     }
                 )
-            } else {
-                Timber.d("[SUGGESTION] WebView not visible, skipping suggestion display")
             }
         }
     }
@@ -106,14 +98,12 @@ class WebViewSuggestionInterface(
      */
     @JavascriptInterface
     fun onInputChanged(inputKey: String, inputValue: String) {
-        Timber.d("Input changed in WebView: $inputKey = $inputValue")
         currentInputKey = sanitizeKey(inputKey)
         currentInputValue = inputValue
         
         // Update suggestions immediately on UI thread
         mainHandler.post {
             if (webView.visibility == View.VISIBLE) {
-                Timber.d("[SUGGESTION] WebView input changed: $currentInputKey = $currentInputValue")
                 // Show updated suggestions without any delay
                 suggestionManager.showSuggestions(webView, currentInputKey, currentInputValue)
             }
@@ -125,14 +115,11 @@ class WebViewSuggestionInterface(
      */
     @JavascriptInterface
     fun saveInputSuggestion(inputKey: String, inputValue: String) {
-        Timber.d("Saving input suggestion: $inputKey = $inputValue")
-        
         // Sanitize key and value
         val sanitizedKey = sanitizeKey(inputKey)
         if (inputValue.isNotBlank()) {
             // Save suggestion on UI thread
             mainHandler.post {
-                Timber.d("[SUGGESTION] Saving WebView suggestion: $sanitizedKey = $inputValue")
                 suggestionManager.saveSuggestion(sanitizedKey, inputValue)
             }
         }

@@ -10,7 +10,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.asforce.asforcetkf2.model.Tab
-import timber.log.Timber
+// import timber.log.Timber - removed for performance
 
 /**
  * Custom WebViewClient for handling web page navigation and errors
@@ -33,13 +33,13 @@ class TKFWebViewClient(
     
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
-        Timber.d("Page started loading: $url")
+        // Page started loading: $url
         onPageStarted(tab.id, url)
     }
     
     override fun onPageFinished(view: WebView, url: String) {
         super.onPageFinished(view, url)
-        Timber.d("Page finished loading: $url")
+        // Page finished loading: $url
         
         // Sayfa yükleme tamamlandığında resimlerin gösterilmesine izin ver
         view.settings.blockNetworkImage = false
@@ -55,7 +55,7 @@ class TKFWebViewClient(
                 // Form script'i yerine basit bir cookie ayarlayalım
                 val simpleScript = "document.cookie = 'TKF_AUTH_PAGE=1; path=/; max-age=3600';"
                 view.evaluateJavascript(simpleScript, null)
-                Timber.d("Set auth page cookie for: $url")
+                // Set auth page cookie for: $url
             }
         } else {
             // Login sayfası değil, basit bir form check enjekte edelim
@@ -77,10 +77,10 @@ class TKFWebViewClient(
                 
                 // Form script'ini enjekte et - performans odaklı
                 view.evaluateJavascript(formScript) { result ->
-                    Timber.d("Form script injection result: $result")
+                    // Form script injection result: $result
                 }
             } catch (e: Exception) {
-                Timber.e("Error injecting basic form script: ${e.message}")
+                // Error injecting basic form script: ${e.message}
             }
         }
         
@@ -95,7 +95,7 @@ class TKFWebViewClient(
             view.evaluateJavascript(minimalistScript) { result ->
                 val endTime = System.currentTimeMillis()
                 if (endTime - startTime > 50) { // 50ms'den uzun sürerse log kaydet
-                    Timber.w("Script injection took ${endTime - startTime}ms")
+                    // Script injection took ${endTime - startTime}ms
                 }
             }
         }
@@ -110,13 +110,13 @@ class TKFWebViewClient(
     ) {
         // Sadece ana çerçeve yükleme hatalarını raporla, kaynakları (resimler, css vb.) görmezden gel
         if (request.isForMainFrame) {
-            Timber.e("Error loading page: ${error.description}, code: ${error.errorCode}")
+            // Error loading page: ${error.description}, code: ${error.errorCode}
             onReceivedError(error.errorCode, error.description.toString(), request.url.toString())
         }
     }
     
     override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
-        Timber.e("SSL Error: ${error.primaryError}")
+        // SSL Error: ${error.primaryError}
         
         // If our handler decides to proceed, we proceed; otherwise, we cancel
         if (onReceivedSslError(error)) {
@@ -146,7 +146,7 @@ class TKFWebViewClient(
         
         // Eğer URL'de form gönderimi varsa - POST istekleri için WebView'in kendi işlemini kullan
         if (request.method == "POST") {
-            Timber.d("Form submission detected to: $url, letting WebView handle it")
+            // Form submission detected to: $url, letting WebView handle it
             
             // POST istekleri için çerez ayarlarını güçlendirelim - minimalist yaklaşım
             val cookieManager = android.webkit.CookieManager.getInstance()
@@ -156,7 +156,7 @@ class TKFWebViewClient(
             
             // Form oturum işlemiyse daha fazla bir şey yapma
             if (isLoginPage(url)) {
-                Timber.d("Login form submission detected to: $url")
+                // Login form submission detected to: $url
                 view.evaluateJavascript("document.cookie = 'TKF_FORM_SUBMIT=1; path=/; max-age=300';", null)
             }
             

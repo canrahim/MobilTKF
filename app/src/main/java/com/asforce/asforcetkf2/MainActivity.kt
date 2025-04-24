@@ -52,7 +52,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import android.os.Handler
 import android.os.Looper
 
@@ -132,7 +131,6 @@ class MainActivity : AppCompatActivity() {
             val hasTopraklamaSorunu = data?.getBooleanExtra("hasTopraklamaSorunu", false) ?: DataHolder.hasTopraklamaSorunu
             
             if (hasTopraklamaSorunu) {
-                Timber.d("Topraklama sorunu tespit edildi, form güncelleniyor")
                 
                 // WebView'i al
                 val currentTab = viewModel.activeTab.value
@@ -143,11 +141,11 @@ class MainActivity : AppCompatActivity() {
                     val setTopraklamaSorunScript = """
                         (function() {
                             try {
-                                console.log('Topraklama sorununu forma uygulama...');
+                                // Topraklama sorununu forma uygulama
                                 // Topraklama sorusunu bul (soru 9)
                                 var selectElement = document.querySelector('select[name="Questions[8].Option"]');
                                 if (selectElement) {
-                                    console.log('Topraklama seçenek elementi bulundu');
+                                    // Topraklama seçenek elementi bulundu
                                     
                                     // "Uygun Değil" (değer: 2) seçeneğini seç
                                     selectElement.value = "2";
@@ -169,7 +167,7 @@ class MainActivity : AppCompatActivity() {
                                         
                                         if (labelText.indexOf('Topraklama direnç değeri ölçülemeyen') !== -1) {
                                             // Bu, bizim aranan elementimiz
-                                            console.log('Topraklama checkbox elementi bulundu');
+                                            // Topraklama checkbox elementi bulundu
                                             
                                             // Checkbox'ı kontrol et
                                             var checkbox = parentLabel.querySelector('input[type="checkbox"]');
@@ -197,24 +195,22 @@ class MainActivity : AppCompatActivity() {
                                     
                                     return { status: 'success', message: 'Topraklama sorunu uygulandı' };
                                 } else {
-                                    console.log('Topraklama seçenek elementi bulunamadı');
+                                    // Topraklama seçenek elementi bulunamadı
                                     return { status: 'error', message: 'Topraklama formu bulunamadı' };
                                 }
                             } catch(e) {
-                                console.error('Topraklama sorunu uygulanırken hata:', e);
+                                // Topraklama sorunu uygulanırken hata
                                 return { status: 'error', message: e.toString() };
                             }
                         })();
                     """.trimIndent()
                     
                     webView.evaluateJavascript(setTopraklamaSorunScript) { result ->
-                        Timber.d("Topraklama sorunu uygulama sonucu: $result")
                         
                         // İşlem sonrası DataHolder'ı temizle
                         DataHolder.hasTopraklamaSorunu = false
                     }
                 } else {
-                    Timber.d("Topraklama sorunu var ama active WebView bulunamadı")
                 }
             }
         }
@@ -465,8 +461,6 @@ class MainActivity : AppCompatActivity() {
             // Kullanıcıya geri bildirim
             Toast.makeText(this, "Yeni sekme açıldı", Toast.LENGTH_SHORT).show()
             
-            // Log kaydı ekle
-            Timber.d("Added new tab with ID: $newTabId, URL: $url")
         }
     }
     
@@ -545,9 +539,7 @@ class MainActivity : AppCompatActivity() {
                             var element = document.elementFromPoint(${event.x}, ${event.y});
                             if (!element) return "NO_ELEMENT";
                             
-                            console.log('TKF Browser: Touched element: ' + element.tagName + 
-                                (element.id ? '#' + element.id : '') + 
-                                (element.className ? '.' + element.className : ''));
+                            // Element touched
                             
                             // Check if touched element is an input field
                             var isInput = element.tagName === 'INPUT' || element.tagName === 'TEXTAREA';
@@ -555,8 +547,7 @@ class MainActivity : AppCompatActivity() {
                             
                             // If it's an input field, handle with enhanced focus logic
                             if (isInput) {
-                                console.log('TKF Browser: Touch detected on input field: ' + element.tagName + 
-                                    ' type=' + inputType);
+                                // Touch detected on input field
                                 
                                 // Ensure element is not disabled or readonly
                                 if (element.disabled || element.readOnly) {
@@ -594,7 +585,7 @@ class MainActivity : AppCompatActivity() {
                             
                             return "NOT_INPUT";
                         } catch(e) {
-                            console.error('TKF Browser: Error in touch handling:', e);
+                            // Error in touch handling
                             return "ERROR: " + e.message;
                         }
                     })();
@@ -638,13 +629,11 @@ class MainActivity : AppCompatActivity() {
                                         showKeyboard(v)
                                     }
                                 } catch (e: Exception) {
-                                    Timber.e(e, "[INPUT] JSON parsing error: $cleanResult")
-                                    // Hata durumunda normal klavyeyi göster
+                                        // Hata durumunda normal klavyeyi göster
                                     showKeyboard(v)
                                 }
                             }
                         } catch (e: Exception) {
-                            Timber.e(e, "[INPUT] Error processing touch event result")
                         }
                     }
                 }
@@ -690,7 +679,6 @@ class MainActivity : AppCompatActivity() {
                 
                 // Input alanları için daha agresif tarama yap
                 if (url.contains("szutest.com.tr", ignoreCase = true)) {
-                    Timber.d("[SZUTEST] Loading SzuTest page, enabling enhanced form detection")
                     injectEnhancedFormDetection(webView)
                 }
             }
@@ -733,7 +721,6 @@ class MainActivity : AppCompatActivity() {
                         url.contains("equipmentid", ignoreCase = true) ||
                         url.contains("tkf", ignoreCase = true)) {
                         // Özel form algılamayı aktifleştir
-                        Timber.d("[WEBVIEW] Special site detected, applying enhanced form detection")
                         injectEnhancedFormDetection(webView)
                     }
                     
@@ -761,7 +748,6 @@ class MainActivity : AppCompatActivity() {
         }
         
         webView.onReceivedError = { errorCode, description, failingUrl ->
-            Timber.e("WebView error: code=$errorCode, description=$description, url=$failingUrl")
             
             Snackbar.make(
                 binding.root,
@@ -972,10 +958,8 @@ class MainActivity : AppCompatActivity() {
                 val digits = result.value
                 // DataHolder'a kaydet
                 com.asforce.asforcetkf2.util.DataHolder.url = digits
-                Timber.d("URL'den çıkarılan sayısal kod: $digits")
-            }
+                }
         } catch (e: Exception) {
-            Timber.e(e, "URL'den sayısal kod çıkarılırken hata oluştu")
         }
     }
     
@@ -1143,18 +1127,15 @@ class MainActivity : AppCompatActivity() {
                                                 viewModel.hibernateTab(tab)
                                                 webView.hibernate()
                                                 
-                                                Timber.d("Auto-hibernated tab ${tab.id} due to high resource usage")
                                             }
                                         }
                                 } catch (e: Exception) {
-                                    Timber.e(e, "Error monitoring resources for tab $tabId")
                                 }
                             }
                         }
                     }
                 }
             } catch (e: Exception) {
-                Timber.e(e, "Error in resource monitoring")
             }
         }
     }
@@ -1218,7 +1199,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }, 200) // Klavyenin yüklenmesi için kısa bir gecikme
         } catch (e: Exception) {
-            Timber.e(e, "Klavye gösterme hatası")
         }
     }
     
@@ -1363,7 +1343,7 @@ class MainActivity : AppCompatActivity() {
                 val photoFile = try {
                     createImageFile()
                 } catch (e: Exception) {
-                    Timber.e(e, "Kamera için geçici dosya oluşturulamadı")
+                    // Error creating temporary file
                     null
                 }
                 
@@ -1408,7 +1388,7 @@ class MainActivity : AppCompatActivity() {
                 getString(R.string.file_chooser_title)
             ))
         } catch (e: Exception) {
-            Timber.e(e, "Failed to open file chooser")
+            // Failed to open file chooser
             Toast.makeText(
                 this,
                 R.string.file_chooser_error,
@@ -1513,15 +1493,13 @@ class MainActivity : AppCompatActivity() {
                                 window.SuggestionHandler.onInputFocused(key);
                                 window.SuggestionHandler.onInputChanged(key, value);
                                 return "NOTIFIED_SUGGESTION";
-                            }
-                            
-                            return "NO_HANDLER";
-                        }
-                        return "NO_ACTIVE_INPUT";
-                    })();
-                """) { result ->
-                    Timber.d("[SUGGESTION] Keyboard visible, refreshing suggestions: $result")
-                }
+                                }
+                                
+                                return "NO_HANDLER";
+                                }
+                                return "NO_ACTIVE_INPUT";
+                                })();
+                                """) { _ -> }
             }
         }
     }
@@ -1651,7 +1629,6 @@ class MainActivity : AppCompatActivity() {
      * Test suggestion insertion directly for debugging purposes
      */
     private fun testSuggestionInsertion() {
-        Timber.d("[TEST] Starting suggestion insertion test")
         val currentTab = viewModel.activeTab.value
         val webView = currentTab?.let { activeWebViews[it.id] }
         
@@ -1730,7 +1707,6 @@ class MainActivity : AppCompatActivity() {
                     if (found) {
                         val key = jsonObj.getString("key")
                         val info = jsonObj.getString("info")
-                        Timber.d("[TEST] Found input element: $info with key: $key")
                         
                         // Generate a test value
                         val testValue = "TEST-${System.currentTimeMillis() / 1000}"
@@ -1779,25 +1755,20 @@ class MainActivity : AppCompatActivity() {
                             })();
                             """.trimIndent()
                             
-                            evaluateJavascript(setValueScript) { jsResult ->
-                                Timber.d("[TEST] JavaScript set value result: $jsResult")
-                            }
+                            evaluateJavascript(setValueScript) { _ -> }
                         }
                         
                         // Show toast notification
                         Toast.makeText(this, "Test suggestion inserted: $testValue", Toast.LENGTH_SHORT).show()
                     } else {
                         val info = jsonObj.getString("info")
-                        Timber.d("[TEST] No input element found: $info")
                         Toast.makeText(this, "No input element found to test", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
-                    Timber.e(e, "[TEST] Error parsing input element info")
                     Toast.makeText(this, "Error testing suggestions: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         } else {
-            Timber.d("[TEST] No active WebView found")
             Toast.makeText(this, "No active WebView to test", Toast.LENGTH_SHORT).show()
         }
     }
@@ -1809,7 +1780,6 @@ class MainActivity : AppCompatActivity() {
      * Gelişmiş form algılama ve giriş alanlarını hızlı bulma (SzuTest gibi özel siteler için)
      */
     private fun injectEnhancedFormDetection(webView: TabWebView) {
-        Timber.d("[FORM] Injecting enhanced form detection")
         
         // Form algılama için deneme sayısını takip et
         var formDetectionAttempts = 0
@@ -1819,11 +1789,9 @@ class MainActivity : AppCompatActivity() {
         val tryFormDetection = object : Runnable {
             override fun run() {
                 formDetectionAttempts++
-                Timber.d("[FORM] Enhanced form detection attempt $formDetectionAttempts")
                 
                 // Eğer maksimum deneme sayısına ulaşıldıysa daha fazla bekleme süresi ekle
                 if (formDetectionAttempts > MAX_FORM_DETECTION_ATTEMPTS) {
-                    Timber.w("[FORM] Maximum form detection attempts reached")
                     return
                 }
         
@@ -1832,13 +1800,13 @@ class MainActivity : AppCompatActivity() {
             val script = """
             (function() {
                 try {
-                    console.log('TKF Browser: Running enhanced form detection...');
+                    // Running enhanced form detection
                     
                     // Formlara otomatik key ekle
                     var forms = document.querySelectorAll('form');
                     forms.forEach(function(form, formIndex) {
                         form.setAttribute('data-tkf-form-index', formIndex);
-                        console.log('Found form #' + formIndex + (form.id ? ' id=' + form.id : ''));
+                        // Found form
                     });
                     
                     // Tüm giriş elemanlarını tara ve kategorize et
@@ -1894,13 +1862,10 @@ class MainActivity : AppCompatActivity() {
                         
                         if (isPriority) {
                             input.setAttribute('data-tkf-priority', 'true');
-                            console.log('Found KEY field: ' + key + ' (' + searchText + ')');
+                            // Found KEY field
                         }
                         
-                        console.log('Input #' + index + ': ' + input.tagName + 
-                            (inputId ? '#'+inputId : '') + 
-                            (inputName ? ' name='+inputName : '') + 
-                            ' → key=' + key);
+                        // Processing input field
                             
                         // ID tablosu için ekle
                         idMap[key] = {
@@ -1915,7 +1880,7 @@ class MainActivity : AppCompatActivity() {
                     
                     // Öncelikli alanlardan biri aktif hale getir (varsa)
                     if (keyFields.length > 0) {
-                        console.log('Activating key field: ' + keyFields[0].getAttribute('data-tkf-key'));
+                        // Activating key field
                         keyFields[0].focus();
                         keyFields[0].select();
                         
@@ -1929,7 +1894,7 @@ class MainActivity : AppCompatActivity() {
                     } 
                     // Yoksa ilk görünür girişi odakla
                     else if (visibleInputs.length > 0) {
-                        console.log('No key fields found, activating first visible input');
+                        // No key fields found, activating first visible input
                         visibleInputs[0].focus();
                         visibleInputs[0].select();
                         
@@ -1952,7 +1917,7 @@ class MainActivity : AppCompatActivity() {
                                         if (node.querySelectorAll) {
                                             var newInputs = node.querySelectorAll('input, textarea, select');
                                             if (newInputs.length > 0) {
-                                                console.log('Found ' + newInputs.length + ' new inputs in DOM mutations');
+                                                // Found new inputs in DOM mutations
                                                 // Yeni girişleri yeniden işle
                                                 setTimeout(function() {
                                                     try {
@@ -1961,11 +1926,11 @@ class MainActivity : AppCompatActivity() {
                                                                 var key = input.name || input.id || 'dynamic_input_' + Math.random().toString(36).substring(2, 9);
                                                                 key = key.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
                                                                 input.setAttribute('data-tkf-key', key);
-                                                                console.log('Added key for dynamic input: ' + key);
+                                                                // Added key for dynamic input
                                                             }
                                                         });
                                                     } catch(e) {
-                                                        console.error('Error processing new inputs:', e);
+                                                        // Error processing new inputs
                                                     }
                                                 }, 100);
                                             }
@@ -1979,7 +1944,7 @@ class MainActivity : AppCompatActivity() {
                             childList: true,
                             subtree: true
                         });
-                        console.log('DOM mutation observer started');
+                        // DOM mutation observer started
                     }
                     
                     // Özel aktivasyon fonksiyonu
@@ -1987,7 +1952,7 @@ class MainActivity : AppCompatActivity() {
                         if (idMap[key] && idMap[key].element) {
                             idMap[key].element.focus();
                             idMap[key].element.select();
-                            console.log('Activated field: ' + key);
+                            // Activated field
                             return true;
                         }
                         return false;
@@ -2001,7 +1966,7 @@ class MainActivity : AppCompatActivity() {
                         idMapKeys: Object.keys(idMap)
                     });
                 } catch(e) {
-                    console.error('Error in enhanced form detection:', e);
+                    // Error in enhanced form detection
                     return JSON.stringify({error: e.message});
                 }
             })();
@@ -2019,7 +1984,6 @@ class MainActivity : AppCompatActivity() {
                     val visibleCount = jsonResult.optInt("visibleInputs", 0)
                     val keyFieldCount = jsonResult.optInt("keyFields", 0)
                     
-                    Timber.d("[FORM] Enhanced detection results: Forms=$formCount, Inputs=$inputCount, Visible=$visibleCount, KeyFields=$keyFieldCount")
                     
                     // Form bulunduğunda ve alanlar tanımlandığında önerileri aktifleştir
                     if (formCount > 0 && visibleCount > 0) {
@@ -2043,14 +2007,11 @@ class MainActivity : AppCompatActivity() {
                                     }
                                     return "NO_ACTIVE_INPUT";
                                 })();
-                                """.trimIndent()) { suggestionResult ->
-                                    Timber.d("[FORM] Suggestion check: $suggestionResult")
-                                }
+                                """.trimIndent()) { _ -> }
                             }
                         }, 300)
                     }
                 } catch (e: Exception) {
-                    Timber.e(e, "[FORM] Error parsing enhanced form detection result: $cleanResult")
                 }
             }
         }, 250) // 250ms gecikme ile çalıştır
@@ -2058,7 +2019,6 @@ class MainActivity : AppCompatActivity() {
                 // DOM tam olarak yüklenmemiş olabilir, JS hatasını kontrol et
                 webView.evaluateJavascript("typeof document !== 'undefined' && !!document.body") { result ->
                     if (result?.contains("true") != true) {
-                        Timber.w("[FORM] DOM not ready yet, retrying form detection later...")
                         // Daha uzun bir gecikme ile tekrar dene
                         Handler(Looper.getMainLooper()).postDelayed(this, 500)
                     }
@@ -2072,7 +2032,6 @@ class MainActivity : AppCompatActivity() {
     
     override fun onLowMemory() {
         super.onLowMemory()
-        Timber.w("[MEMORY] Low memory condition detected")
         
         // Öneri önbelleğini temizle
         suggestionManager.onLowMemory()
@@ -2098,12 +2057,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
         
-        // Log memory usage
+        // Calculate memory usage
         val rt = Runtime.getRuntime()
         val usedMemInMB = (rt.totalMemory() - rt.freeMemory()) / 1048576L
         val maxHeapSizeInMB = rt.maxMemory() / 1048576L
         val availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB
-        Timber.w("[MEMORY] Memory usage: $usedMemInMB MB used, $availHeapSizeInMB MB available, $maxHeapSizeInMB MB max")
         
         // Bilgi mesajı göster
         Toast.makeText(this, "Düşük bellek: Önbellek temizleniyor", Toast.LENGTH_SHORT).show()
@@ -2115,7 +2073,6 @@ class MainActivity : AppCompatActivity() {
         
         // Topraklama sorunu varsa form güncelleme
         if (DataHolder.hasTopraklamaSorunu) {
-            Timber.d("onResume: Topraklama sorunu tespit edildi, form güncelleniyor")
             
             // WebView'i al
             val currentTab = viewModel.activeTab.value
@@ -2191,13 +2148,11 @@ class MainActivity : AppCompatActivity() {
                 """.trimIndent()
                 
                 webView.evaluateJavascript(setTopraklamaSorunScript) { result ->
-                    Timber.d("Topraklama sorunu uygulama sonucu: $result")
                     
                     // İşlem sonrası DataHolder'ı temizle
                     DataHolder.hasTopraklamaSorunu = false
                 }
             } else {
-                Timber.d("Topraklama sorunu var ama active WebView bulunamadı")
             }
         }
     }
