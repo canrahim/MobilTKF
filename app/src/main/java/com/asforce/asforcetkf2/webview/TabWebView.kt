@@ -1621,22 +1621,28 @@ class TabWebView @JvmOverloads constructor(
      */
     private fun completeCleanup() {
         try {
+            // Önce WebView'in hala geçerli olup olmadığını kontrol et
+            if (!isAttachedToWindow || windowVisibility == View.GONE || windowToken == null) {
+                // WebView zaten destroy edilmiş veya görünümden kaldırılmış, işlemleri atlayalım
+                return
+            }
+            
             // Tüm yükleme ve işlemleri durdur
-            stopLoading()
+            try { stopLoading() } catch (e: Exception) {}
             
             // JavaScript'i devre dışı bırak 
-            settings.javaScriptEnabled = false
+            try { settings.javaScriptEnabled = false } catch (e: Exception) {}
             
-            // Önbellekleri temizle
-            clearCache(true)
-            clearFormData()
-            clearHistory()
-            clearSslPreferences()
-            clearMatches()
+            // Önbellekleri temizle - her biri için ayrı try-catch
+            try { clearCache(true) } catch (e: Exception) {}
+            try { clearFormData() } catch (e: Exception) {}
+            try { clearHistory() } catch (e: Exception) {}
+            try { clearSslPreferences() } catch (e: Exception) {}
+            try { clearMatches() } catch (e: Exception) {}
             
             // Tüm görüntüleme işlemlerini durdur
-            onPause()
-            pauseTimers()
+            try { onPause() } catch (e: Exception) {}
+            try { pauseTimers() } catch (e: Exception) {}
             
             // Bellek sızıntılarını önlemek için referansları temizle
             tag = null
@@ -1653,8 +1659,10 @@ class TabWebView @JvmOverloads constructor(
             onDownloadRequested = null
             onLongPress = null
             
-            // WebView'i yok et
-            destroy()
+            // WebView'i yok et - önce isValid kontrolü yap
+            if (isAttachedToWindow && windowToken != null) {
+                try { destroy() } catch (e: Exception) {}
+            }
             
             // Completed WebView cleanup process
         } catch (e: Exception) {

@@ -465,13 +465,32 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun closeTab(tab: Tab) {
-        // Clean up the WebView
+        // Clean up the WebView - güvenlik kontrolleri ekle
         activeWebViews[tab.id]?.let { webView ->
-            webView.cleanup()
-            binding.webviewContainer.removeView(webView)
-            activeWebViews.remove(tab.id)
+            try {
+                // WebView'in hala geçerli olup olmadığını kontrol et
+                if (webView.isAttachedToWindow) {
+                    webView.cleanup()
+                    // Temizlikten sonra kısa bir bekleme süresi ekle
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        try {
+                            if (webView.parent === binding.webviewContainer) {
+                                binding.webviewContainer.removeView(webView)
+                            }
+                        } catch (e: Exception) {
+                            // View kaldırma hatası
+                        }
+                    }, 50) // 50ms gecikme
+                }
+            } catch (e: Exception) {
+                // WebView temizleme hatası
+            } finally {
+                // Her durumda koleksiyondan çıkar
+                activeWebViews.remove(tab.id)
+            }
         }
         
+        // Tab'i viewModel'den kapat
         viewModel.closeTab(tab)
     }
     
@@ -481,20 +500,36 @@ class MainActivity : AppCompatActivity() {
     
     private fun updateActiveTab(tab: Tab) {
         // Update URL bar
-        binding.urlInput.setText(tab.url)
+        try {
+            binding.urlInput.setText(tab.url)
+        } catch (e: Exception) {
+            // URL güncelleme hatası
+        }
         
         // Aktif tab değiştiğinde, URL'deki sayısal kod varsa DataHolder'a kaydet
         extractDigitsFromUrl(tab.url)
         
         // Show active tab's WebView, hide others
-        for ((tabId, webView) in activeWebViews) {
-            webView.visibility = if (tabId == tab.id) View.VISIBLE else View.GONE
-            
-            // Update WebView state based on hibernation
-            if (tabId != tab.id && tab.isHibernated) {
-                webView.hibernate()
-            } else if (tabId == tab.id && tab.isHibernated) {
-                webView.wakeUp()
+        for ((tabId, webView) in activeWebViews.entries.toList()) { // Concurrent modification için toList()
+            try {
+                // WebView'in geçerli olup olmadığını kontrol et
+                if (!webView.isAttachedToWindow) {
+                    // WebView geçersiz, koleksiyondan çıkar
+                    activeWebViews.remove(tabId)
+                    continue
+                }
+                
+                webView.visibility = if (tabId == tab.id) View.VISIBLE else View.GONE
+                
+                // Update WebView state based on hibernation
+                if (tabId != tab.id && tab.isHibernated) {
+                    webView.hibernate()
+                } else if (tabId == tab.id && tab.isHibernated) {
+                    webView.wakeUp()
+                }
+            } catch (e: Exception) {
+                // WebView işleme hatası, bu sekmenin WebView'ini koleksiyondan çıkar
+                activeWebViews.remove(tabId)
             }
         }
         
@@ -1214,12 +1249,24 @@ class MainActivity : AppCompatActivity() {
     }
     
     override fun onDestroy() {
-        // Clean up WebViews
-        activeWebViews.values.forEach { it.cleanup() }
+        // WebView'leri temizlerken güvenlik kontrolü ekle
+        activeWebViews.values.forEach { webView ->
+            try {
+                if (webView.isAttachedToWindow && !isFinishing) {
+                    webView.cleanup()
+                }
+            } catch (e: Exception) {
+                // WebView temizleme hatası
+            }
+        }
         activeWebViews.clear()
         
         // Clean up suggestion manager
-        suggestionManager.cleanup()
+        try {
+            suggestionManager.cleanup()
+        } catch (e: Exception) {
+            // Suggestion manager temizleme hatası
+        }
         
         super.onDestroy()
     }
