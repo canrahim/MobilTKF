@@ -253,7 +253,7 @@ class TabWebView @JvmOverloads constructor(
         // Performansı artırmak için asenkron yerine senkron işleme modu
         settings.blockNetworkLoads = false
         
-        // WebView içinde klavye ve odaklanma işlevselliğini etkinleştir (geliştirilmiş dokunma kontrolü)
+        // WebView içinde klavye ve odaklanma işlevselliğini etkinleştir (normal dokunma kontrolü)  
         setOnTouchListener { v, event ->
             // İlk olarak tıklama olayını işle
             v.performClick()
@@ -267,24 +267,7 @@ class TabWebView @JvmOverloads constructor(
                         v.requestFocus()
                     }
                 }
-                android.view.MotionEvent.ACTION_UP -> {
-                    // Dokunulan noktadaki HTML elementini bulmak için JavaScript çalıştır
-                    val x = event.x
-                    val y = event.y
-                    post {
-                        evaluateJavascript(
-                            "(function() { " +
-                                "var el = document.elementFromPoint($x, $y); " +
-                                "if(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) { " +
-                                    "el.focus(); " +
-                                    "return true; " +
-                                "} " +
-                                "return false; " +
-                            "})()",
-                            null
-                        )
-                    }
-                }
+                // ACTION_UP işlemini kaldırdık - otomatik giriş alanı seçimi yapılmayacak
             }
             
             // Olayı normal işle (WebView'in standart dokunma işlemlerini engelleme)
@@ -461,15 +444,7 @@ class TabWebView @JvmOverloads constructor(
                         }
                     });
                     
-                    // Add immediate focus notification for currently focused element
-                    if (document.activeElement === input) {
-                        console.log('TKF Browser: Input is already focused: ' + key);
-                        setTimeout(function() {
-                            if (window.SuggestionHandler) {
-                                window.SuggestionHandler.onInputFocused(key);
-                            }
-                        }, 100);
-                    }
+                    // Otomatik odaklama için aktif element kontrolünü kaldırıyoruz
                     
                     // Add input event listener
                     input.addEventListener('input', function() {
@@ -554,7 +529,7 @@ class TabWebView @JvmOverloads constructor(
             injectManualFocusHandling()
             enhanceInputFocusDetection()
             
-            // Also try to immediately find and focus input fields
+            // Input alanlarını hazırla ama otomatik odaklama yapma
             post {
                 val findInputScript = """
                 (function() {
@@ -562,9 +537,7 @@ class TabWebView @JvmOverloads constructor(
                     console.log('TKF Browser: Found ' + inputs.length + ' input fields');
                     
                     if (inputs.length > 0) {
-                        var focusedAny = false;
-                        
-                        // Check if any input is currently visible and near the viewport center
+                        // Form alanlarının sadece key'lerini etiketle, otomatik odaklama yapma
                         for (var i = 0; i < inputs.length; i++) {
                             if (inputs[i].offsetParent !== null && !inputs[i].disabled && !inputs[i].readOnly) {
                                 console.log('TKF Browser: Found visible input: ' + inputs[i].tagName);
@@ -574,16 +547,11 @@ class TabWebView @JvmOverloads constructor(
                                 key = key.replace(/[^a-zA-Z0-9_]/g, '_');
                                 inputs[i].setAttribute('data-tkf-key', key);
                                 
-                                // Notify SuggestionHandler if available
-                                if (window.SuggestionHandler) {
-                                    window.SuggestionHandler.onInputFocused(key);
-                                    focusedAny = true;
-                                    break;
-                                }
+                                // Artık otomatik odaklama yapmıyoruz, kullanıcı manuel olarak dokunacak
                             }
                         }
                         
-                        return focusedAny ? 'NOTIFIED_SUGGESTION_HANDLER' : 'NO_SUGGESTION_HANDLER';
+                        return 'INPUTS_PREPARED_NO_AUTO_FOCUS';
                     }
                     
                     return 'NO_INPUTS_FOUND';
@@ -596,7 +564,7 @@ class TabWebView @JvmOverloads constructor(
     }
     
     /**
-     * Enhanced keyboard input detection and handling
+     * Enhanced keyboard input detection and handling (normal version)
      */
     fun enhanceInputFocusDetection() {
         val script = """
@@ -632,34 +600,9 @@ class TabWebView @JvmOverloads constructor(
                 return result;
             };
             
-            // Enhanced touch handling with better suggestion detection
-            document.addEventListener('touchstart', function(event) {
-                setTimeout(function() {
-                    if (document.activeElement && 
-                        (document.activeElement.tagName === 'INPUT' || 
-                         document.activeElement.tagName === 'TEXTAREA')) {
-                        
-                        var el = document.activeElement;
-                        console.log('TKF Browser: Element focused after touch: ' + el.tagName);
-                        
-                        // Try to get or create a key
-                        var key = el.getAttribute('data-tkf-key');
-                        if (!key) {
-                            key = (el.name || el.id || el.placeholder || 'input_' + Math.random().toString(36).substr(2, 9));
-                            key = key.replace(/[^a-zA-Z0-9_]/g, '_');
-                            el.setAttribute('data-tkf-key', key);
-                        }
-                        
-                        // Notify suggestion handler
-                        if (window.SuggestionHandler) {
-                            console.log('TKF Browser: Notifying SuggestionHandler of focused input: ' + key);
-                            window.SuggestionHandler.onInputFocused(key);
-                        }
-                    }
-                }, 100);
-            }, {passive: true});
+            // Otomatik odaklama özelliği kaldırıldı - kullanıcılar artık manuel olarak dokunmaları gerekecek
             
-            return 'Enhanced input focus detection added';
+            return 'Normal input focus detection added';
         })();
         """
         
@@ -1108,39 +1051,7 @@ class TabWebView @JvmOverloads constructor(
                 return window.location.hostname.indexOf('google') !== -1;
             };
             
-            // For all touch events on the document
-            document.addEventListener('touchstart', function(event) {
-                // Get the touched element
-                var el = document.elementFromPoint(event.touches[0].clientX, event.touches[0].clientY);
-                console.log('TKF Browser: Touch detected on element: ' + (el ? el.tagName : 'unknown'));
-                
-                // Check if it's an input field
-                if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
-                    console.log('TKF Browser: Touch on input field: ' + el.tagName + '#' + el.id);
-                    
-                    // Focus the element but don't trigger suggestion selection on Google
-                    if (!isGoogleSearch()) {
-                        el.focus();
-                    }
-                    
-                    // Get the input key
-                    var key = el.getAttribute('data-tkf-key');
-                    if (!key) {
-                        // Create a key if not exists
-                        key = (el.name || el.id || el.placeholder || 'input_' + Math.random().toString(36).substr(2, 9));
-                        key = key.replace(/[^a-zA-Z0-9_]/g, '_');
-                        el.setAttribute('data-tkf-key', key);
-                    }
-                    
-                    // Notify SuggestionHandler - but be careful not to trigger Google suggestions
-                    if (window.SuggestionHandler && !isGoogleSearch()) {
-                        console.log('TKF Browser: Manually notifying SuggestionHandler for key: ' + key);
-                        window.SuggestionHandler.onInputFocused(key);
-                    } else {
-                        console.warn('TKF Browser: SuggestionHandler not available for manual focus or on Google page');
-                    }
-                }
-            }, { passive: true });
+            // Otomatik odaklanma burada kaldırıldı - kullanıcının kendisi tıklaması gerekecek
             
             // Special handling for Google search
             if (isGoogleSearch()) {
@@ -1157,42 +1068,9 @@ class TabWebView @JvmOverloads constructor(
                         console.log('TKF Browser: User clicked on Google search suggestion');
                     }
                 }, true);
-                
-                // Prevent auto-selection by intercepting focus
-                const originalFocus = HTMLInputElement.prototype.focus;
-                HTMLInputElement.prototype.focus = function() {
-                    const result = originalFocus.apply(this, arguments);
-                    
-                    // If this is a Google search input
-                    if (isGoogleSearch() && (this.id === 'lst-ib' || this.name === 'q' || this.autocomplete === 'off')) {
-                        console.log('TKF Browser: Google search input focused, preventing auto-selection');
-                        // Stop propagation of any synthetic events
-                        setTimeout(() => {
-                            const searchForm = document.querySelector('form');
-                            if (searchForm) {
-                                // Temporarily disable form submission
-                                const originalSubmit = searchForm.submit;
-                                searchForm.submit = function() {
-                                    console.log('TKF Browser: Intercepted automatic form submission');
-                                    setTimeout(() => {
-                                        searchForm.submit = originalSubmit;
-                                    }, 100);
-                                    return false;
-                                };
-                                
-                                // Restore after short delay
-                                setTimeout(() => {
-                                    searchForm.submit = originalSubmit;
-                                }, 500);
-                            }
-                        }, 0);
-                    }
-                    
-                    return result;
-                };
             }
             
-            return 'Manual touch handling injected with Google search fix';
+            return 'Normal touch handling injected with Google search fix';
         })();
         """
         

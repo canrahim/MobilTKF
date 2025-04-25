@@ -1925,33 +1925,16 @@ class MainActivity : AppCompatActivity() {
                         };
                     });
                     
-                    // Öncelikli alanlardan biri aktif hale getir (varsa)
+                    // Otomatik odaklama davranışı kaldırıldı - kullanıcı artık kendisi dokunmalı
+                    // Input alanlarının niteliklerini ekleyip etiketliyoruz ama otomatik odaklamıyoruz
                     if (keyFields.length > 0) {
-                        // Activating key field
-                        keyFields[0].focus();
-                        keyFields[0].select();
-                        
-                        // SuggestionHandler'a bildir
-                        if (window.SuggestionHandler) {
-                            setTimeout(function() {
-                                var key = keyFields[0].getAttribute('data-tkf-key') || '';
-                                window.SuggestionHandler.onInputFocused(key);
-                            }, 100);
-                        }
-                    } 
-                    // Yoksa ilk görünür girişi odakla
+                        console.log('TKF Browser: Key fields found but not auto-focusing');
+                        // Form alanlarını hazırla ama odaklama
+                    }
+                    // Görünür giriş alanları için de aynı şekilde
                     else if (visibleInputs.length > 0) {
-                        // No key fields found, activating first visible input
-                        visibleInputs[0].focus();
-                        visibleInputs[0].select();
-                        
-                        // SuggestionHandler'a bildir
-                        if (window.SuggestionHandler) {
-                            setTimeout(function() {
-                                var key = visibleInputs[0].getAttribute('data-tkf-key') || '';
-                                window.SuggestionHandler.onInputFocused(key);
-                            }, 100);
-                        }
+                        console.log('TKF Browser: Visible inputs found but not auto-focusing');
+                        // Form alanlarını hazırla ama odaklama
                     }
                     
                     // DOM değişikliklerini izlemek için gözlemci oluştur

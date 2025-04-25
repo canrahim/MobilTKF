@@ -360,7 +360,7 @@ class TKFFormManager(private val webView: WebView) {
                     }
                 };
                 
-                // İlk form taramasını başlat
+                // İlk form taramasını başlat - otomatik seçim olmadan, sadece kayıt amaçlı
                 if (document.readyState === 'complete' || document.readyState === 'interactive') {
                     window.TKF_FORM_MANAGER.scanForms();
                 } else {
