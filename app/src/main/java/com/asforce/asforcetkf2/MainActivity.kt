@@ -1321,52 +1321,87 @@ class MainActivity : AppCompatActivity() {
      * Modern, özel bir tasarım ile
      */
     private fun showFileSourceDialog() {
-        // BottomSheetDialog kullan - daha modern ve mobil dostu
-        val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
-        
-        // Özel düzeni şişir
-        val view = layoutInflater.inflate(R.layout.dialog_file_source, null)
-        dialog.setContentView(view)
-        
-        // UI öğelerini ayarla
-        val cameraCard = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cameraCard)
-        val galleryCard = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.galleryCard)
-        val filesCard = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.filesCard)
-        val btnCancel = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancel)
-        
-        // Kamera seçeneği için tıklama dinleyicisi
-        cameraCard.setOnClickListener {
-            dialog.dismiss()
-            takePictureFromCamera()
-        }
-        
-        // Galeri seçeneği için tıklama dinleyicisi
-        galleryCard.setOnClickListener {
-            dialog.dismiss()
-            selectImageFromGallery()
-        }
-        
-        // Dosyalar seçeneği için tıklama dinleyicisi
-        filesCard.setOnClickListener {
-            dialog.dismiss()
+        try {
+            // BottomSheetDialog kullan - daha modern ve mobil dostu
+            val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
+            
+            // Özel düzeni şişir
+            val view = layoutInflater.inflate(R.layout.dialog_file_source, null)
+            dialog.setContentView(view)
+            
+            // UI öğelerini ayarla
+            val cameraCard = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cameraCard)
+            val galleryCard = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.galleryCard)
+            val filesCard = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.filesCard)
+            val btnCancel = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancel)
+            
+            // Kamera kullanılabilirliğini kontrol et
+            val isCameraAvailable = try {
+                packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
+            } catch (e: Exception) {
+                true // Kontrol edilemezse, varsayılan olarak kullanılabilir olarak işaretlenir
+            }
+            
+            // Kamera yoksa butonu devre dışı bırak
+            if (!isCameraAvailable) {
+                cameraCard.isEnabled = false
+                cameraCard.alpha = 0.5f
+            }
+            
+            // Kamera seçeneği için tıklama dinleyicisi
+            cameraCard.setOnClickListener {
+                dialog.dismiss()
+                // Çift tıklamayı önle (bazı cihazlarda çift tetiklenme sorunu yaşanıyor)
+                if (System.currentTimeMillis() - (cameraCard.tag as? Long ?: 0) > 1000) {
+                    cameraCard.tag = System.currentTimeMillis()
+                    takePictureFromCamera()
+                }
+            }
+            
+            // Galeri seçeneği için tıklama dinleyicisi
+            galleryCard.setOnClickListener {
+                dialog.dismiss()
+                if (System.currentTimeMillis() - (galleryCard.tag as? Long ?: 0) > 1000) {
+                    galleryCard.tag = System.currentTimeMillis()
+                    selectImageFromGallery()
+                }
+            }
+            
+            // Dosyalar seçeneği için tıklama dinleyicisi
+            filesCard.setOnClickListener {
+                dialog.dismiss()
+                if (System.currentTimeMillis() - (filesCard.tag as? Long ?: 0) > 1000) {
+                    filesCard.tag = System.currentTimeMillis()
+                    openFileChooser()
+                }
+            }
+            
+            // İptal düğmesi için tıklama dinleyicisi
+            btnCancel.setOnClickListener {
+                dialog.dismiss()
+                filePathCallback?.onReceiveValue(null)
+                filePathCallback = null
+            }
+            
+            // Dialog iptal edildiğinde dosya seçimi iptal edilir
+            dialog.setOnCancelListener {
+                filePathCallback?.onReceiveValue(null)
+                filePathCallback = null
+            }
+            
+            // Dialog hatalarına karşı koruma
+            try {
+                dialog.show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Dialog gösterilemezse, alternatif olarak direkt dosya seçiciyi başlat
+                openFileChooser()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Herhangi bir diyalog hatası durumunda dosya seçiciyi doğrudan aç
             openFileChooser()
         }
-        
-        // İptal düğmesi için tıklama dinleyicisi
-        btnCancel.setOnClickListener {
-            dialog.dismiss()
-            filePathCallback?.onReceiveValue(null)
-            filePathCallback = null
-        }
-        
-        // Dialog iptal edildiğinde dosya seçimi iptal edilir
-        dialog.setOnCancelListener {
-            filePathCallback?.onReceiveValue(null)
-            filePathCallback = null
-        }
-        
-        // Dialog'u göster
-        dialog.show()
     }
     
     /**
@@ -1383,32 +1418,95 @@ class MainActivity : AppCompatActivity() {
             return
         }
         
-        // Kamera ile fotoğraf çekme işlemi
-        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { intent ->
-            intent.resolveActivity(packageManager)?.also {
+        // Kamera ile fotoğraf çekme işlemi - iyileştirilmiş hata yakalama ve uyumluluk
+        try {
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            
+            // İyileştirilmiş resolveActivity kontrolü
+            val cameraActivities = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+            val hasCameraApp = cameraActivities.isNotEmpty()
+            
+            if (hasCameraApp) {
                 // Geçici dosya oluştur
                 val photoFile = try {
                     createImageFile()
                 } catch (e: Exception) {
-                    // Error creating temporary file
-                    null
+                    // Hata günlüğü
+                    e.printStackTrace()
+                    // Varsayılan DCIM dizininde deneme
+                    try {
+                        val storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
+                        java.io.File.createTempFile(
+                            "JPEG_TKF_", ".jpg", storageDir
+                        )
+                    } catch (e2: Exception) {
+                        e2.printStackTrace()
+                        null
+                    }
                 }
                 
-                photoFile?.also {
-                    currentPhotoUri = FileProvider.getUriForFile(
-                        this,
-                        "com.asforce.asforcetkf2.fileprovider",
-                        it
-                    )
-                    
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, currentPhotoUri)
-                    cameraLauncher.launch(intent)
+                if (photoFile != null) {
+                    try {
+                        currentPhotoUri = FileProvider.getUriForFile(
+                            this,
+                            "com.asforce.asforcetkf2.fileprovider",
+                            photoFile
+                        )
+                        
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, currentPhotoUri)
+                        
+                        // Diğer cihazlara okuma izni ver - kamera erişim hatası düzeltmesi
+                        val resInfoList = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+                        for (resolveInfo in resInfoList) {
+                            val packageName = resolveInfo.activityInfo.packageName
+                            grantUriPermission(
+                                packageName,
+                                currentPhotoUri,
+                                Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            )
+                        }
+                        
+                        // İyileştirilmiş güncellikten emin olma hata kontrolü
+                        try {
+                            cameraLauncher.launch(intent)
+                        } catch (e: Exception) {
+                            // ActivityResultLauncher başlatma hatası
+                            e.printStackTrace()
+                            filePathCallback?.onReceiveValue(null)
+                            filePathCallback = null
+                            Toast.makeText(this, "Kamera başlatılamadı: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        // FileProvider hatası
+                        e.printStackTrace()
+                        filePathCallback?.onReceiveValue(null)
+                        filePathCallback = null
+                        Toast.makeText(this, "Kamera izinleri alınamadı: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    filePathCallback?.onReceiveValue(null)
+                    filePathCallback = null
+                    Toast.makeText(this, R.string.camera_app_not_found, Toast.LENGTH_SHORT).show()
                 }
-            } ?: run {
-                filePathCallback?.onReceiveValue(null)
-                filePathCallback = null
-                Toast.makeText(this, R.string.camera_app_not_found, Toast.LENGTH_SHORT).show()
+            } else {
+                // Kamera uygulaması bulunamadı, alternatif yöntem dene
+                try {
+                    // Direkt olarak aktivity başlatmayı dene
+                    val plainIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                    startActivityForResult(plainIntent, CAMERA_REQUEST_CODE)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    filePathCallback?.onReceiveValue(null)
+                    filePathCallback = null
+                    Toast.makeText(this, "Kamera uygulaması bulunamadı.", Toast.LENGTH_SHORT).show()
+                }
             }
+        } catch (e: Exception) {
+            // Genel hata durumu
+            e.printStackTrace()
+            filePathCallback?.onReceiveValue(null)
+            filePathCallback = null
+            Toast.makeText(this, "Kamera açılırken bir hata oluştu: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -1452,8 +1550,38 @@ class MainActivity : AppCompatActivity() {
     private fun createImageFile(): java.io.File {
         val timeStamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(java.util.Date())
         val imageFileName = "JPEG_" + timeStamp + "_"
-        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         
+        // Birden fazla depolama konumunu dene
+        var storageDir: java.io.File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        
+        // Ana konumun mevcut ve yazılabilir olduğundan emin ol
+        if (storageDir == null || !storageDir.exists()) {
+            // Uygulamaya özgü dahili depolamayı dene
+            storageDir = filesDir
+            
+            // Hala başarısızsa, harici DCIM dizinini dene
+            if (storageDir == null || !storageDir.exists()) {
+                // Harici DCIM klasörünü dene
+                storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
+                
+                // Bu da başarısızsa, cache dizinini kullan
+                if (storageDir == null || !storageDir.exists()) {
+                    storageDir = cacheDir
+                }
+            }
+        }
+        
+        // Son çare olarak kesinlikle bir dizin olduğundan emin ol
+        if (storageDir == null) {
+            storageDir = cacheDir // Cache dizini her zaman var olmalı
+        }
+        
+        // Klasörün var olduğundan emin ol
+        if (storageDir?.exists() != true) {
+            storageDir?.mkdirs()
+        }
+        
+        // Dosya oluştur
         val image = java.io.File.createTempFile(
             imageFileName,  /* önek */
             ".jpg",         /* uzantı */
@@ -1463,6 +1591,49 @@ class MainActivity : AppCompatActivity() {
         // Görüntü dosya yolu
         cameraPhotoPath = image.absolutePath
         return image
+    }
+    
+    // Kamera için Activity sonuç işleyicisi - startActivityForResult için
+    private val CAMERA_REQUEST_CODE = 1002
+    
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        
+        if (requestCode == CAMERA_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                // Doğrudan kamera aktivitesinden sonuç - muhtemelen veri içerecek
+                val imageUri = if (data?.data != null) {
+                    data.data // Küçük resim (thumbnail) alındı
+                } else if (currentPhotoUri != null) {
+                    currentPhotoUri // Tam boyutlu resim alındı
+                } else if (data?.extras?.get("data") is Bitmap) {
+                    // Bitmap olarak gelen verileri Uri'ye dönüştür
+                    try {
+                        val bitmap = data.extras?.get("data") as Bitmap
+                        val tempFile = java.io.File.createTempFile("camera_image", ".jpg", cacheDir)
+                        val fos = java.io.FileOutputStream(tempFile)
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos)
+                        fos.close()
+                        FileProvider.getUriForFile(this, "com.asforce.asforcetkf2.fileprovider", tempFile)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        null
+                    }
+                } else null
+                
+                filePathCallback?.let { callback ->
+                    if (imageUri != null) {
+                        callback.onReceiveValue(arrayOf(imageUri))
+                    } else {
+                        callback.onReceiveValue(null)
+                    }
+                }
+            } else {
+                filePathCallback?.onReceiveValue(null)
+            }
+            filePathCallback = null
+            currentPhotoUri = null
+        }
     }
     
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
