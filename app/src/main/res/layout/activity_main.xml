@@ -93,6 +93,10 @@
                     android:paddingTop="4dp"
                     android:paddingBottom="4dp"
                     android:textSize="14sp"
+                    android:longClickable="false"
+                    android:textIsSelectable="false"
+                    android:gravity="start"
+                    android:ellipsize="start"
                     android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 

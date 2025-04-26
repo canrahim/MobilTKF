@@ -355,25 +355,46 @@ class MainActivity : AppCompatActivity() {
             false
         }
         
-        // URL kutusuna tıklanınca mevcut metni seçme ve kopyalama seçeneği
+        // URL kutusuna tıklanınca metni tamamen seç ve Google araması yap
+        binding.urlInput.setOnClickListener { v ->
+            // Tüm metni seç
+            (v as TextInputEditText).selectAll()
+            
+            // Mevcut URL'yi al
+            val currentUrl = v.text.toString()
+            
+            // URL'de bir arama terimi varsa Google araması yap
+            if (currentUrl.isNotEmpty() && !currentUrl.startsWith("about:")) {
+                // Google araması için hazırla
+                val searchUrl = if (URLUtil.isValidUrl(currentUrl)) {
+                    // Geçerli bir URL ise doğrudan aç
+                    currentUrl
+                } else {
+                    // Geçerli URL değilse Google araması yap
+                    "https://www.google.com/search?q=${Uri.encode(currentUrl)}"
+                }
+                
+                // Seçimi koru ve klavyeyi gösterme - sadece seçili metin göster
+                v.clearFocus()
+                hideKeyboard()
+                v.requestFocus()
+                v.selectAll()
+            }
+        }
+        
+        // URL kutusuna odaklanınca metni tamamen seç
         binding.urlInput.setOnFocusChangeListener { v, hasFocus ->
             if (hasFocus) {
                 (v as TextInputEditText).selectAll()
             }
         }
         
-        // URL kutusuna uzun tıklama işlemi
+        // Uzun tıklama işlemini devre dışı bırak - xml'de longClickable="false" ayarlandı
+        // Ancak bazı cihazlarda ek güvenlik için buraya da koyalım
         binding.urlInput.setOnLongClickListener {
-            val url = binding.urlInput.text.toString()
-            if (url.isNotEmpty()) {
-                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                val clip = android.content.ClipData.newPlainText("URL", url)
-                clipboard.setPrimaryClip(clip)
-                Toast.makeText(this, R.string.url_copied, Toast.LENGTH_SHORT).show()
-                true
-            } else {
-                false
-            }
+            // Tüm metni seç (kopyalama işlemi yapılmayacak)
+            binding.urlInput.selectAll()
+            true // Olayı tüket
         }
     }
     
@@ -505,9 +526,11 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun updateActiveTab(tab: Tab) {
-        // Update URL bar
+        // Update URL bar and ensure the cursor is at the end for proper ellipsize behavior
         try {
             binding.urlInput.setText(tab.url)
+            // Position cursor at the end to ensure the end of URL is visible when ellipsized from start
+            binding.urlInput.setSelection(tab.url.length)
         } catch (e: Exception) {
             // URL güncelleme hatası
         }
