@@ -1803,6 +1803,27 @@ class MainActivity : AppCompatActivity() {
         binding.btnLeft1.setOnClickListener {
             loadUrl("https://app.szutest.com.tr/EXT/PKControl/EquipmentList")
         }
+        
+        // Add listener for the aramaSearch EditText
+        binding.aramaSearch.setOnEditorActionListener { _, actionId, keyEvent ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || 
+                (keyEvent?.keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.action == KeyEvent.ACTION_DOWN)) {
+                hideKeyboard()
+                performComboboxSearch()
+                return@setOnEditorActionListener true
+            }
+            false
+        }
+        
+        // Add end icon for aramaSearch
+        val textInputLayout1 = findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.text_input_layout_1)
+        textInputLayout1?.apply {
+            setEndIconDrawable(R.drawable.ic_search)
+            setEndIconOnClickListener {
+                hideKeyboard()
+                performComboboxSearch()
+            }
+        }
 
         // Kontrol Listesi butonu - btn_left_2
         binding.btnLeft2.setOnClickListener {
@@ -2117,6 +2138,11 @@ class MainActivity : AppCompatActivity() {
     // Manuel arama aktif olduğunda kullanılacak bayrak
     private var isManualSearchActive = false
     
+    /**
+     * Flag to track if combobox search is active
+     */
+    private var isComboboxSearchActive = false
+    
     private fun performQrCodeSearch() {
         val qrText = binding.qrNo.text.toString().trim()
         
@@ -2286,6 +2312,78 @@ class MainActivity : AppCompatActivity() {
      */
     private var isSerialSearchActive = false
     
+    /**
+     * Function to search comboboxes in the WebView for matching items
+     * This will search across all comboboxes in the page and select the first match
+     */
+    private fun performComboboxSearch() {
+        val searchText = binding.aramaSearch.text.toString().trim()
+        
+        if (searchText.isEmpty()) {
+            // Empty input, silently return
+            return
+        }
+        
+        // Get current active tab and WebView
+        val currentTab = viewModel.activeTab.value
+        val webView = currentTab?.let { activeWebViews[it.id] }
+        
+        if (webView == null) {
+            // No active WebView, show a message
+            Toast.makeText(this, "Aktif sekme bulunamadı", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        // Set combobox search flag to active
+        isComboboxSearchActive = true
+        
+        // Show searching indicator
+        val snackbar = Snackbar.make(
+            binding.root,
+            "Aranıyor: $searchText",
+            Snackbar.LENGTH_SHORT
+        )
+        snackbar.show()
+        
+        // Create and use ComboboxSearchHelper
+        val searchHelper = com.asforce.asforcetkf2.webview.ComboboxSearchHelper(webView)
+        searchHelper.searchComboboxes(
+            searchText = searchText,
+            onItemFound = { comboboxName, itemText ->
+                // Item found and selected, show success message
+                runOnUiThread {
+                    // Dismiss the searching indicator if it's still showing
+                    snackbar.dismiss()
+                    
+                    // Show found message
+                    Snackbar.make(
+                        binding.root,
+                        "'$itemText' bulundu ve seçildi",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                }
+            },
+            onSearchComplete = {
+                // Search completed, reset flag
+                isComboboxSearchActive = false
+            },
+            onNoResults = {
+                // No results found, show message
+                runOnUiThread {
+                    // Dismiss the searching indicator if it's still showing
+                    snackbar.dismiss()
+                    
+                    // Show not found message
+                    Snackbar.make(
+                        binding.root,
+                        "'$searchText' için eşleşme bulunamadı",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        )
+    }
+
     private fun performSerialNumberSearch() {
         val serialText = binding.srNo.text.toString().trim()
         
