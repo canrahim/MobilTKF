@@ -356,40 +356,40 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_left_1"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
                     android:layout_marginBottom="8dp"
-                    android:backgroundTint="@color/primary"
+                    android:backgroundTint="@android:color/transparent"
                     android:contentDescription="Ekipman Listesi"
                     android:insetLeft="0dp"
                     android:insetTop="0dp"
                     android:insetRight="0dp"
                     android:insetBottom="0dp"
-                    app:cornerRadius="28dp"
-                    app:elevation="4dp"
-                    app:icon="@drawable/ic_equipment"
+                    app:cornerRadius="31dp"
+                    app:elevation="0dp"
+                    app:icon="@drawable/ic_equipment_modern"
                     app:iconGravity="textStart"
                     app:iconPadding="0dp"
-                    app:iconSize="24dp"
-                    app:iconTint="@color/white" />
+                    app:iconSize="32dp"
+                    app:iconTint="@null" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_left_2"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:backgroundTint="@color/primary"
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:backgroundTint="@android:color/transparent"
                     android:contentDescription="Kontrol Listesi"
                     android:insetLeft="0dp"
                     android:insetTop="0dp"
                     android:insetRight="0dp"
                     android:insetBottom="0dp"
-                    app:cornerRadius="28dp"
-                    app:elevation="4dp"
-                    app:icon="@drawable/ic_control"
+                    app:cornerRadius="31dp"
+                    app:elevation="0dp"
+                    app:icon="@drawable/ic_control_modern"
                     app:iconGravity="textStart"
                     app:iconPadding="0dp"
-                    app:iconSize="24dp"
-                    app:iconTint="@color/white" />
+                    app:iconSize="32dp"
+                    app:iconTint="@null" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -413,40 +413,40 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_right_top"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
                     android:layout_marginBottom="8dp"
-                    android:backgroundTint="@color/primary"
+                    android:backgroundTint="@android:color/transparent"
                     android:contentDescription="Cihaz Ekle"
                     android:insetLeft="0dp"
                     android:insetTop="0dp"
                     android:insetRight="0dp"
                     android:insetBottom="0dp"
-                    app:cornerRadius="28dp"
-                    app:elevation="4dp"
-                    app:icon="@drawable/ic_equipment"
+                    app:cornerRadius="31dp"
+                    app:elevation="0dp"
+                    app:icon="@drawable/ic_add_device_modern"
                     app:iconGravity="textStart"
                     app:iconPadding="0dp"
-                    app:iconSize="24dp"
-                    app:iconTint="@color/white" />
+                    app:iconSize="32dp"
+                    app:iconTint="@null" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_qr"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:backgroundTint="@color/primary"
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:backgroundTint="@android:color/transparent"
                     android:contentDescription="QR Tarama"
                     android:insetLeft="0dp"
                     android:insetTop="0dp"
                     android:insetRight="0dp"
                     android:insetBottom="0dp"
-                    app:cornerRadius="28dp"
-                    app:elevation="4dp"
-                    app:icon="@drawable/ic_qr_code"
+                    app:cornerRadius="31dp"
+                    app:elevation="0dp"
+                    app:icon="@drawable/ic_qr_code_modern"
                     app:iconGravity="textStart"
                     app:iconPadding="0dp"
-                    app:iconSize="24dp"
-                    app:iconTint="@color/white" />
+                    app:iconSize="32dp"
+                    app:iconTint="@null" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    
+    <!-- Ana gövde - Mavi tonu -->
+    <path
+        android:fillColor="#2196F3"
+        android:pathData="M19.5,5.5h-15c-1.105,0 -2,0.895 -2,2v9c0,1.105 0.895,2 2,2h15c1.105,0 2,-0.895 2,-2v-9C21.5,6.395 20.605,5.5 19.5,5.5z"/>
+    
+    <!-- Sol üst panel - Açık mavi -->
+    <path
+        android:fillColor="#90CAF9"
+        android:pathData="M10.5,15.5h-6v-2h6V15.5z"/>
+    
+    <!-- Sol alt panel - Açık mavi -->
+    <path
+        android:fillColor="#90CAF9"
+        android:pathData="M10.5,12h-6v-2h6V12z"/>
+    
+    <!-- Sağ üst panel - Koyu mavi -->
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M19.5,15.5h-6v-2h6V15.5z"/>
+    
+    <!-- Sağ alt panel - Koyu mavi -->
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M19.5,12h-6v-2h6V12z"/>
+    
+    <!-- Üst detay - Altın sarısı -->
+    <path
+        android:fillColor="#FFC107"
+        android:pathData="M12.5,3L16,4.5L12.5,6L9,4.5L12.5,3z"/>
+    
+    <!-- Alt detay - Altın sarısı -->
+    <path
+        android:fillColor="#FFC107"
+        android:pathData="M12.5,18L16,19.5L12.5,21L9,19.5L12.5,18z"/>
+    
+    <!-- Parlak kenar efekti - Beyaz -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.3"
+        android:pathData="M4.5,7.5C4.5,6.12 5.62,5 7,5h10c1.38,0 2.5,1.12 2.5,2.5v0.5h-15V7.5z"/>
+</vector>
