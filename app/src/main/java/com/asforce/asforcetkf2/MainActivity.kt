@@ -17,6 +17,7 @@ import android.provider.MediaStore
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.webkit.JsResult
@@ -221,11 +222,16 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        // Tam ekran modu ve şeffaf gezinme çubuğu
+        // Tam ekran modu ve şeffaf gezinme çubuğu - klavye içerik kaymasını optimize eden versiyon
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or 
                 View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
         window.statusBarColor = android.graphics.Color.TRANSPARENT
+        
+        // Klavye için içerik ayarlama davranışını güçlendir - SORUN ÇÖZÜMÜ
+        // WebView formları arasında geçiş yaparken klavye kapanıp açılma davranışını önle
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or 
+                               WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
         
         // Bileşenleri başlat
         initializeTabComponents()

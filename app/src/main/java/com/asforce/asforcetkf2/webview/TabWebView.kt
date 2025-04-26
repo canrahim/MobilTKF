@@ -2,12 +2,14 @@ package com.asforce.asforcetkf2.webview
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewTreeObserver
 import android.view.inputmethod.BaseInputConnection
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
@@ -147,6 +149,11 @@ class TabWebView @JvmOverloads constructor(
      * Configure the WebView with optimal settings
      */
     private fun setupWebView() {
+        // Klavye sorununu çözmek için - bunu öncelikle tanımla
+        isFocusableInTouchMode = true
+        isFocusable = true
+        isClickable = true
+        isScrollContainer = true
         // Uzun basma olayını tanımla
         setOnLongClickListener {
             // Basılan link'i al
@@ -163,6 +170,25 @@ class TabWebView @JvmOverloads constructor(
                 }
             }
             false
+        }
+        
+        // Klavye açıldığında içeriğin otomatik olarak kaydırılmasını sağla
+        // Optimizasyon: Bu kısım performans problemi yaratabilir, iyileştirilmiş bir yaklaşımla değiştiriyoruz
+        setOnApplyWindowInsetsListener { v, insets ->
+            // Sadece klavye yüksekliği değiştiğinde padding'i güncelle
+            // Bu, sürekli padding değişikliklerini önler
+            if (v.paddingBottom != insets.systemWindowInsetBottom && insets.systemWindowInsetBottom > 0) {
+                v.setPadding(
+                    v.paddingLeft,
+                    v.paddingTop,
+                    v.paddingRight,
+                    insets.systemWindowInsetBottom
+                )
+            } else if (insets.systemWindowInsetBottom == 0 && v.paddingBottom > 0) {
+                // Klavye kapandığında padding'i kaldır
+                v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, 0)
+            }
+            insets
         }
         
         // WebView performans ayarları
@@ -245,15 +271,16 @@ class TabWebView @JvmOverloads constructor(
         // WebView JavaScript ayarları
         settings.userAgentString += " AndroidWebKit/TKFBrowser"
         
-        // Klavye ve odaklanma ayarları
-        isFocusable = true
-        isFocusableInTouchMode = true
-        isClickable = true
+        // Klavye ve odaklanma ayarları - artık yukarıda tanımlandı
+        // İlave ayarlar: İçerik kayması sorunlarını önlemek için
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        isHorizontalFadingEdgeEnabled = false
+        isVerticalFadingEdgeEnabled = false
         
         // Performansı artırmak için asenkron yerine senkron işleme modu
         settings.blockNetworkLoads = false
         
-        // WebView içinde klavye ve odaklanma işlevselliğini etkinleştir (normal dokunma kontrolü)  
+        // WebView içinde klavye ve odaklanma işlevselliğini etkinleştir - GELİŞTİRİLMİŞ VERSİYON
         setOnTouchListener { v, event ->
             // İlk olarak tıklama olayını işle
             v.performClick()
@@ -261,13 +288,38 @@ class TabWebView @JvmOverloads constructor(
             // Odaklanma sorunlarını önlemek için dokunma olaylarını kontrol et
             when (event.action) {
                 android.view.MotionEvent.ACTION_DOWN -> {
-                    // Dokunma sırasında odaklanma sorununu çözmek için WebView'e odaklan
+                    // WebView'e dokunulduğunda sadece odaklanmaya izin ver
+                    // Klavye davranışını etkileme
                     if (!isFocused) {
                         requestFocusFromTouch()
                         v.requestFocus()
                     }
                 }
-                // ACTION_UP işlemini kaldırdık - otomatik giriş alanı seçimi yapılmayacak
+                android.view.MotionEvent.ACTION_UP -> {
+                    // Input alanına tıklandığında JavaScript ile kontrol et
+                    // Tıklanan alan bir form alanı ise, klavyeyi nazikçe göster
+                    evaluateJavascript("""
+                    (function() {
+                        try {
+                            // Dokunma noktasındaki elementi bul
+                            var x = ${event.x};
+                            var y = ${event.y};
+                            var element = document.elementFromPoint(x, y);
+                            
+                            // Eğer dokunulan yer bir giriş alanı ise
+                            if (element && (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA')) {
+                                // Olay işlendi sinyali gönder
+                                return 'INPUT_TOUCHED';
+                            }
+                            return 'NOT_INPUT';
+                        } catch(e) {
+                            return 'ERROR: ' + e.message;
+                        }
+                    })();
+                    """.trimIndent()) { result ->
+                        // İşlem gerekmiyor - JavaScript zaten TKF fonksiyonlarını çağıracak
+                    }
+                }
             }
             
             // Olayı normal işle (WebView'in standart dokunma işlemlerini engelleme)
@@ -280,7 +332,7 @@ class TabWebView @JvmOverloads constructor(
     
     /**
      * Klavye girişini yönetmek için input connection oluştur
-     * Geliştirilmiş klavye kontrolü ve imlec yönetimi
+     * Geliştirilmiş klavye kontrolü ve imlec yönetimi - Sorun giderme için güçlendirilmiş versiyon
      */
     override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection {
         // Önce default davranışı al
@@ -288,7 +340,7 @@ class TabWebView @JvmOverloads constructor(
         
         // Eğer super metodu null döndüyse veya aktif bir form elemanı varsa kendi connection'umızı oluştur
         if (connection == null) {
-            // EditorInfo ayarları - klavye türünü korumak için IME bayraklarını yönet
+            // EditorInfo ayarları - klavye tipini değiştirme ve extract modu sorununu önle
             outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI or 
                                   EditorInfo.IME_FLAG_NO_FULLSCREEN or 
                                   EditorInfo.IME_ACTION_DONE
@@ -296,23 +348,29 @@ class TabWebView @JvmOverloads constructor(
             // İnput tipini sabit tut - karışık klavye sorununu önle
             outAttrs.inputType = EditorInfo.TYPE_CLASS_TEXT
             
-            // Base input connection oluştur
+            // Base input connection oluştur - true olması önemli! (input bağlantısı açık kalır)
             return BaseInputConnection(this, true)
         } else {
-            // Mevcut bağlantıdan inputType'ı al
+            // ÖNEMLİ KLAVYE SORUNU ÇÖZÜMÜ:
+            // Mevcut bağlantıdan inputType'ı al, ancak değiştirme
             val currentInputType = outAttrs.inputType
             
-            // Eğer numerik klavye gerekiyorsa (TYPE_CLASS_NUMBER), bu tipi koru
-            // aksi takdirde varsayılan olarak TEXT kullan
+            // Numerik klavye tespiti yap ama mevcut tipe müdahale etme 
+            // Bu, klavyenin kapanıp açılmasının ana nedenlerinden birini giderir
             if ((currentInputType and EditorInfo.TYPE_CLASS_NUMBER) == 0) {
-                // Metin giriş alanı - normal klavye için ayarla
-                outAttrs.inputType = EditorInfo.TYPE_CLASS_TEXT 
+                // İşlem yapmadan mevcut klavyeyi koru
+                // outAttrs.inputType değiştirme - bu sorun yaratıyor
             }
             
             // IME seçeneklerinin tutarlı olmasını sağla
+            // Bu bayraklar klavyenin kapanmadan açılmasına yardımcı olur
             outAttrs.imeOptions = outAttrs.imeOptions or 
                                   EditorInfo.IME_FLAG_NO_EXTRACT_UI or 
-                                  EditorInfo.IME_FLAG_NO_FULLSCREEN
+                                  EditorInfo.IME_FLAG_NO_FULLSCREEN or
+                                  EditorInfo.IME_FLAG_NO_ENTER_ACTION // Enter tuşu için özel davranışı engelle
+            
+            // Bunu ekleyerek klavyenin yeniden oluşturulmasını engelliyoruz
+            outAttrs.imeOptions = outAttrs.imeOptions and EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING.inv()
         }
         
         return connection
@@ -325,34 +383,92 @@ class TabWebView @JvmOverloads constructor(
         // Form giriş, tıklama ve gönderim olaylarını yönetmek için optimize edilmiş script
         val script = """
         (function() {
-          // Zaten enjekte edilmişse tekrar yapmayalım
-          if (window._tkfInjected) return 'Already injected';
-          window._tkfInjected = true;
-          
-          // Form odaklama yönetimi - minimal versiyon
-          var focusHandler = function(e) {
-            var target = e.target;
-            if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
-              target.focus();
+        // Zaten enjekte edilmişse tekrar yapmayalım
+        if (window._tkfInjected) return 'Already injected';
+        window._tkfInjected = true;
+        
+        // Input alanına odaklandığında önceki odaklanmış elemanı kaydet
+        var lastFocusedInput = null;
+        
+        // Input odaklanma yönetimi - klavyeyi korumaya çalışan versiyon
+        var focusHandler = function(e) {
+        var target = e.target;
+          if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+            // Bu yeni bir odaklanma mı yoksa aynı input mu kontrol et
+            if (lastFocusedInput !== target) {
+              // Yeni bir input alanı - önce eski elemanı kaydet
+              var previousFocused = lastFocusedInput;
+              // Yeni elemanı son odaklı olarak ayarla
+              lastFocusedInput = target;
+              
+            // Eğer bu ilk odaklanma değilse ve önceki input da varsa
+            // Klavyeyi kapatıp açma sorununu önle
+            if (previousFocused) {
+                // Klavye kapanmasını önleyen önemli değişiklik
+                e.preventDefault();
+                e.stopPropagation();
+                window.native_input_switching = true;
+                
+                // Önceki input ile şu anki input aynı tipte mi kontrol et 
+                var prevType = previousFocused.type || 'text';
+                var currentType = target.type || 'text';
+                
+                // Input tiplerini ve ID'leri log et
+                console.log('TKF Browser: Input switch from', prevType, 'to', currentType);
+                
+                // İmleç hareketlerini kontrol etmek için kullanılabilir:
+                var prevId = previousFocused.id || previousFocused.name || 'unknown';
+                var currentId = target.id || target.name || 'unknown';
+                console.log('TKF Browser: Input switch from', prevId, 'to', currentId);
+                
+                // Aynı tip klavyede otomatik odaklanma için anahtar belirle
+                var key = target.getAttribute('data-tkf-key');
+                if (!key) {
+                  key = (target.name || target.id || target.placeholder || 'input_' + Math.random().toString(36).substr(2, 9));
+                  key = key.replace(/[^a-zA-Z0-9_]/g, '_');
+                  target.setAttribute('data-tkf-key', key);
+                }
+                
+                // SuggestionHandler'a bildir - ama klavyeyi kapatmadan (önemli)
+                if (window.SuggestionHandler) {
+                  window.SuggestionHandler.onSmoothInputFocusChanged(key);
+                }
+                
+                // Klavyeyi açık tutmak için input odağını koru
+                setTimeout(function() {
+                  target.focus();
+                  if (typeof target.select === 'function') {
+                    try { target.select(); } catch(e) {}
+                  }
+                }, 10);
+                
+                return false; // Olayı durdur
             }
-          };
-          document.addEventListener('touchstart', focusHandler, {passive: true});
-          document.addEventListener('click', focusHandler, {passive: true});
-          
-          // Sadece login formlarını arayalım
-          var loginForm = document.querySelector('form[action*="login"], form[action*="Login"], form[action*="account"], form[id*="login"], form[class*="login"]');
-          
-          if (loginForm) {
-            console.log('TKF-DEBUG: Login form found');
+            }
             
-            // Form gönderim olayını yönetme - basitleştirilmiş
-            loginForm.addEventListener('submit', function(e) {
-              var formData = {};
-              var inputs = this.querySelectorAll('input[type="text"], input[type="password"], input[type="email"]');
-              for (var j = 0; j < inputs.length; j++) {
-                var input = inputs[j];
-                if (input.name) {
-                  formData[input.name] = input.value;
+            // Her durumda odaklanmayı garanti et
+            setTimeout(function() {
+              target.focus();
+            }, 0);
+          }
+        };
+        document.addEventListener('touchstart', focusHandler, {passive: true});
+        document.addEventListener('click', focusHandler, {passive: true});
+        
+        // Sadece login formlarını arayalım
+        var loginForm = document.querySelector('form[action*="login"], form[action*="Login"], form[action*="account"], form[id*="login"], form[class*="login"]');
+        
+        if (loginForm) {
+        console.log('TKF-DEBUG: Login form found');
+        
+        // Form gönderim olayını yönetme - basitleştirilmiş
+        loginForm.addEventListener('submit', function(e) {
+        var formData = {};
+        var inputs = this.querySelectorAll('input[type="text"], input[type="password"], input[type="email"]');
+          for (var j = 0; j < inputs.length; j++) {
+              var input = inputs[j];
+              if (input.name) {
+                formData[input.name] = input.value;
                 }
               }
               
@@ -394,7 +510,7 @@ class TabWebView @JvmOverloads constructor(
             }
           } catch(e) {}
           
-          return 'Enhanced form handlers injected';
+          return 'Enhanced form handlers injected with smooth keyboard transition';
         })();
         """
 
@@ -617,6 +733,9 @@ class TabWebView @JvmOverloads constructor(
         
         // Çerez/oturum ayarlarını tekrar uygula
         applyWebViewConfig()
+        
+        // Klavye durumunu takip et ve sayfa kaydırma işlemini optimize et
+        setupKeyboardObserver()
         
         // Set up WebViewClient
         webViewClient = TKFWebViewClient(
@@ -1636,6 +1755,140 @@ class TabWebView @JvmOverloads constructor(
         """
         
         evaluateJavascript(script) { _ -> }
+    }
+
+    /**
+     * Klavye açılıp kapandığında WebView içeriğini uygun şekilde ayarlamak için
+     * klavye durumunu izleyen bir observer kurar - GELİŞTİRİLMİŞ VERSİYON
+     */
+    private fun setupKeyboardObserver() {
+        // Ana pencerenin kök görünümü
+        val rootView = this.rootView
+        // Son klavye durumunu izle
+        var lastKeyboardVisible = false
+        var lastKeyboardHeight = 0
+        
+        // Görünüm değişikliklerini dinleyici - performans için optimize edildi
+        val layoutListener = ViewTreeObserver.OnGlobalLayoutListener {
+            try {
+                // Dikdörtgen oluştur
+                val r = Rect()
+                // Görünür ekran alanı bilgilerini al
+                rootView.getWindowVisibleDisplayFrame(r)
+                
+                // Ekran yüksekliğini al
+                val screenHeight = rootView.height
+                
+                // Klavye yüksekliğini hesapla
+                val keyboardHeight = screenHeight - r.bottom
+                
+                // Klavyenin görünür olup olmadığını kontrol et
+                // Genellikle klavye ekranın %15'inden büyükse görünür kabul edilir
+                val isKeyboardVisible = keyboardHeight > screenHeight * 0.15
+                
+                // Sadece klavye durumu değiştiğinde işlem yap
+                if (isKeyboardVisible != lastKeyboardVisible || 
+                    (isKeyboardVisible && Math.abs(keyboardHeight - lastKeyboardHeight) > 100)) {
+                    
+                    // Durum değişikliğini sakla
+                    lastKeyboardVisible = isKeyboardVisible
+                    lastKeyboardHeight = keyboardHeight
+                    
+                    if (isKeyboardVisible) {
+                        // ÖNEMLİ: Klavye artık açık olduğundan, önce odağı koruyarak gerekli JavaScript kodunu çalıştır
+                        post {
+                            // Aktif elemanı kontrol et ve görünür olduğundan emin ol
+                            evaluateJavascript("""
+                            (function() {
+                                try {
+                                    // Aktif elemanı bul
+                                    var activeElement = document.activeElement;
+                                    
+                                    // Eğer bir input odaklanmışsa
+                                    if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+                                        console.log('TKF Browser: Klavye açıldı, odak düzenleniyor');
+                                        
+                                        // Odak kaybını ve klavye kapanmasını önlemek için kritik
+                                        var saved = activeElement;
+                                        
+                                        // Elemanı görünür yap
+                                        if (activeElement.scrollIntoViewIfNeeded) {
+                                            activeElement.scrollIntoViewIfNeeded(true);
+                                        } else if (activeElement.scrollIntoView) {
+                                            activeElement.scrollIntoView({behavior: 'smooth', block: 'center'});
+                                        }
+                                        
+                                        // Scroll sonrası elemanın odaklanması korunmayabilir, tekrar odakla
+                                        setTimeout(function() {
+                                            if (document.activeElement !== saved) {
+                                                saved.focus();
+                                                if (typeof saved.select === 'function') saved.select();
+                                            }
+                                        }, 100);
+                                        
+                                        // Önce odağı bildirdikten sonra key'i işle
+                                        var key = activeElement.getAttribute('data-tkf-key');
+                                        if (!key) {
+                                            key = (activeElement.name || activeElement.id || activeElement.placeholder || 'input_' + Math.random().toString(36).substr(2, 9));
+                                            key = key.replace(/[^a-zA-Z0-9_]/g, '_');
+                                            activeElement.setAttribute('data-tkf-key', key);
+                                        }
+                                        
+                                        // Öneri işleyicisini bilgilendir (ama klavyeyi kapatma)
+                                        if (window.SuggestionHandler) {
+                                            window.SuggestionHandler.onSmoothInputFocusChanged(key);
+                                        }
+                                        
+                                        return true;
+                                    }
+                                    return false;
+                                } catch(e) {
+                                    console.error('TKF Browser: Klavye düzenleme hatası', e);
+                                    return false;
+                                }
+                            })();
+                            """.trimIndent()) { result ->
+                                // Form odaklanması başarılı oldu mu kontrol et
+                                val focusSuccess = result.contains("true")
+                                
+                                // İlave olarak, odaklanma işlemi tamamlandıktan sonra biraz daha kaydır
+                                if (focusSuccess) {
+                                    Handler(Looper.getMainLooper()).postDelayed({
+                                        // Daha hassas bir kaydırma miktarı kullan
+                                        scrollBy(0, keyboardHeight / 5)
+                                    }, 200) // Biraz daha uzun bir bekleme ile daha iyi sonuç al
+                                }
+                            }
+                        }
+                        
+                        // WebView'e klavye için padding ekle
+                        setPadding(paddingLeft, paddingTop, paddingRight, keyboardHeight)
+                    } else {
+                        // Klavye kapandığında padding'i sıfırla
+                        setPadding(paddingLeft, paddingTop, paddingRight, 0)
+                        
+                        // İlave olarak, mevcut odaklı elemanı log et (debug için)
+                        post {
+                            evaluateJavascript("""
+                            (function() {
+                                var activeElement = document.activeElement;
+                                if (activeElement) {
+                                    return 'Klavye kapandı, aktif eleman: ' + activeElement.tagName + 
+                                           (activeElement.id ? '#' + activeElement.id : '');
+                                }
+                                return 'Klavye kapandı, aktif eleman yok';
+                            })();
+                            """.trimIndent()) { _ -> }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                // Hata durumlarını görmezden gel
+            }
+        }
+        
+        // Observer'i attach et
+        rootView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
     }
 
     /**

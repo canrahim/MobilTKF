@@ -149,12 +149,14 @@
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- WebView container -->
+    <!-- WebView container - FitsSystemWindows true, klavye için düzeltilmiş -->
     <FrameLayout
         android:id="@+id/webview_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@color/white"
+        android:fitsSystemWindows="true"
+        android:clipToPadding="false"
         app:layout_constraintBottom_toTopOf="@id/text_input_layout_1"
         app:layout_constraintTop_toBottomOf="@id/tabs_container" />
 
