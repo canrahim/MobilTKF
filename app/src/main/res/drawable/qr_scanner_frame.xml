@@ -1,9 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <stroke
-        android:width="2dp"
-        android:color="#FFFFFF" />
-    <corners android:radius="8dp" />
-    <solid android:color="#33FFFFFF" />
-</shape>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Ana çerçeve - ortada saydam boşluk bırakır -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#99000000" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+
+    <!-- İç saydam alan -->
+    <item android:gravity="center">
+        <shape android:shape="rectangle">
+            <size
+                android:width="280dp"
+                android:height="280dp" />
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+
+    <!-- Üst-sol köşe -->
+    <item android:gravity="left|top">
+        <shape android:shape="rectangle">
+            <size
+                android:width="50dp"
+                android:height="4dp" />
+            <solid android:color="#4CAF50" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+    <item android:gravity="left|top">
+        <shape android:shape="rectangle">
+            <size
+                android:width="4dp"
+                android:height="50dp" />
+            <solid android:color="#4CAF50" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Üst-sağ köşe -->
+    <item android:gravity="right|top">
+        <shape android:shape="rectangle">
+            <size
+                android:width="50dp"
+                android:height="4dp" />
+            <solid android:color="#4CAF50" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+    <item android:gravity="right|top">
+        <shape android:shape="rectangle">
+            <size
+                android:width="4dp"
+                android:height="50dp" />
+            <solid android:color="#4CAF50" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Alt-sol köşe -->
+    <item android:gravity="left|bottom">
+        <shape android:shape="rectangle">
+            <size
+                android:width="50dp"
+                android:height="4dp" />
+            <solid android:color="#4CAF50" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+    <item android:gravity="left|bottom">
+        <shape android:shape="rectangle">
+            <size
+                android:width="4dp"
+                android:height="50dp" />
+            <solid android:color="#4CAF50" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Alt-sağ köşe -->
+    <item android:gravity="right|bottom">
+        <shape android:shape="rectangle">
+            <size
+                android:width="50dp"
+                android:height="4dp" />
+            <solid android:color="#4CAF50" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+    <item android:gravity="right|bottom">
+        <shape android:shape="rectangle">
+            <size
+                android:width="4dp"
+                android:height="50dp" />
+            <solid android:color="#4CAF50" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+</layer-list>

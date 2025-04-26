@@ -24,6 +24,8 @@
     <string name="file_chooser_title">Yüklenecek dosyayı seçin</string>
     <string name="file_chooser_error">Dosya seçici açılamadı</string>
     <string name="settings">Ayarlar</string>
+    <string name="permission_required">İzin Gerekli</string>
+    <string name="cancel">İptal</string>
     <string name="resource_monitoring">Kaynak İzleme</string>
     <string name="hibernation_mode">Uyku Modu</string>
     <string name="clear_data">Tarama Verilerini Temizle</string>
