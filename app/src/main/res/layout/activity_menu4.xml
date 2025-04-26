@@ -24,13 +24,13 @@
             android:layout_marginBottom="16dp">
 
             <ImageButton
-                android:id="@+id/menuIcon1"
+                android:id="@+id/backButton"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@drawable/ic_menu"
+                android:src="@drawable/ic_back"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:padding="12dp"
-                android:contentDescription="Menu 1"/>
+                android:contentDescription="Back to Main Activity"/>
 
             <TextView
                 android:id="@+id/tvTitle"

@@ -58,7 +58,7 @@ class Menu4Activity : AppCompatActivity() {
     private lateinit var btnSelectAll: Button
     private lateinit var rvItems: RecyclerView
     private lateinit var webView: WebView
-    private lateinit var menuIcon1: ImageButton
+    private lateinit var backButton: ImageButton
     private lateinit var menuContent1: LinearLayout
 
     private var selectedId: String? = null
@@ -264,13 +264,19 @@ class Menu4Activity : AppCompatActivity() {
         webView = findViewById(R.id.webView)
         
         // Menü içerikleri
-        menuIcon1 = findViewById(R.id.menuIcon1)
+        backButton = findViewById(R.id.backButton)
         menuContent1 = findViewById(R.id.menuContent1)
     }
 
     private fun setupClickListeners() {
-        // Menü ikonu
-        menuIcon1.setOnClickListener { toggleMenu() }
+        // Geri butonu
+        backButton.setOnClickListener {
+            // Ana ekrana geri dön (MainActivity'ye git)
+            val intent = Intent(this, com.asforce.asforcetkf2.MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            finish()
+        }
         
         // Menü seçenekleri
         findViewById<View>(R.id.menu1Option1).setOnClickListener {

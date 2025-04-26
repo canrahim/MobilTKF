@@ -58,8 +58,7 @@ class PanoFonksiyonActivity : AppCompatActivity(), FormDialogFragment.FormDialog
     private lateinit var buttonFillForm: ImageView
     private lateinit var buttonSaveItems: ImageView
     private lateinit var settingsButton: ImageView
-    private lateinit var menuIcon1: ImageButton
-    private lateinit var menuContent1: LinearLayout
+    // Removed menu elements
     private lateinit var backButton: ImageView
     
     // WebView
@@ -195,8 +194,7 @@ class PanoFonksiyonActivity : AppCompatActivity(), FormDialogFragment.FormDialog
         buttonFillForm = findViewById(R.id.buttonFillForm)
         buttonSaveItems = findViewById(R.id.buttonSaveItems)
         settingsButton = findViewById(R.id.settingsButton)
-        menuIcon1 = findViewById(R.id.menuIcon1)
-        menuContent1 = findViewById(R.id.menuContent1)
+        // Menu elements removed from layout
         backButton = findViewById(R.id.backButton)
         
         // WebView havuzundan al
@@ -463,37 +461,12 @@ class PanoFonksiyonActivity : AppCompatActivity(), FormDialogFragment.FormDialog
             finish()
         }
         
-        // Menü iconu tıklanınca menüyü göster/gizle
-        menuIcon1.setOnClickListener { toggleMenu() }
-        
-        // Menü seçenekleri - şimdilik sadece Toast mesajları gösterelim
-        findViewById<View>(R.id.menu1Option1).setOnClickListener {
-            Toast.makeText(this, "Kaçak Akım seçildi", Toast.LENGTH_SHORT).show()
-            menuContent1.visibility = View.GONE
-        }
-
-        findViewById<View>(R.id.menu1Option2).setOnClickListener {
-            Toast.makeText(this, "Pano Fonksiyon seçildi", Toast.LENGTH_SHORT).show()
-            menuContent1.visibility = View.GONE
-        }
-        
-        findViewById<View>(R.id.menu1Option3).setOnClickListener {
-            Toast.makeText(this, "Topraklama seçildi", Toast.LENGTH_SHORT).show()
-            menuContent1.visibility = View.GONE
-        }
-
-        findViewById<View>(R.id.menu1Option4).setOnClickListener {
-            Toast.makeText(this, "Termal Kamera seçildi", Toast.LENGTH_SHORT).show()
-            menuContent1.visibility = View.GONE
-        }
+        // Menu click handlers removed as menu elements are no longer in layout
 
         setupTextWatchers()
     }
 
-    private fun toggleMenu() {
-        // Menüyü aç/kapat
-        menuContent1.visibility = if (menuContent1.visibility == View.VISIBLE) View.GONE else View.VISIBLE
-    }
+    // toggleMenu function removed as menu no longer exists
 
     private fun setupTextWatchers() {
         editTextUrl.addTextChangedListener(object : SimpleTextWatcher() {

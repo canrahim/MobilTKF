@@ -257,7 +257,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Cihazı Bağla"
+                    android:text="Cihazı Ekle"
                     android:backgroundTint="#4287f5"
                     android:textColor="@color/white"
                     app:cornerRadius="8dp"
