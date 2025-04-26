@@ -167,8 +167,22 @@ class ComboboxSearchHelper(private val webView: TabWebView) {
                                 // Scroll to the element to make it visible
                                 select.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                 
-                                // Focus on the select for better visibility
-                                select.focus();
+                                // Apply the selection but force dropdown to close
+                                setTimeout(function() {
+                                    // Force close all dropdowns
+                                    // 1. Blur the select
+                                    select.blur();
+                                    // 2. Click outside
+                                    document.body.click();
+                                    // 3. Escape key to close dropdowns
+                                    document.dispatchEvent(new KeyboardEvent('keydown', {
+                                        key: 'Escape',
+                                        code: 'Escape',
+                                        keyCode: 27,
+                                        which: 27,
+                                        bubbles: true
+                                    }));
+                                }, 200);
                             } catch (e) {
                                 console.error('Error selecting option:', e);
                             }
@@ -205,8 +219,22 @@ class ComboboxSearchHelper(private val webView: TabWebView) {
                                 // Scroll to the element to make it visible
                                 select.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                 
-                                // Focus on the select for better visibility
-                                select.focus();
+                                // Apply the selection but force dropdown to close
+                                setTimeout(function() {
+                                    // Force close all dropdowns
+                                    // 1. Blur the select
+                                    select.blur();
+                                    // 2. Click outside
+                                    document.body.click();
+                                    // 3. Escape key to close dropdowns
+                                    document.dispatchEvent(new KeyboardEvent('keydown', {
+                                        key: 'Escape',
+                                        code: 'Escape',
+                                        keyCode: 27,
+                                        which: 27,
+                                        bubbles: true
+                                    }));
+                                }, 200);
                             } catch (e) {
                                 console.error('Error selecting option:', e);
                             }
@@ -274,15 +302,28 @@ class ComboboxSearchHelper(private val webView: TabWebView) {
                                 
                                 // Update the Bootstrap selectpicker
                                 if (typeof $ !== 'undefined') {
-                                    $(selectElement).selectpicker('val', option.value);
-                                    $(selectElement).selectpicker('refresh');
-                                    
-                                    // Open the dropdown to show the selection
-                                    dropdownToggle.click();
-                                    setTimeout(function() {
-                                        dropdownToggle.click(); // Close it after a brief moment
-                                    }, 300);
-                                }
+                                $(selectElement).selectpicker('val', option.value);
+                                $(selectElement).selectpicker('refresh');
+                                
+                                // Instead of opening and closing the dropdown, just force it closed
+                                setTimeout(function() {
+                                    // Force dropdown to close
+                                // 1. Blur
+                                    selectElement.blur();
+                                        // 2. Click outside
+                                            document.body.click();
+                                            // 3. Escape key event
+                                            document.dispatchEvent(new KeyboardEvent('keydown', {
+                                                key: 'Escape',
+                                                code: 'Escape',
+                                                keyCode: 27,
+                                                which: 27,
+                                                bubbles: true
+                                            }));
+                                            // 4. Use Bootstrap's API to close the dropdown
+                                            $('.dropdown-toggle').dropdown('hide');
+                                        }, 300);
+                                    }
                                 
                                 // Make the select visible
                                 dropdownToggle.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -369,11 +410,27 @@ class ComboboxSearchHelper(private val webView: TabWebView) {
                                 if (typeof $ !== 'undefined') {
                                     $(selectElement).trigger('change.select2');
                                     
-                                    // Try to open and close the dropdown to show the selection
-                                    select2Elements[i].click();
+                                    // Force the select2 dropdown to close
                                     setTimeout(function() {
-                                        // Click outside to close
-                                        document.body.click();
+                                        // Make sure dropdown is closed
+                                        try {
+                                            // 1. Use select2's API to close
+                                            $(selectElement).select2('close');
+                                            
+                                            // 2. Click outside
+                                            document.body.click();
+                                            
+                                            // 3. Escape key
+                                            document.dispatchEvent(new KeyboardEvent('keydown', {
+                                                key: 'Escape',
+                                                code: 'Escape',
+                                                keyCode: 27,
+                                                which: 27,
+                                                bubbles: true
+                                            }));
+                                        } catch(e) {
+                                            console.error('Error closing select2 dropdown:', e);
+                                        }
                                     }, 300);
                                 }
                                 
@@ -476,6 +533,26 @@ class ComboboxSearchHelper(private val webView: TabWebView) {
                                     
                                     // Make the dropdown visible
                                     dropdown.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    
+                                    // Force close the dropdown after selection
+                                    setTimeout(function() {
+                                        // 1. Click outside
+                                        document.body.click();
+                                        
+                                        // 2. Escape key
+                                        document.dispatchEvent(new KeyboardEvent('keydown', {
+                                            key: 'Escape',
+                                            code: 'Escape',
+                                            keyCode: 27,
+                                            which: 27,
+                                            bubbles: true
+                                        }));
+                                        
+                                        // 3. If jQuery is available, try dropdown API
+                                        if (typeof $ !== 'undefined') {
+                                            $('.dropdown-toggle').dropdown('hide');
+                                        }
+                                    }, 300);
                                 }, 100);
                             } catch (e) {
                                 console.error('Error selecting custom dropdown item:', e);
@@ -546,59 +623,55 @@ class ComboboxSearchHelper(private val webView: TabWebView) {
         }
     }
     
-    /**
-     * Enhance the display of the selected combobox
-     * This ensures proper highlighting of the selection in various UI frameworks
-     */
     private fun enhanceComboboxDisplay() {
         val enhanceScript = """
         (function() {
             try {
-                // Enhance selectpicker visibility in Bootstrap forms
-                if (typeof $ !== 'undefined') {
-                    // For Bootstrap select
-                    if ($('.selectpicker').length > 0) {
-                        $('.selectpicker').selectpicker('refresh');
-                    }
-                    
-                    // For select2 plugin
-                    if ($('.select2').length > 0) {
-                        $('.select2').select2('close').select2('open');
-                    }
+                // Force close any open dropdowns first
+                // 1. Send Escape key to close dropdowns
+                document.dispatchEvent(new KeyboardEvent('keydown', {
+                    key: 'Escape',
+                    code: 'Escape',
+                    keyCode: 27,
+                    which: 27,
+                    bubbles: true
+                }));
+                
+                // 2. Click on body to close dropdowns
+                document.body.click();
+                
+                // 3. Call blur() on any focused select
+                const focused = document.querySelector('select:focus');
+                if (focused) {
+                    focused.blur();
                 }
                 
-                // Find all select elements that have focus
-                const focusedSelects = document.querySelectorAll('select:focus');
-                for (let i = 0; i < focusedSelects.length; i++) {
-                    // Ensure the select dropdown is visible
-                    try {
-                        const select = focusedSelects[i];
-                        
-                        // Simulate click to show dropdown options if needed
-                        if (select.size <= 1) {
-                            // Use this approach for dropdowns that might not be showing
-                            const clickEvent = new MouseEvent('click', {
-                                bubbles: true,
-                                cancelable: true,
-                                view: window
-                            });
-                            select.dispatchEvent(clickEvent);
-                            
-                            // Then trigger a keydown event to highlight the selection
-                            setTimeout(function() {
-                                const keyEvent = new KeyboardEvent('keydown', {
-                                    bubbles: true,
-                                    cancelable: true,
-                                    key: 'Enter',
-                                    keyCode: 13
-                                });
-                                select.dispatchEvent(keyEvent);
-                            }, 200);
+                // A bit more delay before showing enhancements
+                setTimeout(function() {
+                    // For Bootstrap selects
+                    if (typeof $ !== 'undefined') {
+                        // For Bootstrap select
+                        if ($('.selectpicker').length > 0) {
+                            $('.selectpicker').selectpicker('refresh');
                         }
-                    } catch (e) {
-                        console.error('Error enhancing combobox display:', e);
+                        
+                        // For select2 plugin - force close first
+                        if ($('.select2').length > 0) {
+                            $('.select2').select2('close');
+                        }
                     }
-                }
+                    
+                    // Find all visible selects
+                    const visibleSelects = document.querySelectorAll('select:not([style*="display: none"])');
+                    for (let i = 0; i < visibleSelects.length; i++) {
+                        try {
+                            // Make sure the selection is visible but the dropdown is closed
+                            visibleSelects[i].scrollIntoView({behavior: 'smooth', block: 'center'});
+                        } catch(e) {
+                            console.error('Error enhancing select:', e);
+                        }
+                    }
+                }, 300);
                 
                 return 'ENHANCE_COMPLETED';
             } catch (e) {
