@@ -77,7 +77,7 @@
                 app:endIconDrawable="@drawable/ic_copy"
                 app:endIconTint="@color/toolbar_icon"
                 app:boxStrokeColor="@color/primary"
-                app:boxStrokeWidth="1dp"
+                app:boxStrokeWidth="0.5dp"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 app:endIconContentDescription="@string/copy_url">
 
@@ -150,7 +150,120 @@
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- Container for Text Inputs -->
+    <LinearLayout
+        android:id="@+id/search_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="3"
+        android:layout_marginTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/tabs_container">
+
+        <!-- Arama Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/text_input_layout_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="1dp"
+            android:layout_marginEnd="1dp"
+            android:layout_weight="1"
+            android:hint="Arama"
+            android:theme="@style/ModernEditTextTheme"
+            app:boxStrokeColor="@color/primary"
+            app:boxStrokeWidth="0.5dp"
+            app:boxBackgroundColor="@color/dark_surface"
+            app:hintTextColor="@color/text_secondary_dark"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/aramaSearch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/dark_surface"
+                android:padding="2dp"
+                android:minHeight="20dp"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Divider 1 -->
+        <View
+            android:id="@+id/divider_1"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/primary"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp" />
+        
+        <!-- QR No Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/text_input_layout_2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="1dp"
+            android:layout_marginEnd="1dp"
+            android:layout_weight="1"
+            android:hint="QR No"
+            android:theme="@style/ModernEditTextTheme"
+            app:boxStrokeColor="@color/primary"
+            app:boxStrokeWidth="0.5dp"
+            app:boxBackgroundColor="@color/dark_surface"
+            app:hintTextColor="@color/text_secondary_dark"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/qrNo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/dark_surface"
+                android:padding="2dp"
+                android:minHeight="20dp"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:inputType="number"
+                android:imeOptions="actionSearch" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Divider 2 -->
+        <View
+            android:id="@+id/divider_2"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/primary"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp" />
+        
+        <!-- SR No Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/text_input_layout_3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="1dp"
+            android:layout_marginEnd="1dp"
+            android:layout_weight="1"
+            android:hint="SR No"
+            android:theme="@style/ModernEditTextTheme"
+            app:boxStrokeColor="@color/primary"
+            app:boxStrokeWidth="1dp"
+            app:boxBackgroundColor="@color/dark_surface"
+            app:hintTextColor="@color/text_secondary_dark"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/srNo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/dark_surface"
+                android:padding="2dp"
+                android:minHeight="20dp"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+
     <!-- WebView container - FitsSystemWindows true, klavye için düzeltilmiş -->
+
     <FrameLayout
         android:id="@+id/webview_container"
         android:layout_width="match_parent"
@@ -158,9 +271,9 @@
         android:background="@color/dark_surface"
         android:fitsSystemWindows="true"
         android:clipToPadding="false"
-        android:layout_marginTop="-1dp"
-        app:layout_constraintBottom_toTopOf="@id/text_input_layout_1"
-        app:layout_constraintTop_toBottomOf="@id/tabs_container" />
+        android:layout_marginTop="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/search_container" />
 
     <!-- Loading progress bar - Dark Theme colors -->
     <ProgressBar
@@ -181,10 +294,10 @@
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/text_input_layout_1"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tabs_container">
+        app:layout_constraintTop_toBottomOf="@id/search_container">
 
         <!-- Left Action Buttons -->
         <com.google.android.material.card.MaterialCardView
@@ -301,123 +414,6 @@
         </com.google.android.material.card.MaterialCardView>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <!-- Bottom EditTexts -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/text_input_layout_1"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="2dp"
-        android:layout_marginBottom="8dp"
-        android:hint="EditText 1"
-        android:theme="@style/ModernEditTextTheme"
-        app:boxStrokeColor="@color/primary"
-        app:boxStrokeWidth="1dp"
-        app:boxBackgroundColor="@color/dark_surface"
-        app:hintTextColor="@color/text_secondary_dark"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/divider_1"
-        app:layout_constraintHorizontal_weight="1"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/aramaSearch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/dark_surface"
-            android:padding="4dp"
-            android:textColor="@color/white"
-            android:textSize="14sp" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Divider 1 -->
-    <View
-        android:id="@+id/divider_1"
-        android:layout_width="1dp"
-        android:layout_height="0dp"
-        android:background="@color/primary"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
-        app:layout_constraintBottom_toBottomOf="@id/text_input_layout_1"
-        app:layout_constraintTop_toTopOf="@id/text_input_layout_1"
-        app:layout_constraintStart_toEndOf="@id/text_input_layout_1"
-        app:layout_constraintEnd_toStartOf="@id/text_input_layout_2" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/text_input_layout_2"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="2dp"
-        android:layout_marginEnd="2dp"
-        android:layout_marginBottom="8dp"
-        android:hint="QR No"
-        android:theme="@style/ModernEditTextTheme"
-        app:boxStrokeColor="@color/primary"
-        app:boxStrokeWidth="1dp"
-        app:boxBackgroundColor="@color/dark_surface"
-        app:hintTextColor="@color/text_secondary_dark"
-        app:endIconMode="custom"
-        app:endIconDrawable="@drawable/ic_search"
-        app:endIconTint="@color/white"
-        app:endIconContentDescription="QR Ara"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/divider_1"
-        app:layout_constraintEnd_toStartOf="@id/divider_2"
-        app:layout_constraintHorizontal_weight="1"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/qrNo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/dark_surface"
-            android:padding="4dp"
-            android:textColor="@color/white"
-            android:textSize="14sp"
-            android:hint="QR No"
-            android:inputType="number"
-            android:imeOptions="actionSearch" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Divider 2 -->
-    <View
-        android:id="@+id/divider_2"
-        android:layout_width="1dp"
-        android:layout_height="0dp"
-        android:background="@color/primary"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
-        app:layout_constraintBottom_toBottomOf="@id/text_input_layout_2"
-        app:layout_constraintTop_toTopOf="@id/text_input_layout_2"
-        app:layout_constraintStart_toEndOf="@id/text_input_layout_2"
-        app:layout_constraintEnd_toStartOf="@id/text_input_layout_3" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/text_input_layout_3"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="2dp"
-        android:layout_marginBottom="8dp"
-        android:hint="EditText 3"
-        android:theme="@style/ModernEditTextTheme"
-        app:boxStrokeColor="@color/primary"
-        app:boxStrokeWidth="1dp"
-        app:boxBackgroundColor="@color/dark_surface"
-        app:hintTextColor="@color/text_secondary_dark"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/divider_2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_weight="1"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/srNo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/dark_surface"
-            android:padding="4dp"
-            android:textColor="@color/white"
-            android:textSize="14sp" />
-    </com.google.android.material.textfield.TextInputLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
