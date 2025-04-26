@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.view.View as AndroidView
@@ -147,27 +148,10 @@ class DeviceManager(
         // Dialog'u göster
         dialog?.show()
         
-        // ToolBar'ı ayarla
-        val toolbar = dialogView.findViewById<MaterialToolbar>(R.id.topAppBar)
-        toolbar.setNavigationOnClickListener {
+        // Yeni tasarımda Geri/Kapat butonunu ayarla
+        val btnClose = dialogView.findViewById<View>(R.id.btnClose)
+        btnClose?.setOnClickListener {
             dialog?.dismiss()
-        }
-        
-        // Toolbar menu işlemleri
-        toolbar.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.action_refresh -> {
-                    // Listeyi yenile
-                    fetchDeviceList()
-                    true
-                }
-                R.id.action_filter -> {
-                    // Filtreleme seçenekleri
-                    showFilterOptions()
-                    true
-                }
-                else -> false
-            }
         }
         
         // View'ları bağla
@@ -179,7 +163,7 @@ class DeviceManager(
         val btnSelectAll = dialogView.findViewById<Button>(R.id.btnSelectAll)
         val btnSubmit = dialogView.findViewById<Button>(R.id.btnSubmit)
         val btnCancel = dialogView.findViewById<Button>(R.id.btnCancel)
-        val searchEditText = dialogView.findViewById<TextInputEditText>(R.id.searchEditText)
+        val searchEditText = dialogView.findViewById<EditText>(R.id.searchEditText)
 
         
         // RecyclerView ayarları

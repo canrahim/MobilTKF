@@ -7,72 +7,125 @@
     android:background="@color/dark_surface"
     android:fitsSystemWindows="true">
 
-    <!-- Top AppBar with collapsing toolbar -->
+    <!-- Header in modern LlamaSwap style -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
-        app:liftOnScroll="true">
-        
-        <com.google.android.material.appbar.CollapsingToolbarLayout
+        android:background="@color/dark_surface"
+        android:elevation="0dp"
+        app:elevation="0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
-            app:titleEnabled="false">
-            
-            <LinearLayout
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp">
+
+            <ImageButton
+                android:id="@+id/btnClose"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_back"
+                android:padding="8dp"
+                android:contentDescription="Close dialog"
+                app:tint="@color/white"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/dialogTitle"/>
+
+            <TextView
+                android:id="@+id/dialogTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Cihaz Seçimi"
+                android:textSize="20sp"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:fontFamily="sans-serif-medium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/dialogSubtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp"
-                app:layout_collapseMode="parallax">
-                
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Cihaz Seçimi"
-                    android:textSize="28sp"
-                    android:textColor="@color/white"
-                    android:fontFamily="sans-serif-medium"/>
-                    
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Eklemek istediğiniz cihazları seçin"
-                    android:textSize="14sp"
-                    android:textColor="@color/white"
-                    android:alpha="0.7"/>
-                    
-            </LinearLayout>
-                
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/topAppBar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:layout_collapseMode="pin"
-                android:elevation="0dp"
-                app:titleTextColor="@color/white"
-                app:navigationIcon="@drawable/ic_back"
-                app:menu="@menu/device_menu" />
-                
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
+                android:layout_marginTop="4dp"
+                android:text="Eklemek istediğiniz cihazları seçin"
+                android:textSize="14sp"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:alpha="0.7"
+                app:layout_constraintTop_toBottomOf="@id/dialogTitle"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Content -->
+    <!-- Content with LlamaSwap style -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:padding="16dp">
 
-        <!-- Filter Chip Group - modern görünüm -->
+        <!-- Search box in LlamaSwap style -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/searchCardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/dark_background"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#303E50"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingVertical="8dp"
+                android:paddingHorizontal="12dp">
+
+                <ImageView
+                    android:id="@+id/searchIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_search"
+                    app:tint="#8A99B0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+                <EditText
+                    android:id="@+id/searchEditText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:background="@null"
+                    android:hint="Cihaz ara..."
+                    android:inputType="text"
+                    android:textColor="@color/white"
+                    android:textColorHint="#8A99B0"
+                    android:textSize="16sp"
+                    android:minHeight="36dp"
+                    app:layout_constraintStart_toEndOf="@id/searchIcon"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Filter tabs in LlamaSwap style -->
         <HorizontalScrollView
             android:id="@+id/chipScrollView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/searchCardView"
+            android:layout_marginTop="16dp"
             android:scrollbars="none">
             
             <com.google.android.material.chip.ChipGroup
@@ -90,10 +143,10 @@
                     android:text="Favoriler"
                     app:chipIcon="@android:drawable/btn_star_big_on"
                     app:checkedIconVisible="true"
-                    app:chipIconTint="@color/primary"
-                    app:chipBackgroundColor="@color/secondary"
-                    app:chipStrokeWidth="1dp"
-                    app:chipStrokeColor="@color/primary"
+                    app:chipIconTint="@color/white"
+                    app:chipBackgroundColor="#3949AB"
+                    app:chipStrokeWidth="0dp"
+                    android:textColor="@color/white"
                     app:chipIconSize="18dp"
                     android:checkable="true"
                     android:checked="true" />
@@ -105,10 +158,10 @@
                     android:text="Tüm Cihazlar"
                     app:chipIcon="@drawable/ic_equipment"
                     app:checkedIconVisible="true"
-                    app:chipIconTint="@color/primary"
-                    app:chipBackgroundColor="@color/secondary"
-                    app:chipStrokeWidth="1dp"
-                    app:chipStrokeColor="@color/primary"
+                    app:chipIconTint="@color/white"
+                    app:chipBackgroundColor="#00897B"
+                    app:chipStrokeWidth="0dp"
+                    android:textColor="@color/white"
                     app:chipIconSize="18dp"
                     android:checkable="true" />
                     
@@ -119,57 +172,27 @@
                     android:text="Son Eklenenler"
                     app:chipIcon="@android:drawable/ic_menu_recent_history"
                     app:checkedIconVisible="true"
-                    app:chipIconTint="@color/primary"
-                    app:chipBackgroundColor="@color/secondary"
-                    app:chipStrokeWidth="1dp"
-                    app:chipStrokeColor="@color/primary"
+                    app:chipIconTint="@color/white"
+                    app:chipBackgroundColor="#E53935"
+                    app:chipStrokeWidth="0dp"
+                    android:textColor="@color/white"
                     app:chipIconSize="18dp"
                     android:checkable="true" />
     
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
 
-        <!-- Search box - geliştirilmiş arama kutusu -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/searchLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/chipScrollView"
-            android:layout_marginTop="12dp"
-            android:layout_marginHorizontal="4dp"
-            android:hint="Cihaz Ara"
-            app:boxBackgroundColor="@color/dark_background"
-            app:boxStrokeColor="@color/primary"
-            app:hintTextColor="@color/primary"
-            app:startIconDrawable="@android:drawable/ic_menu_search"
-            app:startIconTint="@color/primary"
-            app:endIconMode="clear_text"
-            app:endIconTint="@color/primary"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/searchEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:textColorHint="@color/text_secondary_dark"
-                android:textSize="16sp"
-                android:paddingVertical="12dp"
-                android:inputType="text" />
 
-        </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Device List - modern kart görünümü ve animasyonlar -->
+
+        <!-- Device List with modern card view -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/deviceRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="12dp"
-            app:layout_constraintTop_toBottomOf="@id/searchLayout"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/chipScrollView"
             app:layout_constraintBottom_toTopOf="@id/buttonPanel"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             android:background="@android:color/transparent"
@@ -183,7 +206,7 @@
             android:scrollbarSize="4dp"
             android:fadeScrollbars="false" />
 
-        <!-- Bottom panel with action buttons - material design butonları -->
+        <!-- Bottom panel with action buttons in LlamaSwap style -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/buttonPanel"
             android:layout_width="match_parent"
@@ -198,53 +221,52 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="end"
+                android:gravity="center"
                 android:padding="12dp">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSelectAll"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="Tümünü Seç"
                     app:icon="@android:drawable/ic_menu_set_as"
                     app:iconGravity="textStart"
-                    app:iconTint="@color/primary"
+                    app:iconTint="#4287f5"
                     app:iconSize="18dp"
-                    app:strokeColor="@color/primary"
-                    android:textColor="@color/primary"
-                    app:cornerRadius="12dp"
+                    app:strokeColor="#4287f5"
+                    android:textColor="#4287f5"
+                    app:cornerRadius="8dp"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_marginEnd="8dp" />
     
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCancel"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="İptal"
-                    app:strokeColor="@color/primary"
-                    android:textColor="@color/primary"
-                    app:cornerRadius="12dp"
+                    app:strokeColor="#EA4335"
+                    android:textColor="#EA4335"
+                    app:cornerRadius="8dp"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_marginEnd="8dp" />
     
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSubmit"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Ekle"
-                    app:icon="@android:drawable/ic_input_add"
-                    app:iconGravity="textStart"
-                    app:iconTint="@color/white"
-                    app:iconSize="18dp"
-                    android:backgroundTint="@color/primary"
+                    android:layout_weight="1"
+                    android:text="Cihazı Bağla"
+                    android:backgroundTint="#4287f5"
                     android:textColor="@color/white"
-                    app:cornerRadius="12dp"
+                    app:cornerRadius="8dp"
                     style="@style/Widget.MaterialComponents.Button" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Loading indicator - modern animasyonlu gösterge -->
+        <!-- Loading indicator with LlamaSwap style -->
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progressIndicator"
             android:layout_width="wrap_content"
@@ -254,12 +276,13 @@
             app:indicatorColor="@color/primary"
             app:indicatorSize="64dp"
             app:trackThickness="6dp"
+            app:trackColor="@color/dark_background"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Empty state - geliştirilmiş boş durum görünümü -->
+        <!-- Empty state in LlamaSwap style -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/emptyState"
             android:layout_width="match_parent"
@@ -274,8 +297,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="24dp"
-                app:cardBackgroundColor="@color/dark_background"
-                app:cardElevation="4dp"
+                app:cardBackgroundColor="#1A2430"
+                app:cardElevation="2dp"
                 app:cardCornerRadius="16dp"
                 app:strokeColor="@color/primary"
                 app:strokeWidth="1dp"
@@ -292,17 +315,17 @@
                     android:padding="24dp">
         
                     <ImageView
-                        android:layout_width="72dp"
-                        android:layout_height="72dp"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
                         android:src="@android:drawable/ic_menu_search"
-                        android:alpha="0.7"
+                        android:alpha="0.9"
                         app:tint="@color/primary" />
         
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Cihaz Bulunamadı"
-                        android:textSize="18sp"
+                        android:textSize="20sp"
                         android:textStyle="bold"
                         android:layout_marginTop="16dp"
                         android:textColor="@color/white" />
@@ -314,19 +337,27 @@
                         android:textSize="14sp"
                         android:layout_marginTop="8dp"
                         android:gravity="center"
-                        android:textColor="@color/text_secondary_dark" />
+                        android:textColor="#8A99B0" />
                         
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnClearSearch"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Aramayı Temizle"
                         android:layout_marginTop="16dp"
-                        app:icon="@android:drawable/ic_menu_close_clear_cancel"
-                        app:iconGravity="textStart"
-                        app:cornerRadius="12dp"
+                        android:layout_marginHorizontal="32dp"
+                        app:cornerRadius="8dp"
                         android:backgroundTint="@color/primary"
+                        app:iconGravity="textStart"
                         style="@style/Widget.MaterialComponents.Button" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Şimdi deneyin veya daha fazla bilgi edinin"
+                        android:textSize="14sp"
+                        android:layout_marginTop="16dp"
+                        android:textColor="#8A99B0" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </androidx.constraintlayout.widget.ConstraintLayout>
