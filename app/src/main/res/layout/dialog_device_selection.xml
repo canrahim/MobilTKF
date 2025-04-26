@@ -225,6 +225,18 @@
                 android:padding="12dp">
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="İptal"
+                    app:strokeColor="#EA4335"
+                    android:textColor="#EA4335"
+                    app:cornerRadius="8dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_marginEnd="8dp" />
+    
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSelectAll"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -236,18 +248,6 @@
                     app:iconSize="18dp"
                     app:strokeColor="#4287f5"
                     android:textColor="#4287f5"
-                    app:cornerRadius="8dp"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_marginEnd="8dp" />
-    
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnCancel"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="İptal"
-                    app:strokeColor="#EA4335"
-                    android:textColor="#EA4335"
                     app:cornerRadius="8dp"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_marginEnd="8dp" />
