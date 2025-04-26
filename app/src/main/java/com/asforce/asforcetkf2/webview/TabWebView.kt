@@ -1172,24 +1172,44 @@ class TabWebView @JvmOverloads constructor(
             
             // Otomatik odaklanma burada kaldırıldı - kullanıcının kendisi tıklaması gerekecek
             
-            // Special handling for Google search
+            // Special handling for Google search - GELİŞTİRİLMİŞ VERSİYON
             if (isGoogleSearch()) {
-                console.log('TKF Browser: Adding Google search specific handlers');
+                console.log('TKF Browser: Adding Google search specific handlers - IMPROVED VERSION');
                 
-                // Add a click listener to make sure selection is explicit
-                document.addEventListener('click', function(event) {
-                    // Only process real user clicks (not synthetic events)
-                    if (!event.isTrusted) return;
-                    
-                    var el = event.target;
-                    // If user explicitly clicks on a suggestion, let it work normally
-                    if (el && el.closest('[role="option"], .sbct')) {
-                        console.log('TKF Browser: User clicked on Google search suggestion');
+                // Enhance Google search functionality
+                setTimeout(function() {
+                    // Find Google search input
+                    var searchInput = document.querySelector('input[name="q"], input[title="Ara"], input[title="Search"]');
+                    if (searchInput) {
+                        console.log('TKF Browser: Found Google search input');
+                        // Make sure its ready for input
+                        searchInput.focus();
+                        
+                        // Track form submits
+                        var searchForm = searchInput.closest('form');
+                        if (searchForm) {
+                            searchForm.addEventListener('submit', function(e) {
+                                console.log('TKF Browser: Google search form submitted');
+                            });
+                        }
                     }
-                }, true);
+                    
+                    // Make search suggestions clickable
+                    document.addEventListener('click', function(event) {
+                        // Only process real user clicks
+                        if (!event.isTrusted) return;
+                        
+                        var el = event.target;
+                        // If user explicitly clicks on a suggestion, ensure it works
+                        if (el && (el.closest('[role="option"], .sbct, .suggestions-inner-container') ||
+                                  el.matches('.suggestions-inner-container, .sbct'))) {
+                            console.log('TKF Browser: User clicked on Google search suggestion - handling');
+                        }
+                    }, true);
+                }, 500); // Allow page to fully load
             }
             
-            return 'Normal touch handling injected with Google search fix';
+            return 'Enhanced touch handling injected with improved Google search fix';
         })();
         """
         

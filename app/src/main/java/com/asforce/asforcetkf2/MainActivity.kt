@@ -355,7 +355,7 @@ class MainActivity : AppCompatActivity() {
             false
         }
         
-        // URL kutusuna tıklanınca metni tamamen seç ve Google araması yap
+        // URL kutusuna tıklanınca metni tamamen seç ve klavyeyi göster - Google arama sorunu düzeltmesi
         binding.urlInput.setOnClickListener { v ->
             // Tüm metni seç
             (v as TextInputEditText).selectAll()
@@ -363,23 +363,10 @@ class MainActivity : AppCompatActivity() {
             // Mevcut URL'yi al
             val currentUrl = v.text.toString()
             
-            // URL'de bir arama terimi varsa Google araması yap
-            if (currentUrl.isNotEmpty() && !currentUrl.startsWith("about:")) {
-                // Google araması için hazırla
-                val searchUrl = if (URLUtil.isValidUrl(currentUrl)) {
-                    // Geçerli bir URL ise doğrudan aç
-                    currentUrl
-                } else {
-                    // Geçerli URL değilse Google araması yap
-                    "https://www.google.com/search?q=${Uri.encode(currentUrl)}"
-                }
-                
-                // Seçimi koru ve klavyeyi gösterme - sadece seçili metin göster
-                v.clearFocus()
-                hideKeyboard()
-                v.requestFocus()
-                v.selectAll()
-            }
+            // Klavyeyi göster - Google araması yapabilmek için gerekli
+            v.requestFocus()
+            showKeyboard(v)
+            v.selectAll()
         }
         
         // URL kutusuna odaklanınca metni tamamen seç
@@ -921,7 +908,20 @@ class MainActivity : AppCompatActivity() {
         val currentTab = viewModel.activeTab.value ?: return
         val webView = activeWebViews[currentTab.id] ?: return
         
-        webView.loadUrl(url)
+        // Google araması için özel kontrol ekle
+        val formattedUrl = if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            if (url.contains(" ") || !url.contains(".")) {
+                // Boşluk içeriyorsa veya bir domain gibi görünmüyorsa, büyük olasılıkla bir arama terimidir
+                "https://www.google.com/search?q=${Uri.encode(url)}"
+            } else {
+                // Domain gibi görünen bir şey ise https ekle
+                "https://$url"
+            }
+        } else {
+            url
+        }
+        
+        webView.loadUrl(formattedUrl)
     }
     
     private fun showMainMenu() {

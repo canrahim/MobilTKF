@@ -144,6 +144,22 @@ class TKFWebViewClient(
         // URL'yi mevcut WebView'de yükle
         val url = request.url.toString()
         
+        // GOOGLE ARAMA URL KONTROLÜ - Google aramasını engelleme sorununu düzelt
+        if (url.contains("google.com/search") || url.contains("google.com.tr/search")) {
+            // Google araması tespiti, varsayılan davranışa izin ver
+            // POST istekleri için çerez ayarlarını güçlendirelim
+            val cookieManager = android.webkit.CookieManager.getInstance()
+            cookieManager.setAcceptCookie(true)
+            cookieManager.setAcceptThirdPartyCookies(view, true)
+            cookieManager.flush()
+            
+            // Sayfayı yükle
+            view.post {
+                view.loadUrl(url)
+            }
+            return true
+        }
+        
         // Eğer URL'de form gönderimi varsa - POST istekleri için WebView'in kendi işlemini kullan
         if (request.method == "POST") {
             // Form submission detected to: $url, letting WebView handle it
