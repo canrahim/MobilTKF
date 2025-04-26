@@ -49,7 +49,7 @@
     <color name="card_background">#FFFFFF</color>
     
     <!-- Sekme Renkleri - Koyu Mod İçin -->
-    <color name="tab_background">#252525</color> <!-- Koyu sekme arka planı -->
+    <color name="tab_background">#1D1D1D</color> <!-- Koyu sekme arka planı - dark_surface ile eşleştirildi -->
     <color name="tab_selected">#3D5AFE</color> <!-- Parlak mavi seçili -->
     <color name="tab_inactive">#505050</color> <!-- Devre dışı sekme -->
     <color name="tab_title_active">#FFFFFF</color> <!-- Beyaz metin -->
