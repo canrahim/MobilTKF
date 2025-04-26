@@ -698,6 +698,8 @@ class MainActivity : AppCompatActivity() {
         
         // Update the suggestion manager with the new WebView
         suggestionManager.trackEditText(binding.urlInput, "url_input", webView)
+        suggestionManager.trackEditText(binding.aramaSearch, "aramaSearch_input", webView)
+        suggestionManager.trackEditText(binding.aramaSearch2, "aramaSearch2_input", webView)
         
         // Set suggestion manager on WebView
         webView.setSuggestionManager(suggestionManager)
@@ -1689,6 +1691,16 @@ class MainActivity : AppCompatActivity() {
             suggestionManager.trackEditText(editText, "url_input")
         }
         
+        // Track aramaSearch input
+        binding.aramaSearch.let { editText ->
+            suggestionManager.trackEditText(editText, "aramaSearch_input")
+        }
+        
+        // Track aramaSearch2 input (new)
+        binding.aramaSearch2.let { editText ->
+            suggestionManager.trackEditText(editText, "aramaSearch2_input")
+        }
+        
         // Monitor keyboard visibility changes to reposition suggestion bar above keyboard
         val contentView = window.decorView.findViewById<View>(android.R.id.content)
         contentView.viewTreeObserver.addOnGlobalLayoutListener {
@@ -1809,7 +1821,18 @@ class MainActivity : AppCompatActivity() {
             if (actionId == EditorInfo.IME_ACTION_SEARCH || 
                 (keyEvent?.keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.action == KeyEvent.ACTION_DOWN)) {
                 hideKeyboard()
-                performComboboxSearch()
+                performComboboxSearch(binding.aramaSearch.text.toString().trim())
+                return@setOnEditorActionListener true
+            }
+            false
+        }
+        
+        // Add listener for the aramaSearch2 EditText (new)
+        binding.aramaSearch2.setOnEditorActionListener { _, actionId, keyEvent ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || 
+                (keyEvent?.keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.action == KeyEvent.ACTION_DOWN)) {
+                hideKeyboard()
+                performComboboxSearch(binding.aramaSearch2.text.toString().trim())
                 return@setOnEditorActionListener true
             }
             false
@@ -1821,7 +1844,17 @@ class MainActivity : AppCompatActivity() {
             setEndIconDrawable(R.drawable.ic_search)
             setEndIconOnClickListener {
                 hideKeyboard()
-                performComboboxSearch()
+                performComboboxSearch(binding.aramaSearch.text.toString().trim())
+            }
+        }
+        
+        // Add end icon for aramaSearch2 (new)
+        val textInputLayout1_2 = findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.text_input_layout_1_2)
+        textInputLayout1_2?.apply {
+            setEndIconDrawable(R.drawable.ic_search)
+            setEndIconOnClickListener {
+                hideKeyboard()
+                performComboboxSearch(binding.aramaSearch2.text.toString().trim())
             }
         }
 
@@ -2315,10 +2348,9 @@ class MainActivity : AppCompatActivity() {
     /**
      * Function to search comboboxes in the WebView for matching items
      * This will search across all comboboxes in the page and select the first match
+     * @param searchText The specific text to search for
      */
-    private fun performComboboxSearch() {
-        val searchText = binding.aramaSearch.text.toString().trim()
-        
+    private fun performComboboxSearch(searchText: String) {
         if (searchText.isEmpty()) {
             // Empty input, silently return
             return

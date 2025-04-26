@@ -156,18 +156,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="3"
+        android:weightSum="4"
         android:layout_marginTop="4dp"
         app:layout_constraintTop_toBottomOf="@id/tabs_container">
 
-        <!-- Arama Input -->
+        <!-- Arama Input 1 -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/text_input_layout_1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="1dp"
             android:layout_marginEnd="1dp"
-            android:layout_weight="1"
+            android:layout_weight="0.5"
             android:hint="Arama"
             android:theme="@style/ModernEditTextTheme"
             app:boxStrokeColor="@color/primary"
@@ -178,6 +178,35 @@
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/aramaSearch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/dark_surface"
+                android:padding="2dp"
+                android:minHeight="20dp"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:inputType="text"
+                android:imeOptions="actionSearch" />
+        </com.google.android.material.textfield.TextInputLayout>
+        
+        <!-- Arama Input 2 (new) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/text_input_layout_1_2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="1dp"
+            android:layout_marginEnd="1dp"
+            android:layout_weight="0.5"
+            android:hint="Arama"
+            android:theme="@style/ModernEditTextTheme"
+            app:boxStrokeColor="@color/primary"
+            app:boxStrokeWidth="0.5dp"
+            app:boxBackgroundColor="@color/dark_surface"
+            app:hintTextColor="@color/text_secondary_dark"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/aramaSearch2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/dark_surface"
