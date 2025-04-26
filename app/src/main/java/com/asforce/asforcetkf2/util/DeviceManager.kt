@@ -325,25 +325,18 @@ class DeviceManager(
         js.append("            var checkboxes = form.querySelectorAll('input[name=\"DeviceIds[]\"]');")
         js.append("            checkboxes.forEach(function(cb) { cb.checked = false; });")
 
-        // Her cihaz ID'si için checkbox'ları işaretle
+        // Her cihaz ID'si için checkbox'ları işaretle - aynı cihazdan sadece bir tane seçmek için düzeltildi
         for (id in deviceIds) {
             js.append(
                 """
                 var cbs = form.querySelectorAll('input[value="$id"]');
                 if (cbs.length > 0) {
+                    // Her cihaz ID'si için sadece bir checkbox seç
+                    cbs[0].checked = true;
+                    console.log('Selected first checkbox for device ' + '$id');
+                }
                 """.trimIndent()
             )
-            // Tüm seçim modu ise, eşleşen tüm checkbox'ları işaretle
-            js.append("                if (").append(selectAll).append(") {")
-            js.append("                    cbs.forEach(function(cb) { cb.checked = true; });")
-            js.append("                    console.log('All checkboxes selected for device ").append(id).append("');")
-            js.append("                } else {")
-            // Aksi takdirde rastgele birini seç
-            js.append("                    var randomIndex = Math.floor(Math.random() * cbs.length);")
-            js.append("                    cbs[randomIndex].checked = true;")
-            js.append("                    console.log('Selected checkbox index for device ").append(id).append(": ' + randomIndex);")
-            js.append("                }")
-            js.append("            }")
         }
 
         // Formu gönder butonuna tıklayarak
@@ -360,7 +353,7 @@ class DeviceManager(
         js.append("        }")
         js.append("    }, 300);")
         js.append("    return true;")
-        js.append("})();")
+        js.append("})();");
 
         webView.evaluateJavascript(js.toString()) { result ->
             if ("false" == result) {
