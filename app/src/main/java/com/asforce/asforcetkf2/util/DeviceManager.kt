@@ -14,6 +14,7 @@ import android.webkit.WebView
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.view.View as AndroidView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -46,7 +47,7 @@ class DeviceManager(
     private var dialog: Dialog? = null
     private var deviceAdapter: DeviceAdapter? = null
     private var progressIndicator: CircularProgressIndicator? = null
-    private var emptyStateView: LinearLayout? = null
+    private var emptyStateView: AndroidView? = null
     
     /**
      * Cihaz ID'si için favori durumunu kontrol eder
