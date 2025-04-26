@@ -258,7 +258,9 @@
                 android:padding="2dp"
                 android:minHeight="20dp"
                 android:textColor="@color/white"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:inputType="text"
+                android:imeOptions="actionSearch" />
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 

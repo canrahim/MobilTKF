@@ -1830,6 +1830,26 @@ class MainActivity : AppCompatActivity() {
             }
         }
         
+        // Seri Numarası arama fonksiyonu için IME_ACTION_SEARCH işleyicisi ekle
+        binding.srNo.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                hideKeyboard()
+                performSerialNumberSearch() // SR Numarası için özel arama fonksiyonu
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+        }
+        
+        // SR Edittext için end icon ekle ve tıklama işleyicisi ayarla
+        val textInputLayout3 = findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.text_input_layout_3)
+        textInputLayout3?.apply {
+            setEndIconDrawable(R.drawable.ic_search)
+            setEndIconOnClickListener {
+                hideKeyboard()
+                performSerialNumberSearch()
+            }
+        }
+        
         // Cihaz Ekleme butonu - btn_right_top
         binding.btnRightTop.setOnClickListener {
             val currentTab = viewModel.activeTab.value
@@ -2253,6 +2273,174 @@ class MainActivity : AppCompatActivity() {
                         // Update the qrEditText with the found value
                         binding.qrNo.setText(foundQrCode)
                         // Toast mesajı kaldırıldı
+                    }
+                }
+            } catch (e: Exception) {
+                // Hata durumunda sessizce devam et
+            }
+        }
+    }
+    
+    /**
+     * Seri numarası arama fonksiyonu - serialnumber alanı ile arama yapar
+     */
+    private var isSerialSearchActive = false
+    
+    private fun performSerialNumberSearch() {
+        val serialText = binding.srNo.text.toString().trim()
+        
+        if (serialText.isEmpty()) {
+            // Boş girdi durumunda sessizce çık
+            return
+        }
+        
+        // Get current active tab and WebView
+        val currentTab = viewModel.activeTab.value
+        val webView = currentTab?.let { activeWebViews[it.id] }
+        
+        if (webView == null) {
+            // Aktif sekme bulunamadığında sessizce çık
+            return
+        }
+        
+        // Manuel seri numarası arama modunu aktifleştir
+        isSerialSearchActive = true
+        
+        // Check if the current page is the EquipmentList
+        val currentUrl = webView.url ?: ""
+        if (!currentUrl.contains("EquipmentList")) {
+            // Navigate to EquipmentList page first
+            webView.loadUrl("https://app.szutest.com.tr/EXT/PKControl/EquipmentList")
+            
+            // Geçici onPageFinished listener'ı (sadece bu arama için)
+            val originalOnPageFinished = webView.onPageFinished // Mevcut listener'ı sakla
+            
+            webView.onPageFinished = { tabId, url, favicon ->
+                // Only proceed if we're on the right page
+                if (url.contains("EquipmentList") && isSerialSearchActive) {
+                    // Wait a bit for the page to fully render
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        executeSerialNumberSearch(webView, serialText)
+                        // Aramayı tamamladıktan sonra bayrağı sıfırla
+                        isSerialSearchActive = false
+                        // Orijinal listener'ı geri yükle
+                        webView.onPageFinished = originalOnPageFinished
+                    }, 1000)
+                }
+                
+                // Call the original onPageFinished handler's functionality
+                val tabs = viewModel.allTabs.value ?: emptyList()
+                val tab = tabs.find { it.id == tabId }
+                if (tab != null) {
+                    // Update tab
+                    val updatedTab = tab.copy(
+                        url = url,
+                        isLoading = false,
+                        favicon = favicon ?: tab.favicon
+                    )
+                    
+                    val position = tabs.indexOf(tab)
+                    viewModel.updateTab(updatedTab, position)
+                    
+                    // Hide progress bar
+                    binding.progressBar.isVisible = false
+                }
+            }
+        } else {
+            // Already on the correct page, execute search directly
+            executeSerialNumberSearch(webView, serialText)
+            isSerialSearchActive = false // Aramayı tamamladıktan sonra bayrağı sıfırla
+        }
+    }
+    
+    private fun executeSerialNumberSearch(webView: TabWebView, serialText: String) {
+        // JavaScript to fill in the serial number input field and click search button
+        val searchScript = """
+            (function() {
+                try {
+                    // Find the serial number input field
+                    var serialInput = document.querySelector('input#filter_serialnumber');
+                    if (!serialInput) {
+                        return "Serial number input field not found";
+                    }
+                    
+                    // Set the serial number value
+                    serialInput.value = "$serialText";
+                    
+                    // Find and click the search button
+                    var searchButton = document.querySelector('i.fa.fa-search[title="Filtrele"]');
+                    if (!searchButton) {
+                        return "Search button not found";
+                    }
+                    
+                    // Click the search button
+                    searchButton.click();
+                    
+                    return "Search executed";
+                } catch(e) {
+                    return "Error: " + e.message;
+                }
+            })();
+        """.trimIndent()
+        
+        webView.evaluateJavascript(searchScript) { result ->
+            // Wait briefly for the search to complete and then check the result
+            Handler(Looper.getMainLooper()).postDelayed({
+                checkSerialNumberSearchResult(webView, serialText)
+            }, 1500)
+        }
+    }
+    
+    private fun checkSerialNumberSearchResult(webView: TabWebView, serialText: String) {
+        val checkResultScript = """
+            (function() {
+                try {
+                    // Find the result value in the specified format
+                    var resultElements = document.querySelectorAll('div.col-sm-8 p.form-control-static');
+                    var results = [];
+                    
+                    for (var i = 0; i < resultElements.length; i++) {
+                        var text = resultElements[i].textContent.trim();
+                        if (text) {
+                            results.push(text);
+                        }
+                    }
+                    
+                    if (results.length > 0) {
+                        return JSON.stringify(results);
+                    } else {
+                        return "NO_RESULTS";
+                    }
+                } catch(e) {
+                    return "ERROR: " + e.message;
+                }
+            })();
+        """.trimIndent()
+        
+        webView.evaluateJavascript(checkResultScript) { result ->
+            try {
+                // Clean up the result string
+                val cleanResult = result.trim().removeSurrounding("\"").replace("\\\"", "\"").replace("\\\\", "\\")
+                
+                if (cleanResult == "NO_RESULTS") {
+                    // Sessizce devam et - bilgi mesajı gösterme
+                    return@evaluateJavascript
+                }
+                
+                if (cleanResult.startsWith("ERROR")) {
+                    // Sessizce devam et - hata mesajı gösterme
+                    return@evaluateJavascript
+                }
+                
+                // Parse JSON result
+                val jsonArray = org.json.JSONArray(cleanResult)
+                
+                if (jsonArray.length() > 0) {
+                    val foundSerialNumber = jsonArray.getString(0)
+                    
+                    runOnUiThread {
+                        // Update the srNo EditText with the found value
+                        binding.srNo.setText(foundSerialNumber)
                     }
                 }
             } catch (e: Exception) {
