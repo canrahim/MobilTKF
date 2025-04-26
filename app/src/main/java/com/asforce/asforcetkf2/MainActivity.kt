@@ -533,6 +533,14 @@ class MainActivity : AppCompatActivity() {
                 } else if (tabId == tab.id && tab.isHibernated) {
                     webView.wakeUp()
                 }
+                
+                // Tab aktif olduğunda, manuel arama aktif değilse ve URL szutest.com.tr içeriyorsa QR kodu kontrol et
+                if (tabId == tab.id && tab.url.contains("szutest.com.tr", ignoreCase = true) && !isManualSearchActive) {
+                    // Kısa bir gecikme ile QR kodunu kontrol et (sayfanın tamamen yüklenmesi için)
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        checkForQrCodeOnPage(webView)
+                    }, 500)
+                }
             } catch (e: Exception) {
                 // WebView işleme hatası, bu sekmenin WebView'ini koleksiyondan çıkar
                 activeWebViews.remove(tabId)
@@ -763,6 +771,11 @@ class MainActivity : AppCompatActivity() {
                         url.contains("tkf", ignoreCase = true)) {
                         // Özel form algılamayı aktifleştir
                         injectEnhancedFormDetection(webView)
+                        
+                        // Eğer manuel arama aktif değilse QR kodunu otomatik olarak kontrol et
+                        if (!isManualSearchActive) {
+                            checkForQrCodeOnPage(webView)
+                        }
                     }
                     
                 }, 300) // 500ms -> 300ms (daha hızlı tepki için süreyi azalttık)
@@ -1797,6 +1810,26 @@ class MainActivity : AppCompatActivity() {
             loadUrl("https://app.szutest.com.tr/EXT/PKControl/EKControlList")
         }
         
+        // QR arama fonksiyonu için IME_ACTION_SEARCH işleyicisi ekle
+        binding.qrNo.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                hideKeyboard()
+                performQrCodeSearch()
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+        }
+        
+        // QR Edittext için end icon ekle ve tıklama işleyicisi ayarla
+        val textInputLayout2 = findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.text_input_layout_2)
+        textInputLayout2?.apply {
+            setEndIconDrawable(R.drawable.ic_search)
+            setEndIconOnClickListener {
+                hideKeyboard()
+                performQrCodeSearch()
+            }
+        }
+        
         // Cihaz Ekleme butonu - btn_right_top
         binding.btnRightTop.setOnClickListener {
             val currentTab = viewModel.activeTab.value
@@ -1997,6 +2030,237 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Otomatik QR kod kontrolü - her sayfada QR kodu olup olmadığını kontrol eder
+     */
+    private fun checkForQrCodeOnPage(webView: TabWebView) {
+        val checkResultScript = """
+            (function() {
+                try {
+                    // Find the result value in the specified format
+                    var resultElements = document.querySelectorAll('div.col-sm-8 p.form-control-static');
+                    var results = [];
+                    
+                    for (var i = 0; i < resultElements.length; i++) {
+                        var text = resultElements[i].textContent.trim();
+                        if (text && /^\d+$/.test(text)) {  // Sadece sayı içeren değerleri kontrol et
+                            results.push(text);
+                        }
+                    }
+                    
+                    if (results.length > 0) {
+                        return JSON.stringify(results);
+                    } else {
+                        return "NO_RESULTS";
+                    }
+                } catch(e) {
+                    return "ERROR: " + e.message;
+                }
+            })();
+        """.trimIndent()
+        
+        webView.evaluateJavascript(checkResultScript) { result ->
+            try {
+                // Clean up the result string
+                val cleanResult = result.trim().removeSurrounding("\"").replace("\\\"", "\"").replace("\\\\", "\\")
+                
+                if (cleanResult == "NO_RESULTS" || cleanResult.startsWith("ERROR")) {
+                    // Herhangi bir hata veya sonuç bulunamazsa sessizce çık
+                    return@evaluateJavascript
+                }
+                
+                // Parse JSON result
+                val jsonArray = org.json.JSONArray(cleanResult)
+                
+                if (jsonArray.length() > 0) {
+                    val foundQrCode = jsonArray.getString(0)
+                    
+                    // Bulunan değer şu anki değerden farklıysa güncelle
+                    val currentQrText = binding.qrNo.text.toString().trim()
+                    if (foundQrCode != currentQrText) {
+                        runOnUiThread {
+                            // Update the qrEditText with the found value
+                            binding.qrNo.setText(foundQrCode)
+                            // Toast mesajı kaldırıldı
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                // Hata durumunda sessizce devam et
+            }
+        }
+    }
+    
+    /**
+     * QR code search functionality - handles searching on equipment list page
+     */
+    // Manuel arama aktif olduğunda kullanılacak bayrak
+    private var isManualSearchActive = false
+    
+    private fun performQrCodeSearch() {
+        val qrText = binding.qrNo.text.toString().trim()
+        
+        if (qrText.isEmpty()) {
+            // Boş girdi durumunda sessizce çık
+            return
+        }
+        
+        // Get current active tab and WebView
+        val currentTab = viewModel.activeTab.value
+        val webView = currentTab?.let { activeWebViews[it.id] }
+        
+        if (webView == null) {
+            // Aktif sekme bulunamadığında sessizce çık
+            return
+        }
+        
+        // Manuel arama modunu aktifleştir
+        isManualSearchActive = true
+        
+        // Check if the current page is the EquipmentList
+        val currentUrl = webView.url ?: ""
+        if (!currentUrl.contains("EquipmentList")) {
+            // Navigate to EquipmentList page first
+            webView.loadUrl("https://app.szutest.com.tr/EXT/PKControl/EquipmentList")
+            
+            // Geçici onPageFinished listener'ı (sadece bu arama için)
+            val originalOnPageFinished = webView.onPageFinished // Mevcut listener'ı sakla
+            
+            webView.onPageFinished = { tabId, url, favicon ->
+                // Only proceed if we're on the right page
+                if (url.contains("EquipmentList") && isManualSearchActive) {
+                    // Wait a bit for the page to fully render
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        executeQrCodeSearch(webView, qrText)
+                        // Aramayı tamamladıktan sonra bayrağı sıfırla
+                        isManualSearchActive = false
+                        // Orijinal listener'ı geri yükle
+                        webView.onPageFinished = originalOnPageFinished
+                    }, 1000)
+                }
+                
+                // Call the original onPageFinished handler's functionality
+                val tabs = viewModel.allTabs.value ?: emptyList()
+                val tab = tabs.find { it.id == tabId }
+                if (tab != null) {
+                    // Update tab
+                    val updatedTab = tab.copy(
+                        url = url,
+                        isLoading = false,
+                        favicon = favicon ?: tab.favicon
+                    )
+                    
+                    val position = tabs.indexOf(tab)
+                    viewModel.updateTab(updatedTab, position)
+                    
+                    // Hide progress bar
+                    binding.progressBar.isVisible = false
+                }
+            }
+        } else {
+            // Already on the correct page, execute search directly
+            executeQrCodeSearch(webView, qrText)
+            isManualSearchActive = false // Aramayı tamamladıktan sonra bayrağı sıfırla
+        }
+    }
+    
+    private fun executeQrCodeSearch(webView: TabWebView, qrText: String) {
+        // JavaScript to fill in the QR input field and click search button
+        val searchScript = """
+            (function() {
+                try {
+                    // Find the QR input field
+                    var qrInput = document.querySelector('input#filter_qr');
+                    if (!qrInput) {
+                        return "QR input field not found";
+                    }
+                    
+                    // Set the QR value
+                    qrInput.value = "$qrText";
+                    
+                    // Find and click the search button
+                    var searchButton = document.querySelector('i.fa.fa-search[title="Filtrele"]');
+                    if (!searchButton) {
+                        return "Search button not found";
+                    }
+                    
+                    // Click the search button
+                    searchButton.click();
+                    
+                    return "Search executed";
+                } catch(e) {
+                    return "Error: " + e.message;
+                }
+            })();
+        """.trimIndent()
+        
+        webView.evaluateJavascript(searchScript) { result ->
+            // Wait briefly for the search to complete and then check the result
+            Handler(Looper.getMainLooper()).postDelayed({
+                checkQrCodeSearchResult(webView, qrText)
+            }, 1500)
+        }
+    }
+    
+    private fun checkQrCodeSearchResult(webView: TabWebView, qrText: String) {
+        val checkResultScript = """
+            (function() {
+                try {
+                    // Find the result value in the specified format
+                    var resultElements = document.querySelectorAll('div.col-sm-8 p.form-control-static');
+                    var results = [];
+                    
+                    for (var i = 0; i < resultElements.length; i++) {
+                        var text = resultElements[i].textContent.trim();
+                        if (text) {
+                            results.push(text);
+                        }
+                    }
+                    
+                    if (results.length > 0) {
+                        return JSON.stringify(results);
+                    } else {
+                        return "NO_RESULTS";
+                    }
+                } catch(e) {
+                    return "ERROR: " + e.message;
+                }
+            })();
+        """.trimIndent()
+        
+        webView.evaluateJavascript(checkResultScript) { result ->
+            try {
+                // Clean up the result string
+                val cleanResult = result.trim().removeSurrounding("\"").replace("\\\"", "\"").replace("\\\\", "\\")
+                
+                if (cleanResult == "NO_RESULTS") {
+                    // Sessizce devam et - bilgi mesajı gösterme
+                    return@evaluateJavascript
+                }
+                
+                if (cleanResult.startsWith("ERROR")) {
+                    // Sessizce devam et - hata mesajı gösterme
+                    return@evaluateJavascript
+                }
+                
+                // Parse JSON result
+                val jsonArray = org.json.JSONArray(cleanResult)
+                
+                if (jsonArray.length() > 0) {
+                    val foundQrCode = jsonArray.getString(0)
+                    
+                    runOnUiThread {
+                        // Update the qrEditText with the found value
+                        binding.qrNo.setText(foundQrCode)
+                        // Toast mesajı kaldırıldı
+                    }
+                }
+            } catch (e: Exception) {
+                // Hata durumunda sessizce devam et
+            }
+        }
+    }
+    
     /**
      * Override onLowMemory to handle low memory conditions
      */

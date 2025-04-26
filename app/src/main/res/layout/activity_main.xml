@@ -321,7 +321,7 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_text_1"
+            android:id="@+id/aramaSearch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/dark_surface"
@@ -350,12 +350,16 @@
         android:layout_marginStart="2dp"
         android:layout_marginEnd="2dp"
         android:layout_marginBottom="8dp"
-        android:hint="EditText 2"
+        android:hint="QR No"
         android:theme="@style/ModernEditTextTheme"
         app:boxStrokeColor="@color/primary"
         app:boxStrokeWidth="1dp"
         app:boxBackgroundColor="@color/dark_surface"
         app:hintTextColor="@color/text_secondary_dark"
+        app:endIconMode="custom"
+        app:endIconDrawable="@drawable/ic_search"
+        app:endIconTint="@color/white"
+        app:endIconContentDescription="QR Ara"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/divider_1"
         app:layout_constraintEnd_toStartOf="@id/divider_2"
@@ -363,13 +367,16 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_text_2"
+            android:id="@+id/qrNo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/dark_surface"
             android:padding="4dp"
             android:textColor="@color/white"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:hint="QR No"
+            android:inputType="number"
+            android:imeOptions="actionSearch" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Divider 2 -->
@@ -404,7 +411,7 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_text_3"
+            android:id="@+id/srNo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/dark_surface"
