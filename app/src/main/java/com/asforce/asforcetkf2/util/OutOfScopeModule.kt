@@ -10,29 +10,44 @@ object OutOfScopeModule {
     private const val CSS_CLASS = "kapsam-disi"
 
     // AYDINLATMA MENÜSÜ METOTLARİ
-
-    // 24V Aydınlatma
+    // Acil durum aydınlatma için kaçak akım ölçümü kapsam dışı------------
+    // WebViewUtils.setKacakAkimOlcumuOutOfScope(webView)
+    // Tüm fonksiyon testleri kapsam dışı-----------
+    //WebViewUtils.setAllFunctionTestsOutOfScope(webView)
+    // Sensörlü aydınlatma için izolasyon direnci kapsam dışı------------
+    //WebViewUtils.setIzolasyonDirenciOutOfScope(webView)
+    // Priz grubu için toprak sürekliliği kapsam dışı------------
+    // WebViewUtils.setToprakSurekliligiOutOfScope(webView)
+    // Sigorta grubu için izolasyon ve kaçak akım kapsam dışı----------
+    // WebViewUtils.setSelectedFunctionTestsOutOfScope(webView, intArrayOf(1, 2))
+    // 24V Kablolu Aydınlatma
     fun set24VAydinlatmaOutOfScope(webView: WebView) {
-        val indices = intArrayOf(2, 3, 4, 11, 12, 13, 14, 15, 16, 17)
+        val indices = intArrayOf(0, 1, 4, 11, 12, 13, 14, 15, 16, 17)
         WebViewUtils.setQuestionsToOutOfScope(webView, indices, OUT_OF_SCOPE_VALUE, CSS_CLASS)
         // Aydınlatma için toprak sürekliliği ve kaçak akım ölçümü kapsam dışı
         WebViewUtils.setSelectedFunctionTestsOutOfScope(webView, intArrayOf(0, 1, 2))
     }
 
-    // 220V Aydınlatma
-    fun set220VAydinlatmaOutOfScope(webView: WebView) {
-        val indices = intArrayOf(1, 4, 6, 8, 10, 12, 14, 16)
+    // Akülü Alan Aydınlatma
+    fun setAkuluAydinlatmaOutOfScope(webView: WebView) {
+        val indices = intArrayOf(2, 3, 11, 12, 13, 14, 15, 16, 17)
         WebViewUtils.setQuestionsToOutOfScope(webView, indices, OUT_OF_SCOPE_VALUE, CSS_CLASS)
         // Tüm fonksiyon testleri kapsam dışı
         WebViewUtils.setAllFunctionTestsOutOfScope(webView)
     }
 
-    // Acil Durum Aydınlatma
-    fun setAcilDurumAydinlatmaOutOfScope(webView: WebView) {
-        val indices = intArrayOf(3, 5, 7, 9, 11, 13, 15, 17, 19)
+    // Avuc Taslama
+    fun setAvucTaslamaOutOfScope(webView: WebView) {
+        val indices = intArrayOf(0, 1, 10)
         WebViewUtils.setQuestionsToOutOfScope(webView, indices, OUT_OF_SCOPE_VALUE, CSS_CLASS)
-        // Acil durum aydınlatma için kaçak akım ölçümü kapsam dışı
-        WebViewUtils.setKacakAkimOlcumuOutOfScope(webView)
+        WebViewUtils.setToprakSurekliligiOutOfScope(webView)
+    }
+
+    // Şarjlı Avuc Taslama
+    fun setSarjliAvucTaslamaOutOfScope(webView: WebView) {
+        val indices = intArrayOf(2, 3, 10, 13, 19)
+        WebViewUtils.setQuestionsToOutOfScope(webView, indices, OUT_OF_SCOPE_VALUE, CSS_CLASS)
+        WebViewUtils.setAllFunctionTestsOutOfScope(webView)
     }
 
     // Sensörlü Aydınlatma

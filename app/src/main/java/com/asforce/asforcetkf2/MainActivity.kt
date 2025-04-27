@@ -58,27 +58,27 @@ import android.os.Handler
 import android.os.Looper
 
 class MainActivity : AppCompatActivity() {
-    
+
     private lateinit var binding: ActivityMainBinding
     private val viewModel: TabViewModel by viewModels()
-    
+
     // Açıkça değişken türlerini belirtelim
     private lateinit var tabsAdapter: TabsAdapter
     private lateinit var itemTouchHelper: ItemTouchHelper
-    
+
     // Dosya seçici ve kamera için gerekli değişkenler
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
     private var cameraPhotoPath: String? = null
     private var currentPhotoUri: Uri? = null
     private val CAMERA_PERMISSION_REQUEST_CODE = 1001
-    
+
     // Dosya seçici başlatıcı - önceki hali
     private val fileChooserLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         val data = result.data
         val resultCode = result.resultCode
-        
+
         filePathCallback?.let { callback ->
             if (resultCode == Activity.RESULT_OK && data != null) {
                 val results = if (data.clipData != null) {
@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
             filePathCallback = null
         }
     }
-    
+
     // Kamera başlatıcı
     private val cameraLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -113,17 +113,17 @@ class MainActivity : AppCompatActivity() {
         filePathCallback = null
         currentPhotoUri = null
     }
-    
+
     private val downloadManager by lazy { TKFDownloadManager(this) }
     private val resourceMonitor by lazy { TabResourceMonitor() }
     private val activeWebViews = mutableMapOf<String, TabWebView>()
-    
+
     // Suggestion manager
     private lateinit var suggestionManager: SuggestionManager
-    
+
     // Device manager
     private lateinit var deviceManager: DeviceManager
-    
+
     // Topraklama kontrolünden dönüş için
     private val topraklamaActivityResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -131,13 +131,13 @@ class MainActivity : AppCompatActivity() {
         if (result.resultCode == Activity.RESULT_OK) {
             val data = result.data
             val hasTopraklamaSorunu = data?.getBooleanExtra("hasTopraklamaSorunu", false) ?: DataHolder.hasTopraklamaSorunu
-            
+
             if (hasTopraklamaSorunu) {
-                
+
                 // WebView'i al
                 val currentTab = viewModel.activeTab.value
                 val webView = currentTab?.let { activeWebViews[it.id] }
-                
+
                 if (webView != null) {
                     // Seçeneği "Uygun Değil" olarak ayarla ve tickbox'ı işaretle
                     val setTopraklamaSorunScript = """
@@ -206,9 +206,9 @@ class MainActivity : AppCompatActivity() {
                             }
                         })();
                     """.trimIndent()
-                    
+
                     webView.evaluateJavascript(setTopraklamaSorunScript) { result ->
-                        
+
                         // İşlem sonrası DataHolder'ı temizle
                         DataHolder.hasTopraklamaSorunu = false
                     }
@@ -217,23 +217,23 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
+
         // Tam ekran modu ve şeffaf gezinme çubuğu - klavye içerik kaymasını optimize eden versiyon
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or 
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
                 View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
         window.statusBarColor = android.graphics.Color.TRANSPARENT
-        
+
         // Klavye için içerik ayarlama davranışını güçlendir - SORUN ÇÖZÜMÜ
         // WebView formları arasında geçiş yaparken klavye kapanıp açılma davranışını önle
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or 
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
                                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
-        
+
         // Bileşenleri başlat
         initializeTabComponents()
         setupTabRecyclerView()
@@ -241,51 +241,51 @@ class MainActivity : AppCompatActivity() {
         setupNavigationButtons()
         setupFloatingMenuButtons()
         setupActionButtons()
-        
+
         // Direkt olarak WebView'a yazmak için test fonksiyonu ekle
         binding.btnLeft2.setOnLongClickListener {
             testSuggestionInsertion()
             return@setOnLongClickListener true
         }
-        
+
         // Yeni sekme düğmesi - çift tıklama koruması güçlendirilmiş
         val newTabButton = binding.btnNewTab
         newTabButton.isEnabled = true
         newTabButton.setOnClickListener(object : View.OnClickListener {
             private var lastClickTime: Long = 0
-            
+
             override fun onClick(v: View) {
                 // Çift tıklama koruması - 1 saniye içinde tekrar tıklamayı önle
                 val currentTime = System.currentTimeMillis()
                 if (currentTime - lastClickTime > 1000) {
                     lastClickTime = currentTime
-                    
+
                     // Düğme animasyonu
                     v.isEnabled = false
                     v.postDelayed({ v.isEnabled = true }, 1000) // 1 saniye sonra etkinleştir
-                    
+
                     // Yeni sekme aç
                     addNewTab()
                 }
             }
         })
-        
+
         // Initialize view model observers
         observeViewModel()
-        
+
         // Handle intent (e.g., for opening URLs from external apps)
         handleIntent(intent)
-        
+
         // Start resource monitoring
         startTabResourceMonitoring()
-        
+
         // QR Kod tarayıcı butonunu ayarla
         setupQrScannerButton()
-        
+
         // Initialize suggestion manager
         initializeSuggestionManager()
     }
-    
+
     private fun initializeTabComponents() {
         // Önce callback'i oluştur
         val touchHelperCallback = object : ItemTouchHelper.SimpleCallback(
@@ -301,15 +301,15 @@ class MainActivity : AppCompatActivity() {
                 tabsAdapter.moveTab(fromPosition, toPosition)
                 return true
             }
-            
+
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 // Not used as we're only supporting drag
             }
         }
-        
+
         // ItemTouchHelper'ı oluştur
         itemTouchHelper = ItemTouchHelper(touchHelperCallback)
-        
+
         // Adapter'ı başlat
         tabsAdapter = TabsAdapter(
             onTabSelected = { tab -> selectTab(tab) },
@@ -317,33 +317,33 @@ class MainActivity : AppCompatActivity() {
             onStartDrag = { holder -> itemTouchHelper.startDrag(holder) }
         )
     }
-    
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
     }
-    
+
     private fun handleIntent(intent: Intent) {
         val action = intent.action
         val data = intent.data
-        
+
         if (Intent.ACTION_VIEW == action && data != null) {
             val url = data.toString()
             addNewTab(url)
         }
     }
-    
+
     private fun setupTabRecyclerView() {
         binding.tabsRecyclerView.adapter = tabsAdapter
         itemTouchHelper.attachToRecyclerView(binding.tabsRecyclerView)
-        
+
         tabsAdapter.onTabDragListener = TabsAdapter.OnTabDragListener { fromPosition, toPosition ->
             // Update tab positions in view model
             val tabs = tabsAdapter.getTabs()
             viewModel.updateTabPositions(tabs)
         }
     }
-    
+
     private fun setupUrlInput() {
         binding.urlInput.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_GO ||
@@ -356,28 +356,28 @@ class MainActivity : AppCompatActivity() {
             }
             false
         }
-        
+
         // URL kutusuna tıklanınca metni tamamen seç ve klavyeyi göster - Google arama sorunu düzeltmesi
         binding.urlInput.setOnClickListener { v ->
             // Tüm metni seç
             (v as TextInputEditText).selectAll()
-            
+
             // Mevcut URL'yi al
             val currentUrl = v.text.toString()
-            
+
             // Klavyeyi göster - Google araması yapabilmek için gerekli
             v.requestFocus()
             showKeyboard(v)
             v.selectAll()
         }
-        
+
         // URL kutusuna odaklanınca metni tamamen seç
         binding.urlInput.setOnFocusChangeListener { v, hasFocus ->
             if (hasFocus) {
                 (v as TextInputEditText).selectAll()
             }
         }
-        
+
         // Uzun tıklama işlemini devre dışı bırak - xml'de longClickable="false" ayarlandı
         // Ancak bazı cihazlarda ek güvenlik için buraya da koyalım
         binding.urlInput.setOnLongClickListener {
@@ -386,54 +386,54 @@ class MainActivity : AppCompatActivity() {
             true // Olayı tüket
         }
     }
-    
+
     private fun setupNavigationButtons() {
         // Main menu button
         binding.btnMainMenu.setOnClickListener {
             showMainMenu()
         }
-        
+
         // Back button
         binding.btnBack.setOnClickListener {
             val currentTab = viewModel.activeTab.value ?: return@setOnClickListener
             val webView = activeWebViews[currentTab.id] ?: return@setOnClickListener
-            
+
             if (webView.canGoBack()) {
                 webView.goBack()
             }
         }
-        
+
         // Forward button
         binding.btnForward.setOnClickListener {
             val currentTab = viewModel.activeTab.value ?: return@setOnClickListener
             val webView = activeWebViews[currentTab.id] ?: return@setOnClickListener
-            
+
             if (webView.canGoForward()) {
                 webView.goForward()
             }
         }
-        
+
         // Refresh button
         binding.btnRefresh.setOnClickListener {
             val currentTab = viewModel.activeTab.value ?: return@setOnClickListener
             val webView = activeWebViews[currentTab.id] ?: return@setOnClickListener
-            
+
             // Önbelleği devre dışı bırakarak sayfayı yenile (force refresh)
             webView.settings.cacheMode = WebSettings.LOAD_NO_CACHE
             webView.reload()
-            
+
             // Yenileme sonrası önbellek modunu eski haline döndür
             webView.postDelayed({
                 webView.settings.cacheMode = WebSettings.LOAD_DEFAULT
                 webView.fixToastVisibility()
             }, 1000)  // Slight delay to ensure page has loaded
         }
-        
+
         // Menu button
         binding.btnMenu.setOnClickListener {
             showMenu()
         }
-        
+
         // URL kopyalama butonu
         binding.urlInputLayout.setEndIconOnClickListener {
             val url = binding.urlInput.text.toString()
@@ -445,18 +445,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     private fun observeViewModel() {
         // Observe tabs
         viewModel.allTabs.observe(this) { tabs ->
             tabsAdapter.updateTabs(tabs)
-            
+
             // If no tabs, add a new one
             if (tabs.isEmpty()) {
                 addNewTab()
             }
         }
-        
+
         // Observe active tab
         viewModel.activeTab.observe(this) { tab ->
             if (tab != null) {
@@ -464,7 +464,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     /**
      * Yeni bir sekme ekler ve etkinleştirir
      */
@@ -473,13 +473,13 @@ class MainActivity : AppCompatActivity() {
         runOnUiThread {
             // Yeni sekme ekle ve etkinleştir
             val newTabId = viewModel.addTab(url)
-            
+
             // Kullanıcıya geri bildirim
             Toast.makeText(this, "Yeni sekme açıldı", Toast.LENGTH_SHORT).show()
-            
+
         }
     }
-    
+
     private fun closeTab(tab: Tab) {
         // Clean up the WebView - güvenlik kontrolleri ekle
         activeWebViews[tab.id]?.let { webView ->
@@ -505,15 +505,15 @@ class MainActivity : AppCompatActivity() {
                 activeWebViews.remove(tab.id)
             }
         }
-        
+
         // Tab'i viewModel'den kapat
         viewModel.closeTab(tab)
     }
-    
+
     private fun selectTab(tab: Tab) {
         viewModel.setActiveTab(tab)
     }
-    
+
     private fun updateActiveTab(tab: Tab) {
         // Update URL bar and ensure the cursor is at the end for proper ellipsize behavior
         try {
@@ -523,10 +523,10 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             // URL güncelleme hatası
         }
-        
+
         // Aktif tab değiştiğinde, URL'deki sayısal kod varsa DataHolder'a kaydet
         extractDigitsFromUrl(tab.url)
-        
+
         // Show active tab's WebView, hide others
         for ((tabId, webView) in activeWebViews.entries.toList()) { // Concurrent modification için toList()
             try {
@@ -536,16 +536,16 @@ class MainActivity : AppCompatActivity() {
                     activeWebViews.remove(tabId)
                     continue
                 }
-                
+
                 webView.visibility = if (tabId == tab.id) View.VISIBLE else View.GONE
-                
+
                 // Update WebView state based on hibernation
                 if (tabId != tab.id && tab.isHibernated) {
                     webView.hibernate()
                 } else if (tabId == tab.id && tab.isHibernated) {
                     webView.wakeUp()
                 }
-                
+
                 // Tab aktif olduğunda, manuel arama aktif değilse ve URL szutest.com.tr içeriyorsa QR kodu kontrol et
                 if (tabId == tab.id && tab.url.contains("szutest.com.tr", ignoreCase = true) && !isManualSearchActive) {
                     // Kısa bir gecikme ile QR kodunu kontrol et (sayfanın tamamen yüklenmesi için)
@@ -558,25 +558,25 @@ class MainActivity : AppCompatActivity() {
                 activeWebViews.remove(tabId)
             }
         }
-        
+
         // Create WebView for the tab if it doesn't exist yet
         if (!activeWebViews.containsKey(tab.id)) {
             createWebViewForTab(tab)
         }
     }
-    
+
     private fun createWebViewForTab(tab: Tab) {
         val webView = TabWebView(this)
-        
+
         // Set up WebView events
         setupWebViewEvents(webView)
-        
+
         // Add to container
         binding.webviewContainer.addView(webView)
-        
+
         // Initialize with tab and load URL
         webView.initialize(tab)
-        
+
         // WebView için özel dokunma dinleyicisi ekle
         webView.setOnClickListener {
             // WebView'e tıklanma - odakla
@@ -590,7 +590,7 @@ class MainActivity : AppCompatActivity() {
                     // WebView'in odak almasını sağla - imleç sorununu gider
                     v.requestFocus()
                 }
-                
+
                 MotionEvent.ACTION_UP -> {
                     // Dokunma sonrası tıklanan elementi ve tipini belirle
                     val script = """
@@ -651,12 +651,12 @@ class MainActivity : AppCompatActivity() {
                         }
                     })();
                     """
-                    
+
                     webView.evaluateJavascript(script) { result ->
                         try {
                             // Tırnak işaretlerini ve kaçış karakterlerini temizle
                             val cleanResult = result.trim().removeSurrounding("\"").replace("\\\"", "\"").replace("\\\\", "\\")
-                            
+
                             // Input alanı ise özel işlem yap
                             if (cleanResult.startsWith("{")) {
                                 try {
@@ -665,7 +665,7 @@ class MainActivity : AppCompatActivity() {
                                     val isNumeric = jsonResult.optBoolean("isNumeric", false)
                                     val inputType = jsonResult.optString("type", "text")
                                     val inputKey = jsonResult.optString("key", "")
-                                    
+
                                     // Öneri sistemini aktifleştir
                                     if (inputKey.isNotEmpty()) {
                                         webView.evaluateJavascript("""
@@ -678,7 +678,7 @@ class MainActivity : AppCompatActivity() {
                                             })();
                                         """.trimIndent(), null)
                                     }
-                                    
+
                                     // Sayısal klavye için özel klavye tipi ayarla
                                     if (isNumeric) {
                                         // Sayısal klavye durumunda klavyeyi dikkatli şekilde göster
@@ -699,24 +699,24 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-            
+
             // WebView'in normal tıklama işlemesine izin ver
             // Bu önemli: WebView'in kendi dokunma olaylarını da işlemesi gerekiyor
             return@setOnTouchListener false
         }
-        
+
         // Store in active WebViews
         activeWebViews[tab.id] = webView
-        
+
         // Update the suggestion manager with the new WebView
         suggestionManager.trackEditText(binding.urlInput, "url_input", webView)
         suggestionManager.trackEditText(binding.aramaSearch, "aramaSearch_input", webView)
         suggestionManager.trackEditText(binding.aramaSearch2, "aramaSearch2_input", webView)
-        
+
         // Set suggestion manager on WebView
         webView.setSuggestionManager(suggestionManager)
     }
-    
+
     private fun setupWebViewEvents(webView: TabWebView) {
         webView.onPageStarted = { tabId, url ->
             val tabs = viewModel.allTabs.value ?: emptyList()
@@ -727,26 +727,26 @@ class MainActivity : AppCompatActivity() {
                     url = url,
                     isLoading = true
                 )
-                
+
                 val position = tabs.indexOf(tab)
                 viewModel.updateTab(updatedTab, position)
-                
+
                 // Update URL input
                 if (updatedTab.isActive) {
                     binding.urlInput.setText(url)
                 }
-                
+
                 // Show progress bar
                 binding.progressBar.isVisible = true
                 binding.progressBar.progress = 0
-                
+
                 // Input alanları için daha agresif tarama yap
                 if (url.contains("szutest.com.tr", ignoreCase = true)) {
                     injectEnhancedFormDetection(webView)
                 }
             }
         }
-        
+
         webView.onPageFinished = { tabId, url, favicon ->
             val tabs = viewModel.allTabs.value ?: emptyList()
             val tab = tabs.find { it.id == tabId }
@@ -757,45 +757,45 @@ class MainActivity : AppCompatActivity() {
                     isLoading = false,
                     favicon = favicon ?: tab.favicon
                 )
-                
+
                 val position = tabs.indexOf(tab)
                 viewModel.updateTab(updatedTab, position)
-                
+
                 // Hide progress bar
                 binding.progressBar.isVisible = false
-                
+
                 // Sayfa yükleme tamamlanınca form işlemlerini ve gelişmiş form algılamayı çalıştır
                 // Süreyi azalttık - daha hızlı tepki ver
                 webView.postDelayed({
                     // Form işleme enjeksiyonu
                     webView.injectFormHandlers()
-                    
+
                     // Giriş alanı izleme
                     webView.injectInputTracking()
-                    
+
                     // Elle odaklama işleme
                     webView.injectManualFocusHandling()
-                    
+
                     // Giriş algılamayı iyileştir
                     webView.enhanceInputFocusDetection()
-                    
+
                     // SzuTest gibi özel siteler için gelişmiş form algılama yöntemini kullan
-                    if (url.contains("szutest.com.tr", ignoreCase = true) || 
+                    if (url.contains("szutest.com.tr", ignoreCase = true) ||
                         url.contains("equipmentid", ignoreCase = true) ||
                         url.contains("tkf", ignoreCase = true)) {
                         // Özel form algılamayı aktifleştir
                         injectEnhancedFormDetection(webView)
-                        
+
                         // Eğer manuel arama aktif değilse QR kodunu otomatik olarak kontrol et
                         if (!isManualSearchActive) {
                             checkForQrCodeOnPage(webView)
                         }
                     }
-                    
+
                 }, 300) // 500ms -> 300ms (daha hızlı tepki için süreyi azalttık)
             }
         }
-        
+
         webView.onProgressChanged = { tabId, progress ->
             val tabs = viewModel.allTabs.value ?: emptyList()
             val tab = tabs.find { it.id == tabId }
@@ -803,7 +803,7 @@ class MainActivity : AppCompatActivity() {
                 binding.progressBar.progress = progress
             }
         }
-        
+
         webView.onReceivedTitle = { tabId, title ->
             val tabs = viewModel.allTabs.value ?: emptyList()
             val tab = tabs.find { it.id == tabId }
@@ -814,16 +814,16 @@ class MainActivity : AppCompatActivity() {
                 viewModel.updateTab(updatedTab, position)
             }
         }
-        
+
         webView.onReceivedError = { errorCode, description, failingUrl ->
-            
+
             Snackbar.make(
                 binding.root,
                 "Error loading page: $description",
                 Snackbar.LENGTH_LONG
             ).show()
         }
-        
+
         webView.onReceivedSslError = { error ->
             // Show SSL error dialog
             val builder = MaterialAlertDialogBuilder(this)
@@ -832,13 +832,13 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton(R.string.ssl_error_continue) { _, _ -> true }
                 .setNegativeButton(R.string.ssl_error_cancel) { _, _ -> false }
                 .create()
-            
+
             builder.show()
-            
+
             // Don't proceed by default (safer)
             false
         }
-        
+
         webView.onJsAlert = { url, message, result ->
             val builder = AlertDialog.Builder(this)
                 .setTitle(url)
@@ -848,11 +848,11 @@ class MainActivity : AppCompatActivity() {
                 }
                 .setCancelable(false)
                 .create()
-            
+
             builder.show()
             true
         }
-        
+
         webView.onJsConfirm = { url, message, result ->
             val builder = AlertDialog.Builder(this)
                 .setTitle(url)
@@ -865,26 +865,26 @@ class MainActivity : AppCompatActivity() {
                 }
                 .setCancelable(false)
                 .create()
-            
+
             builder.show()
             true
         }
-        
+
         webView.onFileChooser = { callback ->
             filePathCallback = callback
-            
+
             showFileSourceDialog()
             true
         }
-        
+
         webView.onDownloadRequested = { url, userAgent, contentDisposition, mimeType, contentLength ->
             val fileName = URLUtil.guessFileName(url, contentDisposition, mimeType)
-            
+
             // Start download
             val downloadId = downloadManager.downloadFile(
                 url, userAgent, contentDisposition, mimeType, contentLength
             )
-            
+
             if (downloadId > 0) {
                 Snackbar.make(
                     binding.root,
@@ -899,17 +899,17 @@ class MainActivity : AppCompatActivity() {
                 ).show()
             }
         }
-        
+
         // Uzun basma için callback'i ayarla
         webView.onLongPress = { tabId, url ->
             showLongPressMenu(url)
         }
     }
-    
+
     private fun loadUrl(url: String) {
         val currentTab = viewModel.activeTab.value ?: return
         val webView = activeWebViews[currentTab.id] ?: return
-        
+
         // Google araması için özel kontrol ekle
         val formattedUrl = if (!url.startsWith("http://") && !url.startsWith("https://")) {
             if (url.contains(" ") || !url.contains(".")) {
@@ -922,10 +922,10 @@ class MainActivity : AppCompatActivity() {
         } else {
             url
         }
-        
+
         webView.loadUrl(formattedUrl)
     }
-    
+
     private fun showMainMenu() {
         // Ana menü öğeleri
         val items = arrayOf(
@@ -936,16 +936,16 @@ class MainActivity : AppCompatActivity() {
             "Öneri Önbelleğini Temizle",
             "Ayarlar"
         )
-        
+
         // PopupMenu kullanarak menüyü butonun altında göster
         val menuBtn = binding.btnMainMenu
         val popup = android.widget.PopupMenu(this, menuBtn)
-        
+
         // Menü öğelerini ekle
         for (i in items.indices) {
             popup.menu.add(android.view.Menu.NONE, i, i, items[i])
         }
-        
+
         // Tıklama olaylarını yönet
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
@@ -958,22 +958,22 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
-        
+
         // Menü konumunu ayarla - butonun altında göstermek için
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
             popup.setForceShowIcon(true)
         }
-        
+
         popup.show()
     }
-    
+
     /**
      * Clear the suggestion cache to optimize performance
      */
     private fun clearSuggestionCache() {
         // Önbelleği temizle ve kullanıcıya bilgi ver
         suggestionManager.clearAllSuggestionCaches()
-        
+
         // Bilgilendirme mesajı göster
         Snackbar.make(
             binding.root,
@@ -981,7 +981,7 @@ class MainActivity : AppCompatActivity() {
             Snackbar.LENGTH_SHORT
         ).show()
     }
-    
+
     private fun showMenu() {
         // Tarayıcı ayarları menü öğeleri - Yeni menü yapısı
         val items = arrayOf(
@@ -990,16 +990,16 @@ class MainActivity : AppCompatActivity() {
             "Topraklama",
             "Termal Kamera"
         )
-        
+
         // PopupMenu kullanarak menüyü butonun altında göster
         val menuBtn = binding.btnMenu
         val popup = android.widget.PopupMenu(this, menuBtn)
-        
+
         // Menü öğelerini ekle
         for (i in items.indices) {
             popup.menu.add(android.view.Menu.NONE, i, i, items[i])
         }
-        
+
         // Tıklama olaylarını yönet
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
@@ -1010,22 +1010,22 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
-        
+
         // Menü konumunu ayarla - butonun altında göstermek için
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
             popup.setForceShowIcon(true)
         }
-        
+
         popup.show()
     }
-    
+
     // Yeni menü işlevleri
     private fun handleKacakAkim() {
         // Kaçak Akım aktivitesini başlat
         val intent = Intent(this, LeakageControlActivity::class.java)
         startActivity(intent)
     }
-    
+
     /**
      * Kapsam Dışı ana menüsünü gösterir
      */
@@ -1033,61 +1033,59 @@ class MainActivity : AppCompatActivity() {
         // Ana menü kategorileri
         val mainCategories = arrayOf(
             "Aydınlatma Cihazları",
-            "Elektrik Malzemeleri",
-            "Tesisat Malzemeleri",
-            "Ölçüm Aletleri"
+            "Elektrikli El Aletleri",
+            "Şarjlı El Aletleri",
+            "Elektrikli Kaynak Makinası",
+            "Diğer Elektirikli Cihazlar"
         )
-        
+
         // PopupMenu ile ana kategorileri göster
         val menuBtn = binding.btnScopeOut
         val popup = android.widget.PopupMenu(this, menuBtn)
-        
+
         // Menü öğelerini ekle
         for (i in mainCategories.indices) {
             popup.menu.add(android.view.Menu.NONE, i, i, mainCategories[i])
         }
-        
+
         // Tıklama olaylarını yönet
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 0 -> showAydinlatmaSubMenu()
-                1 -> showElektrikSubMenu()
-                2 -> showTesisatSubMenu()
-                3 -> showOlcumSubMenu()
+                1 -> showElektrikElSubMenu()
+                2 -> showSarjliElSubMenu()
+                3 -> showKaynakSubMenu()
+                4 -> showDıgerElektrikSubMenu()
             }
             true
         }
-        
+
         // Menüyü göster
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
             popup.setForceShowIcon(true)
         }
-        
+
         popup.show()
     }
-    
+
     /**
      * Aydınlatma alt menüsünü gösterir
      */
     private fun showAydinlatmaSubMenu() {
         // Aydınlatma alt menü öğeleri
         val subItems = arrayOf(
-            "24V Aydınlatma",
-            "220V Aydınlatma",
-            "Acil Durum Aydınlatma",
-            "Sensörlü Aydınlatma"
+            "24V Kablolu Aydınlatma",
+            "Akülü Alan Aydınlatma"
         )
-        
+
         showSubMenu("Aydınlatma Cihazları", subItems) { position ->
             val currentTab = viewModel.activeTab.value
             val webView = currentTab?.let { activeWebViews[it.id] }
-            
+
             if (webView != null) {
                 when (position) {
                     0 -> OutOfScopeModule.set24VAydinlatmaOutOfScope(webView)
-                    1 -> OutOfScopeModule.set220VAydinlatmaOutOfScope(webView)
-                    2 -> OutOfScopeModule.setAcilDurumAydinlatmaOutOfScope(webView)
-                    3 -> OutOfScopeModule.setSensorluAydinlatmaOutOfScope(webView)
+                    1 -> OutOfScopeModule.setAkuluAydinlatmaOutOfScope(webView)
                 }
                 showScopeOutSuccessMessage(subItems[position])
             } else {
@@ -1095,26 +1093,26 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     /**
      * Elektrik Malzemeleri alt menüsünü gösterir
      */
-    private fun showElektrikSubMenu() {
+    private fun showElektrikElSubMenu() {
         // Elektrik alt menü öğeleri
         val subItems = arrayOf(
-            "Priz Grubu",
+            "Avuç Taşlama",
             "Sigorta Grubu",
             "Şalter Grubu",
             "Pano Aksesuarları"
         )
-        
-        showSubMenu("Elektrik Malzemeleri", subItems) { position ->
+
+        showSubMenu("Elektrik El Aletleri", subItems) { position ->
             val currentTab = viewModel.activeTab.value
             val webView = currentTab?.let { activeWebViews[it.id] }
-            
+
             if (webView != null) {
                 when (position) {
-                    0 -> OutOfScopeModule.setPrizGrubuOutOfScope(webView)
+                    0 -> OutOfScopeModule.setAvucTaslamaOutOfScope(webView)
                     1 -> OutOfScopeModule.setSigortaGrubuOutOfScope(webView)
                     2 -> OutOfScopeModule.setSalterGrubuOutOfScope(webView)
                     3 -> OutOfScopeModule.setPanoAksesuarlariOutOfScope(webView)
@@ -1125,22 +1123,52 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
+    /**
+     * Elektrik Malzemeleri alt menüsünü gösterir
+     */
+    private fun showSarjliElSubMenu() {
+        // Elektrik alt menü öğeleri
+        val subItems = arrayOf(
+            "Şarjlı Avuç Taşlama",
+            "Sigorta Grubu",
+            "Şalter Grubu",
+            "Pano Aksesuarları"
+        )
+
+        showSubMenu("Şarjlı El Aletleri", subItems) { position ->
+            val currentTab = viewModel.activeTab.value
+            val webView = currentTab?.let { activeWebViews[it.id] }
+
+            if (webView != null) {
+                when (position) {
+                    0 -> OutOfScopeModule.setSarjliAvucTaslamaOutOfScope(webView)
+                    1 -> OutOfScopeModule.setSigortaGrubuOutOfScope(webView)
+                    2 -> OutOfScopeModule.setSalterGrubuOutOfScope(webView)
+                    3 -> OutOfScopeModule.setPanoAksesuarlariOutOfScope(webView)
+                }
+                showScopeOutSuccessMessage(subItems[position])
+            } else {
+                Toast.makeText(this, "Aktif sekme bulunamadı", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     /**
      * Tesisat Malzemeleri alt menüsünü gösterir
      */
-    private fun showTesisatSubMenu() {
+    private fun showKaynakSubMenu() {
         // Tesisat alt menü öğeleri
         val subItems = arrayOf(
             "Kablo Grubu",
             "Buat Grubu",
             "Kablo Kanalları"
         )
-        
+
         showSubMenu("Tesisat Malzemeleri", subItems) { position ->
             val currentTab = viewModel.activeTab.value
             val webView = currentTab?.let { activeWebViews[it.id] }
-            
+
             if (webView != null) {
                 when (position) {
                     0 -> OutOfScopeModule.setKabloGrubuOutOfScope(webView)
@@ -1153,11 +1181,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     /**
      * Ölçüm Aletleri alt menüsünü gösterir
      */
-    private fun showOlcumSubMenu() {
+    private fun showDıgerElektrikSubMenu() {
         // Ölçüm alt menü öğeleri
         val subItems = arrayOf(
             "Multimetre",
@@ -1165,11 +1193,11 @@ class MainActivity : AppCompatActivity() {
             "İzolasyon Ölçüm",
             "Termal Kamera"
         )
-        
+
         showSubMenu("Ölçüm Aletleri", subItems) { position ->
             val currentTab = viewModel.activeTab.value
             val webView = currentTab?.let { activeWebViews[it.id] }
-            
+
             if (webView != null) {
                 when (position) {
                     0 -> OutOfScopeModule.setMultimetreOutOfScope(webView)
@@ -1183,7 +1211,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     /**
      * Alt kategori menüsünü gösterir ve seçilen öğeyi işler
      * @param title Menü başlığı
@@ -1199,7 +1227,7 @@ class MainActivity : AppCompatActivity() {
             }
             .show()
     }
-    
+
     /**
      * Kapsam dışı ayarlaması başarılı olduğunda bilgi mesajı gösterir
      * @param itemName Kapsam dışı yapılan öğenin adı
@@ -1211,7 +1239,7 @@ class MainActivity : AppCompatActivity() {
             Snackbar.LENGTH_SHORT
         ).show()
     }
-    
+
     /**
      * URL'deki sayısal kodu ayıklayıp DataHolder'a kaydeder
      */
@@ -1220,7 +1248,7 @@ class MainActivity : AppCompatActivity() {
             // URL'nin sonundaki sayısal kısmı bul - herhangi bir uzunlukta sayı dizisi
             val regex = Regex("\\d+$")
             val matchResult = regex.find(url)
-            
+
             matchResult?.let { result ->
                 val digits = result.value
                 // DataHolder'a kaydet
@@ -1229,23 +1257,23 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
         }
     }
-    
+
     private fun handlePanoFonksiyon() {
         // Pano Fonksiyon aktivitesini başlat
         val intent = Intent(this, com.asforce.asforcetkf2.ui.panel.kotlin.PanoFonksiyonActivity::class.java)
         startActivity(intent)
     }
-    
+
     private fun handleTopraklama() {
         // Aktif sekmeden URL'yi al ve DataHolder'a kaydet
         val currentTab = viewModel.activeTab.value
         val currentUrl = currentTab?.url ?: ""
-        
+
         // URL'den sayısal değeri çıkar
         try {
             val regex = Regex("\\d+$")
             val matchResult = regex.find(currentUrl)
-            
+
             // Sayısal değer varsa kaydet, yoksa boş olarak bırak
             if (matchResult != null) {
                 val digits = matchResult.value
@@ -1256,33 +1284,33 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             com.asforce.asforcetkf2.util.DataHolder.topraklama = ""
         }
-        
+
         // Topraklama Kontrol aktivitesini başlat
         val intent = Intent(this, com.asforce.asforcetkf2.ui.topraklama.kotlin.TopraklamaControlActivity::class.java)
         startActivity(intent)
     }
-    
+
     private fun handleTermalKamera() {
         // Termal Kamera aktivitesini başlat
         val intent = Intent(this, com.asforce.asforcetkf2.ui.termal.kotlin.Menu4Activity::class.java)
         startActivity(intent)
     }
-    
+
     private fun toggleResourceMonitoring() {
         val isEnabled = viewModel.resourceMonitoringEnabled.value ?: true
         viewModel.toggleResourceMonitoring(!isEnabled)
-        
+
         Toast.makeText(
             this,
             "Kaynak İzleme: ${if (!isEnabled) "etkin" else "devre dışı"}",
             Toast.LENGTH_SHORT
         ).show()
     }
-    
+
     private fun toggleHibernationMode() {
         val currentTab = viewModel.activeTab.value
         val tabs = viewModel.allTabs.value ?: emptyList()
-        
+
         // Hibernate all inactive tabs
         tabs.forEach { tab ->
             if (!tab.isActive && !tab.isHibernated) {
@@ -1290,14 +1318,14 @@ class MainActivity : AppCompatActivity() {
                 activeWebViews[tab.id]?.hibernate()
             }
         }
-        
+
         Toast.makeText(
             this,
             "Aktif olmayan sekmeler uyku moduna alındı",
             Toast.LENGTH_SHORT
         ).show()
     }
-    
+
     private fun clearBrowsingData() {
         // Seçenekler için seçim kutusu göster
         val options = arrayOf(
@@ -1306,9 +1334,9 @@ class MainActivity : AppCompatActivity() {
             "Çerezleri temizle",
             "Tümünü temizle"
         )
-        
+
         val checkedItems = booleanArrayOf(true, true, false, false) // Varsayılan olarak çerezleri silme
-        
+
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.clear_data)
             .setMultiChoiceItems(options, checkedItems) { _, which, isChecked ->
@@ -1319,36 +1347,36 @@ class MainActivity : AppCompatActivity() {
                 var clearHistory = checkedItems[1]
                 var clearCookies = checkedItems[2]
                 var clearAll = checkedItems[3]
-                
+
                 if (clearAll) {
                     clearCache = true
                     clearHistory = true
                     clearCookies = true
                 }
-                
+
                 if (clearCookies) {
                     // Clear cookies
                     android.webkit.CookieManager.getInstance().removeAllCookies(null)
                     android.webkit.CookieManager.getInstance().flush()
                 }
-                
+
                 // Her sekme için işlem yap
                 activeWebViews.values.forEach { webView ->
                     if (clearCache) {
                         webView.clearCache(true)
                     }
-                    
+
                     if (clearHistory) {
                         webView.clearHistory()
                     }
                 }
-                
+
                 // Kullanıcıya bilgi ver
                 val message = StringBuilder("Temizlendi: ")
                 if (clearCache) message.append("Önbellek ")
                 if (clearHistory) message.append("Geçmiş ")
                 if (clearCookies) message.append("Çerezler ")
-                
+
                 Toast.makeText(
                     this,
                     message.toString(),
@@ -1358,7 +1386,7 @@ class MainActivity : AppCompatActivity() {
             .setNegativeButton("İptal", null)
             .show()
     }
-    
+
     private fun showAboutDialog() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.about)
@@ -1366,7 +1394,7 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Tamam", null)
             .show()
     }
-    
+
     private fun startTabResourceMonitoring() {
         lifecycleScope.launch {
             // Flow'u doğrudan kullanmak yerine StateFlow'dan yararlanma
@@ -1385,15 +1413,15 @@ class MainActivity : AppCompatActivity() {
                                                 metrics.cpuUsage,
                                                 metrics.memoryUsage
                                             )
-                                            
+
                                             // Auto-hibernate if resource usage is too high
                                             val tab = viewModel.allTabs.value?.find { it.id == tabId }
-                                            if (tab != null && !tab.isActive && !tab.isHibernated && 
+                                            if (tab != null && !tab.isActive && !tab.isHibernated &&
                                                 (metrics.cpuUsage > 30f || metrics.memoryUsage > 100 * 1024 * 1024)
                                             ) {
                                                 viewModel.hibernateTab(tab)
                                                 webView.hibernate()
-                                                
+
                                             }
                                         }
                                 } catch (e: Exception) {
@@ -1406,7 +1434,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     /**
      * Dokunma olaylarını yöneterek klavyenin gerektiğinde kapanmasını sağlar
      */
@@ -1419,7 +1447,7 @@ class MainActivity : AppCompatActivity() {
         }
         return super.dispatchTouchEvent(ev)
     }
-    
+
     /**
      * Verilen noktanın belirtilen görünümün içinde olup olmadığını kontrol eder
      */
@@ -1428,10 +1456,10 @@ class MainActivity : AppCompatActivity() {
         view.getLocationOnScreen(location)
         val x = location[0]
         val y = location[1]
-        return (rawX >= x && rawX <= (x + view.width) && 
+        return (rawX >= x && rawX <= (x + view.width) &&
                 rawY >= y && rawY <= (y + view.height))
     }
-    
+
     /**
      * Klavyeyi gizler
      */
@@ -1442,7 +1470,7 @@ class MainActivity : AppCompatActivity() {
             view.clearFocus()
         }
     }
-    
+
     /**
      * Klavyeyi görünür hale getirir
      * Geliştirilmiş klavye gösterimi - imleç sorununu çözmek için
@@ -1453,11 +1481,11 @@ class MainActivity : AppCompatActivity() {
             if (!view.isFocused) {
                 view.requestFocus()
             }
-            
+
             // InputMethodManager ile klavyeyi göster
             val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
-            
+
             // Klavyenin gerçekten gösterildiğinden emin olmak için ek işlemler
             Handler(Looper.getMainLooper()).postDelayed({
                 if (!inputMethodManager.isActive(view)) {
@@ -1468,18 +1496,18 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
         }
     }
-    
+
     override fun onBackPressed() {
         val currentTab = viewModel.activeTab.value
         val webView = currentTab?.let { activeWebViews[it.id] }
-        
+
         if (webView?.canGoBack() == true) {
             webView.goBack()
         } else {
             super.onBackPressed()
         }
     }
-    
+
     override fun onDestroy() {
         // WebView'leri temizlerken güvenlik kontrolü ekle
         activeWebViews.values.forEach { webView ->
@@ -1492,17 +1520,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
         activeWebViews.clear()
-        
+
         // Clean up suggestion manager
         try {
             suggestionManager.cleanup()
         } catch (e: Exception) {
             // Suggestion manager temizleme hatası
         }
-        
+
         super.onDestroy()
     }
-    
+
     /**
      * Uzun basma menüsünü gösterir - link için seçenekler
      */
@@ -1513,7 +1541,7 @@ class MainActivity : AppCompatActivity() {
             "Linki kopyala",
             "Dosyayı indir"
         )
-        
+
         // Dialog menüsünü göster
         MaterialAlertDialogBuilder(this)
             .setTitle("Link seçenekleri")
@@ -1536,7 +1564,7 @@ class MainActivity : AppCompatActivity() {
                         val downloadId = downloadManager.downloadFile(
                             url, "Mozilla/5.0", "", "*/*", 0
                         )
-                        
+
                         if (downloadId > 0) {
                             Toast.makeText(this, "İndirme başlatıldı", Toast.LENGTH_SHORT).show()
                         } else {
@@ -1547,7 +1575,7 @@ class MainActivity : AppCompatActivity() {
             }
             .show()
     }
-    
+
     /**
      * Dosya kaynağı seçim menüsünü gösterir (Kamera, Galeri, Dosya Seçici)
      * Modern, özel bir tasarım ile
@@ -1556,30 +1584,30 @@ class MainActivity : AppCompatActivity() {
         try {
             // BottomSheetDialog kullan - daha modern ve mobil dostu
             val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
-            
+
             // Özel düzeni şişir
             val view = layoutInflater.inflate(R.layout.dialog_file_source, null)
             dialog.setContentView(view)
-            
+
             // UI öğelerini ayarla
             val cameraCard = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cameraCard)
             val galleryCard = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.galleryCard)
             val filesCard = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.filesCard)
             val btnCancel = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancel)
-            
+
             // Kamera kullanılabilirliğini kontrol et
             val isCameraAvailable = try {
                 packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
             } catch (e: Exception) {
                 true // Kontrol edilemezse, varsayılan olarak kullanılabilir olarak işaretlenir
             }
-            
+
             // Kamera yoksa butonu devre dışı bırak
             if (!isCameraAvailable) {
                 cameraCard.isEnabled = false
                 cameraCard.alpha = 0.5f
             }
-            
+
             // Kamera seçeneği için tıklama dinleyicisi
             cameraCard.setOnClickListener {
                 dialog.dismiss()
@@ -1589,7 +1617,7 @@ class MainActivity : AppCompatActivity() {
                     takePictureFromCamera()
                 }
             }
-            
+
             // Galeri seçeneği için tıklama dinleyicisi
             galleryCard.setOnClickListener {
                 dialog.dismiss()
@@ -1598,7 +1626,7 @@ class MainActivity : AppCompatActivity() {
                     selectImageFromGallery()
                 }
             }
-            
+
             // Dosyalar seçeneği için tıklama dinleyicisi
             filesCard.setOnClickListener {
                 dialog.dismiss()
@@ -1607,20 +1635,20 @@ class MainActivity : AppCompatActivity() {
                     openFileChooser()
                 }
             }
-            
+
             // İptal düğmesi için tıklama dinleyicisi
             btnCancel.setOnClickListener {
                 dialog.dismiss()
                 filePathCallback?.onReceiveValue(null)
                 filePathCallback = null
             }
-            
+
             // Dialog iptal edildiğinde dosya seçimi iptal edilir
             dialog.setOnCancelListener {
                 filePathCallback?.onReceiveValue(null)
                 filePathCallback = null
             }
-            
+
             // Dialog hatalarına karşı koruma
             try {
                 dialog.show()
@@ -1635,29 +1663,29 @@ class MainActivity : AppCompatActivity() {
             openFileChooser()
         }
     }
-    
+
     /**
      * Kamera ile fotoğraf çekmek için gerekli izinleri kontrol eder ve kamerayı başlatır
      */
     private fun takePictureFromCamera() {
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) 
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
-                this, 
+                this,
                 arrayOf(android.Manifest.permission.CAMERA),
                 CAMERA_PERMISSION_REQUEST_CODE
             )
             return
         }
-        
+
         // Kamera ile fotoğraf çekme işlemi - iyileştirilmiş hata yakalama ve uyumluluk
         try {
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            
+
             // İyileştirilmiş resolveActivity kontrolü
             val cameraActivities = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
             val hasCameraApp = cameraActivities.isNotEmpty()
-            
+
             if (hasCameraApp) {
                 // Geçici dosya oluştur
                 val photoFile = try {
@@ -1676,7 +1704,7 @@ class MainActivity : AppCompatActivity() {
                         null
                     }
                 }
-                
+
                 if (photoFile != null) {
                     try {
                         currentPhotoUri = FileProvider.getUriForFile(
@@ -1684,9 +1712,9 @@ class MainActivity : AppCompatActivity() {
                             "com.asforce.asforcetkf2.fileprovider",
                             photoFile
                         )
-                        
+
                         intent.putExtra(MediaStore.EXTRA_OUTPUT, currentPhotoUri)
-                        
+
                         // Diğer cihazlara okuma izni ver - kamera erişim hatası düzeltmesi
                         val resInfoList = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
                         for (resolveInfo in resInfoList) {
@@ -1697,7 +1725,7 @@ class MainActivity : AppCompatActivity() {
                                 Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
                             )
                         }
-                        
+
                         // İyileştirilmiş güncellikten emin olma hata kontrolü
                         try {
                             cameraLauncher.launch(intent)
@@ -1741,7 +1769,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Kamera açılırken bir hata oluştu: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
-    
+
     /**
      * Galeri/Medya'dan görsel seçmek için intent oluşturur
      */
@@ -1749,7 +1777,7 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         fileChooserLauncher.launch(intent)
     }
-    
+
     /**
      * Tüm dosya tiplerini gösteren dosya seçiciyi başlatır
      */
@@ -1759,7 +1787,7 @@ class MainActivity : AppCompatActivity() {
             intent.addCategory(Intent.CATEGORY_OPENABLE)
             intent.type = "*/*"
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-            
+
             fileChooserLauncher.launch(Intent.createChooser(
                 intent,
                 getString(R.string.file_chooser_title)
@@ -1775,62 +1803,62 @@ class MainActivity : AppCompatActivity() {
             filePathCallback = null
         }
     }
-    
+
     /**
      * Kamera için geçici resim dosyası oluşturur
      */
     private fun createImageFile(): java.io.File {
         val timeStamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(java.util.Date())
         val imageFileName = "JPEG_" + timeStamp + "_"
-        
+
         // Birden fazla depolama konumunu dene
         var storageDir: java.io.File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        
+
         // Ana konumun mevcut ve yazılabilir olduğundan emin ol
         if (storageDir == null || !storageDir.exists()) {
             // Uygulamaya özgü dahili depolamayı dene
             storageDir = filesDir
-            
+
             // Hala başarısızsa, harici DCIM dizinini dene
             if (storageDir == null || !storageDir.exists()) {
                 // Harici DCIM klasörünü dene
                 storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
-                
+
                 // Bu da başarısızsa, cache dizinini kullan
                 if (storageDir == null || !storageDir.exists()) {
                     storageDir = cacheDir
                 }
             }
         }
-        
+
         // Son çare olarak kesinlikle bir dizin olduğundan emin ol
         if (storageDir == null) {
             storageDir = cacheDir // Cache dizini her zaman var olmalı
         }
-        
+
         // Klasörün var olduğundan emin ol
         if (storageDir?.exists() != true) {
             storageDir?.mkdirs()
         }
-        
+
         // Dosya oluştur
         val image = java.io.File.createTempFile(
             imageFileName,  /* önek */
             ".jpg",         /* uzantı */
             storageDir      /* dizin */
         )
-        
+
         // Görüntü dosya yolu
         cameraPhotoPath = image.absolutePath
         return image
     }
-    
+
     // Kamera için Activity sonuç işleyicisi - startActivityForResult için
     private val CAMERA_REQUEST_CODE = 1002
-    
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        
+
         if (requestCode == CAMERA_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 // Doğrudan kamera aktivitesinden sonuç - muhtemelen veri içerecek
@@ -1852,7 +1880,7 @@ class MainActivity : AppCompatActivity() {
                         null
                     }
                 } else null
-                
+
                 filePathCallback?.let { callback ->
                     if (imageUri != null) {
                         callback.onReceiveValue(arrayOf(imageUri))
@@ -1867,10 +1895,10 @@ class MainActivity : AppCompatActivity() {
             currentPhotoUri = null
         }
     }
-    
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        
+
         when (requestCode) {
             CAMERA_PERMISSION_REQUEST_CODE -> {
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
@@ -1886,47 +1914,47 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     /**
      * Initialize suggestion manager and track input fields
      */
     private fun initializeSuggestionManager() {
         // Create suggestion manager
         suggestionManager = SuggestionManager(this)
-        
+
         // Track keyboard visibility to show/hide suggestions at appropriate times
         suggestionManager.trackKeyboardVisibility(binding.root)
-        
+
         // Track URL input
         binding.urlInput.let { editText ->
             suggestionManager.trackEditText(editText, "url_input")
         }
-        
+
         // Track aramaSearch input
         binding.aramaSearch.let { editText ->
             suggestionManager.trackEditText(editText, "aramaSearch_input")
         }
-        
+
         // Track aramaSearch2 input (new)
         binding.aramaSearch2.let { editText ->
             suggestionManager.trackEditText(editText, "aramaSearch2_input")
         }
-        
+
         // Monitor keyboard visibility changes to reposition suggestion bar above keyboard
         val contentView = window.decorView.findViewById<View>(android.R.id.content)
         contentView.viewTreeObserver.addOnGlobalLayoutListener {
             val r = Rect()
             contentView.getWindowVisibleDisplayFrame(r)
-            
+
             val screenHeight = contentView.height
             val keyboardHeight = screenHeight - r.bottom
-            
+
             // Consider keyboard as visible if its height is more than 15% of screen
             if (keyboardHeight > screenHeight * 0.15) {
                 // Pass keyboard height to suggestion manager for proper positioning
                 val activeTab = viewModel.activeTab.value
                 val webView = activeTab?.let { activeWebViews[it.id] }
-                
+
                 // Force refresh suggestions for current input
                 webView?.evaluateJavascript("""
                     (function() {
@@ -1963,7 +1991,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     /**
      * QR kod tarayıcı butonunu ayarla
      */
@@ -1973,32 +2001,32 @@ class MainActivity : AppCompatActivity() {
             openQrScanner()
         }
     }
-    
+
     /**
      * QR kod tarayıcıyı aç
      */
     private fun openQrScanner() {
         // İzin kontrolü
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) 
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
             // İzin iste
             ActivityCompat.requestPermissions(
-                this, 
+                this,
                 arrayOf(android.Manifest.permission.CAMERA),
                 CAMERA_PERMISSION_REQUEST_CODE
             )
             return
         }
-        
+
         // QR kod tarayıcı fragment'ı oluştur ve başlat
         val qrScannerFragment = QRScannerFragment.newInstance { qrContent ->
             // QR kod algılandığında çalışacak callback
             handleQrCodeResult(qrContent)
         }
-        
+
         qrScannerFragment.show(supportFragmentManager, "QR_SCANNER")
     }
-    
+
     /**
      * QR kod tarama sonucunu işle
      */
@@ -2029,22 +2057,22 @@ class MainActivity : AppCompatActivity() {
         binding.btnToggleButtons.setOnClickListener {
             toggleFloatingMenu()
         }
-        
+
         // Uygulama ilk açıldığında menü görünürlüğünü ayarla
         binding.buttonsScrollView.visibility = View.GONE
     }
-    
+
     /**
      * Açılır kapanır menüyü aç/kapat
      */
     private fun toggleFloatingMenu() {
         // Menü görünürlüğünü değiştir
         val isVisible = binding.buttonsScrollView.visibility == View.VISIBLE
-        
+
         // Interpolator'ları tanımla (daha yumuşak animasyonlar için)
         val overshootInterpolator = android.view.animation.OvershootInterpolator(0.5f)
         val accelerateDecelerateInterpolator = android.view.animation.AccelerateDecelerateInterpolator()
-        
+
         if (isVisible) {
             // Menü açıksa kapat
             binding.buttonsScrollView.animate()
@@ -2057,7 +2085,7 @@ class MainActivity : AppCompatActivity() {
                     binding.buttonsScrollView.translationX = 0f
                 }
                 .start()
-            
+
             // Açma/kapama butonunu zarif animasyonla döndür
             binding.btnToggleButtons.animate()
                 .rotation(0f)
@@ -2066,7 +2094,7 @@ class MainActivity : AppCompatActivity() {
                 .setDuration(350)
                 .setInterpolator(overshootInterpolator)
                 .start()
-                
+
             // Buton renk değişimi
             val colorAnimation = android.animation.ValueAnimator.ofArgb(
                 binding.btnToggleButtons.backgroundTintList?.defaultColor ?: ContextCompat.getColor(this, R.color.primary),
@@ -2088,7 +2116,7 @@ class MainActivity : AppCompatActivity() {
                 .setDuration(350)
                 .setInterpolator(overshootInterpolator)
                 .start()
-            
+
             // Açma/kapama butonunu zarif animasyonla döndür
             binding.btnToggleButtons.animate()
                 .rotation(90f)
@@ -2097,7 +2125,7 @@ class MainActivity : AppCompatActivity() {
                 .setDuration(350)
                 .setInterpolator(overshootInterpolator)
                 .start()
-                
+
             // Buton renk değişimi (açıkken daha koyu ton)
             val colorAnimation = android.animation.ValueAnimator.ofArgb(
                 binding.btnToggleButtons.backgroundTintList?.defaultColor ?: ContextCompat.getColor(this, R.color.primary),
@@ -2110,16 +2138,16 @@ class MainActivity : AppCompatActivity() {
             colorAnimation.start()
         }
     }
-    
+
     private fun setupActionButtons() {
         // Ekipman Listesi butonu - btn_left_1
         binding.btnLeft1.setOnClickListener {
             loadUrl("https://app.szutest.com.tr/EXT/PKControl/EquipmentList")
         }
-        
+
         // Add listener for the aramaSearch EditText
         binding.aramaSearch.setOnEditorActionListener { _, actionId, keyEvent ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH || 
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
                 (keyEvent?.keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.action == KeyEvent.ACTION_DOWN)) {
                 hideKeyboard()
                 performComboboxSearch(binding.aramaSearch.text.toString().trim())
@@ -2127,10 +2155,10 @@ class MainActivity : AppCompatActivity() {
             }
             false
         }
-        
+
         // Add listener for the aramaSearch2 EditText (new)
         binding.aramaSearch2.setOnEditorActionListener { _, actionId, keyEvent ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH || 
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
                 (keyEvent?.keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.action == KeyEvent.ACTION_DOWN)) {
                 hideKeyboard()
                 performComboboxSearch(binding.aramaSearch2.text.toString().trim())
@@ -2138,7 +2166,7 @@ class MainActivity : AppCompatActivity() {
             }
             false
         }
-        
+
         // Add end icon for aramaSearch
         val textInputLayout1 = findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.text_input_layout_1)
         textInputLayout1?.apply {
@@ -2148,7 +2176,7 @@ class MainActivity : AppCompatActivity() {
                 performComboboxSearch(binding.aramaSearch.text.toString().trim())
             }
         }
-        
+
         // Add end icon for aramaSearch2 (new)
         val textInputLayout1_2 = findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.text_input_layout_1_2)
         textInputLayout1_2?.apply {
@@ -2164,12 +2192,12 @@ class MainActivity : AppCompatActivity() {
             // Sadece URL'yi yükle, özel form desteği yok
             loadUrl("https://app.szutest.com.tr/EXT/PKControl/EKControlList")
         }
-        
+
         // Kapsam Dışı butonu - btn_scope_out
         binding.btnScopeOut.setOnClickListener {
             showScopeOutMenu()
         }
-        
+
         // QR arama fonksiyonu için IME_ACTION_SEARCH işleyicisi ekle
         binding.qrNo.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -2179,7 +2207,7 @@ class MainActivity : AppCompatActivity() {
             }
             return@setOnEditorActionListener false
         }
-        
+
         // QR Edittext için end icon ekle ve tıklama işleyicisi ayarla
         val textInputLayout2 = findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.text_input_layout_2)
         textInputLayout2?.apply {
@@ -2189,7 +2217,7 @@ class MainActivity : AppCompatActivity() {
                 performQrCodeSearch()
             }
         }
-        
+
         // Seri Numarası arama fonksiyonu için IME_ACTION_SEARCH işleyicisi ekle
         binding.srNo.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -2199,7 +2227,7 @@ class MainActivity : AppCompatActivity() {
             }
             return@setOnEditorActionListener false
         }
-        
+
         // SR Edittext için end icon ekle ve tıklama işleyicisi ayarla
         val textInputLayout3 = findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.text_input_layout_3)
         textInputLayout3?.apply {
@@ -2209,12 +2237,12 @@ class MainActivity : AppCompatActivity() {
                 performSerialNumberSearch()
             }
         }
-        
+
         // Cihaz Ekleme butonu - btn_right_top
         binding.btnRightTop.setOnClickListener {
             val currentTab = viewModel.activeTab.value
             val webView = currentTab?.let { activeWebViews[it.id] }
-            
+
             if (webView != null) {
                 // DeviceManager örneği oluştur ve cihaz listesini çek
                 deviceManager = DeviceManager(this, webView)
@@ -2233,7 +2261,7 @@ class MainActivity : AppCompatActivity() {
             "İnternet'te ara",
             "Panoya kopyala"
         )
-        
+
         MaterialAlertDialogBuilder(this)
             .setTitle("QR Kod İçeriği")
             .setMessage(content)
@@ -2249,7 +2277,7 @@ class MainActivity : AppCompatActivity() {
                         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         val clip = ClipData.newPlainText("QR Code Content", content)
                         clipboard.setPrimaryClip(clip)
-                        
+
                         Toast.makeText(
                             this,
                             "İçerik panoya kopyalandı",
@@ -2268,7 +2296,7 @@ class MainActivity : AppCompatActivity() {
     private fun testSuggestionInsertion() {
         val currentTab = viewModel.activeTab.value
         val webView = currentTab?.let { activeWebViews[it.id] }
-        
+
         if (webView != null) {
             // 1. First try to identify the active input field
             webView.evaluateJavascript("""
@@ -2336,26 +2364,26 @@ class MainActivity : AppCompatActivity() {
                 try {
                     // Clean up result string (remove quotes)
                     val jsonStr = result.trim().removeSurrounding("\"").replace("\\\"", "\"").replace("\\\\", "\\")
-                    
+
                     // Parse JSON
                     val jsonObj = org.json.JSONObject(jsonStr.toString())
                     val found = jsonObj.getBoolean("found")
-                    
+
                     if (found) {
                         val key = jsonObj.getString("key")
                         val info = jsonObj.getString("info")
-                        
+
                         // Generate a test value
                         val testValue = "TEST-${System.currentTimeMillis() / 1000}"
-                        
+
                         // 2. Save the test value as a suggestion
                         suggestionManager.saveSuggestion(key, testValue)
-                        
+
                         // 3. Use multiple approaches to set the value
                         (webView as? com.asforce.asforcetkf2.webview.TabWebView)?.apply {
                             // Direct simulation method
                             simulateKeyboardInput(testValue)
-                            
+
                             // JavaScript method
                             val setValueScript = """
                             (function() {
@@ -2391,10 +2419,10 @@ class MainActivity : AppCompatActivity() {
                                 return "No element found to set value";
                             })();
                             """.trimIndent()
-                            
+
                             evaluateJavascript(setValueScript) { _ -> }
                         }
-                        
+
                         // Show toast notification
                         Toast.makeText(this, "Test suggestion inserted: $testValue", Toast.LENGTH_SHORT).show()
                     } else {
@@ -2438,23 +2466,23 @@ class MainActivity : AppCompatActivity() {
                 }
             })();
         """.trimIndent()
-        
+
         webView.evaluateJavascript(checkResultScript) { result ->
             try {
                 // Clean up the result string
                 val cleanResult = result.trim().removeSurrounding("\"").replace("\\\"", "\"").replace("\\\\", "\\")
-                
+
                 if (cleanResult == "NO_RESULTS" || cleanResult.startsWith("ERROR")) {
                     // Herhangi bir hata veya sonuç bulunamazsa sessizce çık
                     return@evaluateJavascript
                 }
-                
+
                 // Parse JSON result
                 val jsonArray = org.json.JSONArray(cleanResult)
-                
+
                 if (jsonArray.length() > 0) {
                     val foundQrCode = jsonArray.getString(0)
-                    
+
                     // Bulunan değer şu anki değerden farklıysa güncelle
                     val currentQrText = binding.qrNo.text.toString().trim()
                     if (foundQrCode != currentQrText) {
@@ -2470,47 +2498,47 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     /**
      * QR code search functionality - handles searching on equipment list page
      */
     // Manuel arama aktif olduğunda kullanılacak bayrak
     private var isManualSearchActive = false
-    
+
     /**
      * Flag to track if combobox search is active
      */
     private var isComboboxSearchActive = false
-    
+
     private fun performQrCodeSearch() {
         val qrText = binding.qrNo.text.toString().trim()
-        
+
         if (qrText.isEmpty()) {
             // Boş girdi durumunda sessizce çık
             return
         }
-        
+
         // Get current active tab and WebView
         val currentTab = viewModel.activeTab.value
         val webView = currentTab?.let { activeWebViews[it.id] }
-        
+
         if (webView == null) {
             // Aktif sekme bulunamadığında sessizce çık
             return
         }
-        
+
         // Manuel arama modunu aktifleştir
         isManualSearchActive = true
-        
+
         // Check if the current page is the EquipmentList
         val currentUrl = webView.url ?: ""
         if (!currentUrl.contains("EquipmentList")) {
             // Navigate to EquipmentList page first
             webView.loadUrl("https://app.szutest.com.tr/EXT/PKControl/EquipmentList")
-            
+
             // Geçici onPageFinished listener'ı (sadece bu arama için)
             val originalOnPageFinished = webView.onPageFinished // Mevcut listener'ı sakla
-            
+
             webView.onPageFinished = { tabId, url, favicon ->
                 // Only proceed if we're on the right page
                 if (url.contains("EquipmentList") && isManualSearchActive) {
@@ -2523,7 +2551,7 @@ class MainActivity : AppCompatActivity() {
                         webView.onPageFinished = originalOnPageFinished
                     }, 1000)
                 }
-                
+
                 // Call the original onPageFinished handler's functionality
                 val tabs = viewModel.allTabs.value ?: emptyList()
                 val tab = tabs.find { it.id == tabId }
@@ -2534,10 +2562,10 @@ class MainActivity : AppCompatActivity() {
                         isLoading = false,
                         favicon = favicon ?: tab.favicon
                     )
-                    
+
                     val position = tabs.indexOf(tab)
                     viewModel.updateTab(updatedTab, position)
-                    
+
                     // Hide progress bar
                     binding.progressBar.isVisible = false
                 }
@@ -2548,7 +2576,7 @@ class MainActivity : AppCompatActivity() {
             isManualSearchActive = false // Aramayı tamamladıktan sonra bayrağı sıfırla
         }
     }
-    
+
     private fun executeQrCodeSearch(webView: TabWebView, qrText: String) {
         // JavaScript to fill in the QR input field and click search button
         val searchScript = """
@@ -2578,7 +2606,7 @@ class MainActivity : AppCompatActivity() {
                 }
             })();
         """.trimIndent()
-        
+
         webView.evaluateJavascript(searchScript) { result ->
             // Wait briefly for the search to complete and then check the result
             Handler(Looper.getMainLooper()).postDelayed({
@@ -2586,7 +2614,7 @@ class MainActivity : AppCompatActivity() {
             }, 1500)
         }
     }
-    
+
     private fun checkQrCodeSearchResult(webView: TabWebView, qrText: String) {
         val checkResultScript = """
             (function() {
@@ -2612,28 +2640,28 @@ class MainActivity : AppCompatActivity() {
                 }
             })();
         """.trimIndent()
-        
+
         webView.evaluateJavascript(checkResultScript) { result ->
             try {
                 // Clean up the result string
                 val cleanResult = result.trim().removeSurrounding("\"").replace("\\\"", "\"").replace("\\\\", "\\")
-                
+
                 if (cleanResult == "NO_RESULTS") {
                     // Sessizce devam et - bilgi mesajı gösterme
                     return@evaluateJavascript
                 }
-                
+
                 if (cleanResult.startsWith("ERROR")) {
                     // Sessizce devam et - hata mesajı gösterme
                     return@evaluateJavascript
                 }
-                
+
                 // Parse JSON result
                 val jsonArray = org.json.JSONArray(cleanResult)
-                
+
                 if (jsonArray.length() > 0) {
                     val foundQrCode = jsonArray.getString(0)
-                    
+
                     runOnUiThread {
                         // Update the qrEditText with the found value
                         binding.qrNo.setText(foundQrCode)
@@ -2645,12 +2673,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     /**
      * Seri numarası arama fonksiyonu - serialnumber alanı ile arama yapar
      */
     private var isSerialSearchActive = false
-    
+
     /**
      * Function to search comboboxes in the WebView for matching items
      * This will search across all comboboxes in the page and select the first match
@@ -2661,20 +2689,20 @@ class MainActivity : AppCompatActivity() {
             // Empty input, silently return
             return
         }
-        
+
         // Get current active tab and WebView
         val currentTab = viewModel.activeTab.value
         val webView = currentTab?.let { activeWebViews[it.id] }
-        
+
         if (webView == null) {
             // No active WebView, show a message
             Toast.makeText(this, "Aktif sekme bulunamadı", Toast.LENGTH_SHORT).show()
             return
         }
-        
+
         // Set combobox search flag to active
         isComboboxSearchActive = true
-        
+
         // Show searching indicator
         val snackbar = Snackbar.make(
             binding.root,
@@ -2682,7 +2710,7 @@ class MainActivity : AppCompatActivity() {
             Snackbar.LENGTH_SHORT
         )
         snackbar.show()
-        
+
         // Create and use ComboboxSearchHelper
         val searchHelper = com.asforce.asforcetkf2.webview.ComboboxSearchHelper(webView)
         searchHelper.searchComboboxes(
@@ -2692,7 +2720,7 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread {
                     // Dismiss the searching indicator if it's still showing
                     snackbar.dismiss()
-                    
+
                     // Show found message
                     Snackbar.make(
                         binding.root,
@@ -2710,7 +2738,7 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread {
                     // Dismiss the searching indicator if it's still showing
                     snackbar.dismiss()
-                    
+
                     // Show not found message
                     Snackbar.make(
                         binding.root,
@@ -2724,33 +2752,33 @@ class MainActivity : AppCompatActivity() {
 
     private fun performSerialNumberSearch() {
         val serialText = binding.srNo.text.toString().trim()
-        
+
         if (serialText.isEmpty()) {
             // Boş girdi durumunda sessizce çık
             return
         }
-        
+
         // Get current active tab and WebView
         val currentTab = viewModel.activeTab.value
         val webView = currentTab?.let { activeWebViews[it.id] }
-        
+
         if (webView == null) {
             // Aktif sekme bulunamadığında sessizce çık
             return
         }
-        
+
         // Manuel seri numarası arama modunu aktifleştir
         isSerialSearchActive = true
-        
+
         // Check if the current page is the EquipmentList
         val currentUrl = webView.url ?: ""
         if (!currentUrl.contains("EquipmentList")) {
             // Navigate to EquipmentList page first
             webView.loadUrl("https://app.szutest.com.tr/EXT/PKControl/EquipmentList")
-            
+
             // Geçici onPageFinished listener'ı (sadece bu arama için)
             val originalOnPageFinished = webView.onPageFinished // Mevcut listener'ı sakla
-            
+
             webView.onPageFinished = { tabId, url, favicon ->
                 // Only proceed if we're on the right page
                 if (url.contains("EquipmentList") && isSerialSearchActive) {
@@ -2763,7 +2791,7 @@ class MainActivity : AppCompatActivity() {
                         webView.onPageFinished = originalOnPageFinished
                     }, 1000)
                 }
-                
+
                 // Call the original onPageFinished handler's functionality
                 val tabs = viewModel.allTabs.value ?: emptyList()
                 val tab = tabs.find { it.id == tabId }
@@ -2774,10 +2802,10 @@ class MainActivity : AppCompatActivity() {
                         isLoading = false,
                         favicon = favicon ?: tab.favicon
                     )
-                    
+
                     val position = tabs.indexOf(tab)
                     viewModel.updateTab(updatedTab, position)
-                    
+
                     // Hide progress bar
                     binding.progressBar.isVisible = false
                 }
@@ -2788,7 +2816,7 @@ class MainActivity : AppCompatActivity() {
             isSerialSearchActive = false // Aramayı tamamladıktan sonra bayrağı sıfırla
         }
     }
-    
+
     private fun executeSerialNumberSearch(webView: TabWebView, serialText: String) {
         // JavaScript to fill in the serial number input field and click search button
         val searchScript = """
@@ -2818,7 +2846,7 @@ class MainActivity : AppCompatActivity() {
                 }
             })();
         """.trimIndent()
-        
+
         webView.evaluateJavascript(searchScript) { result ->
             // Wait briefly for the search to complete and then check the result
             Handler(Looper.getMainLooper()).postDelayed({
@@ -2826,7 +2854,7 @@ class MainActivity : AppCompatActivity() {
             }, 1500)
         }
     }
-    
+
     private fun checkSerialNumberSearchResult(webView: TabWebView, serialText: String) {
         val checkResultScript = """
             (function() {
@@ -2852,28 +2880,28 @@ class MainActivity : AppCompatActivity() {
                 }
             })();
         """.trimIndent()
-        
+
         webView.evaluateJavascript(checkResultScript) { result ->
             try {
                 // Clean up the result string
                 val cleanResult = result.trim().removeSurrounding("\"").replace("\\\"", "\"").replace("\\\\", "\\")
-                
+
                 if (cleanResult == "NO_RESULTS") {
                     // Sessizce devam et - bilgi mesajı gösterme
                     return@evaluateJavascript
                 }
-                
+
                 if (cleanResult.startsWith("ERROR")) {
                     // Sessizce devam et - hata mesajı gösterme
                     return@evaluateJavascript
                 }
-                
+
                 // Parse JSON result
                 val jsonArray = org.json.JSONArray(cleanResult)
-                
+
                 if (jsonArray.length() > 0) {
                     val foundSerialNumber = jsonArray.getString(0)
-                    
+
                     runOnUiThread {
                         // Update the srNo EditText with the found value
                         binding.srNo.setText(foundSerialNumber)
@@ -2884,7 +2912,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     /**
      * Override onLowMemory to handle low memory conditions
      */
@@ -2892,21 +2920,21 @@ class MainActivity : AppCompatActivity() {
      * Gelişmiş form algılama ve giriş alanlarını hızlı bulma (SzuTest gibi özel siteler için)
      */
     private fun injectEnhancedFormDetection(webView: TabWebView) {
-        
+
         // Form algılama için deneme sayısını takip et
         var formDetectionAttempts = 0
         val MAX_FORM_DETECTION_ATTEMPTS = 3
-        
+
         // Form algılama işlevini tanımla - yeniden deneme mekanizması ile
         val tryFormDetection = object : Runnable {
             override fun run() {
                 formDetectionAttempts++
-                
+
                 // Eğer maksimum deneme sayısına ulaşıldıysa daha fazla bekleme süresi ekle
                 if (formDetectionAttempts > MAX_FORM_DETECTION_ATTEMPTS) {
                     return
                 }
-        
+
         // 250ms sonra form algılamayı başlat - DOM'un yüklenmesi için bekle
         Handler(Looper.getMainLooper()).postDelayed({
             val script = """
@@ -3066,11 +3094,11 @@ class MainActivity : AppCompatActivity() {
                 }
             })();
             """.trimIndent()
-            
+
             webView.evaluateJavascript(script) { result ->
                 // Sonuç stringini temizle
                 val cleanResult = result.trim().removeSurrounding("\"").replace("\\\"(", "\"(").replace("\\\"", "\"").replace("\\\\", "\\")
-                
+
                 try {
                     // JSON sonuç alındıysa işle
                     val jsonResult = org.json.JSONObject(cleanResult.toString())
@@ -3078,8 +3106,8 @@ class MainActivity : AppCompatActivity() {
                     val inputCount = jsonResult.optInt("inputs", 0)
                     val visibleCount = jsonResult.optInt("visibleInputs", 0)
                     val keyFieldCount = jsonResult.optInt("keyFields", 0)
-                    
-                    
+
+
                     // Form bulunduğunda ve alanlar tanımlandığında önerileri aktifleştir
                     if (formCount > 0 && visibleCount > 0) {
                         // 300ms sonra önerileri göstermeyi dene
@@ -3087,7 +3115,7 @@ class MainActivity : AppCompatActivity() {
                             // Aktif tab ve webview hala geçerli mi kontrol et
                             val currentTab = viewModel.activeTab.value
                             val currentWebView = activeWebViews[currentTab?.id]
-                            
+
                             if (currentWebView == webView) {
                                 // Öneri sistem aktivitesini kontrol et
                                 webView.evaluateJavascript("""
@@ -3110,7 +3138,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }, 250) // 250ms gecikme ile çalıştır
-                
+
                 // DOM tam olarak yüklenmemiş olabilir, JS hatasını kontrol et
                 webView.evaluateJavascript("typeof document !== 'undefined' && !!document.body") { result ->
                     if (result?.contains("true") != true) {
@@ -3120,17 +3148,17 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        
+
         // Form algılama işlevini başlat
         tryFormDetection.run()
     }
-    
+
     override fun onLowMemory() {
         super.onLowMemory()
-        
+
         // Öneri önbelleğini temizle
         suggestionManager.onLowMemory()
-        
+
         // İhtiyaç duyulmayan webview'ları uykuya al
         val currentTab = viewModel.activeTab.value
         activeWebViews.forEach { (tabId, webView) ->
@@ -3144,35 +3172,35 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        
+
         // Web önbelleğini temizle (current tab hariç)
         activeWebViews.values.forEach { webView ->
             if (webView != activeWebViews[currentTab?.id]) {
                 webView.clearCache(true)
             }
         }
-        
+
         // Calculate memory usage
         val rt = Runtime.getRuntime()
         val usedMemInMB = (rt.totalMemory() - rt.freeMemory()) / 1048576L
         val maxHeapSizeInMB = rt.maxMemory() / 1048576L
         val availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB
-        
+
         // Bilgi mesajı göster
         Toast.makeText(this, "Düşük bellek: Önbellek temizleniyor", Toast.LENGTH_SHORT).show()
     }
-    
+
     // Activity yaşam döngüsü yönetimi
     override fun onResume() {
         super.onResume()
-        
+
         // Topraklama sorunu varsa form güncelleme
         if (DataHolder.hasTopraklamaSorunu) {
-            
+
             // WebView'i al
             val currentTab = viewModel.activeTab.value
             val webView = currentTab?.let { activeWebViews[it.id] }
-            
+
             if (webView != null) {
                 // Seçeneği "Uygun Değil" olarak ayarla ve tickbox'ı işaretle
                 val setTopraklamaSorunScript = """
@@ -3241,9 +3269,9 @@ class MainActivity : AppCompatActivity() {
                         }
                     })();
                 """.trimIndent()
-                
+
                 webView.evaluateJavascript(setTopraklamaSorunScript) { result ->
-                    
+
                     // İşlem sonrası DataHolder'ı temizle
                     DataHolder.hasTopraklamaSorunu = false
                 }
