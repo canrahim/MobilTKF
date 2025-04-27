@@ -326,7 +326,7 @@
         tools:progress="50"
         tools:visibility="visible" />
 
-    <!-- Butonlar Container - Modern Floating Design -->
+    <!-- Butonlar Container - Modern Collapsible Floating Design -->
     <androidx.cardview.widget.CardView
         android:id="@+id/floating_buttons_container"
         android:layout_width="wrap_content"
@@ -335,34 +335,38 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:cardBackgroundColor="#232323"
+        app:cardBackgroundColor="@color/dark_surface"
         app:cardCornerRadius="31dp"
-        app:cardElevation="12dp">
+        app:cardElevation="8dp">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <!-- Toggle Button - Modern Style -->
+            <!-- Toggle Button - Menu açma/kapama butonu (zarif tasarım) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_toggle_buttons"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:backgroundTint="@color/primary"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="8dp"
                 android:contentDescription="Butonları Göster/Gizle"
                 android:insetLeft="0dp"
                 android:insetTop="0dp"
                 android:insetRight="0dp"
                 android:insetBottom="0dp"
-                app:cornerRadius="28dp"
-                app:elevation="6dp"
+                android:padding="0dp"
+                app:backgroundTint="@color/primary"
+                app:cornerRadius="20dp"
+                app:elevation="2dp"
                 app:icon="@drawable/ic_menu"
                 app:iconGravity="textStart"
                 app:iconPadding="0dp"
-                app:iconSize="24dp"
+                app:iconSize="18dp"
                 app:iconTint="@color/white" />
 
+            <!-- Açılabilir/kapanabilir menü bölümü -->
             <HorizontalScrollView
                 android:id="@+id/buttons_scroll_view"
                 android:layout_width="wrap_content"
@@ -374,106 +378,107 @@
                 android:paddingEnd="8dp"
                 android:visibility="gone">
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center">
+                <LinearLayout
+                    android:id="@+id/buttons_container"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
 
-                <!-- All buttons in a horizontal row -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_left_1"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:layout_marginEnd="8dp"
-                    android:backgroundTint="@android:color/transparent"
-                    android:contentDescription="Ekipman Listesi"
-                    android:insetLeft="0dp"
-                    android:insetTop="0dp"
-                    android:insetRight="0dp"
-                    android:insetBottom="0dp"
-                    android:text="E"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:textColor="#2196F3"
-                    app:cornerRadius="28dp"
-                    app:elevation="0dp" />
-
-                <!-- Second Button - PE with horizontal text -->
-                <FrameLayout
-                    android:layout_width="62dp"
-                    android:layout_height="56dp"
-                    android:layout_marginEnd="8dp">
-
-                    <TextView
-                        android:id="@+id/btnLeft2"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="PE"
-                        android:textSize="18sp"
+                    <!-- Tüm butonlar - tasarımları aynı kalacak şekilde -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_left_1"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:layout_marginEnd="8dp"
+                        android:backgroundTint="@android:color/transparent"
+                        android:contentDescription="Ekipman Listesi"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
+                        android:text="E"
+                        android:textSize="24sp"
                         android:textStyle="bold"
-                        android:textColor="#FF5722"
-                        android:gravity="center"
-                        android:includeFontPadding="false"
-                        android:background="?attr/selectableItemBackgroundBorderless" />
-                </FrameLayout>
+                        android:textColor="#2196F3"
+                        app:cornerRadius="28dp"
+                        app:elevation="0dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_scope_out"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:layout_marginEnd="8dp"
-                    android:backgroundTint="@android:color/transparent"
-                    android:contentDescription="Kapsam Dışı"
-                    android:insetLeft="0dp"
-                    android:insetTop="0dp"
-                    android:insetRight="0dp"
-                    android:insetBottom="0dp"
-                    android:text="K"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:textColor="#4CAF50"
-                    app:cornerRadius="28dp"
-                    app:elevation="0dp" />
+                    <!-- Second Button - PE with horizontal text -->
+                    <FrameLayout
+                        android:layout_width="62dp"
+                        android:layout_height="56dp"
+                        android:layout_marginEnd="8dp">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_right_top"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:layout_marginEnd="8dp"
-                    android:backgroundTint="@android:color/transparent"
-                    android:contentDescription="Cihaz Ekle"
-                    android:insetLeft="0dp"
-                    android:insetTop="0dp"
-                    android:insetRight="0dp"
-                    android:insetBottom="0dp"
-                    app:cornerRadius="28dp"
-                    app:elevation="0dp"
-                    app:icon="@drawable/ic_add_device_modern"
-                    app:iconGravity="textStart"
-                    app:iconPadding="0dp"
-                    app:iconSize="28dp"
-                    app:iconTint="@null" />
+                        <TextView
+                            android:id="@+id/btnLeft2"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:text="PE"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="#FF5722"
+                            android:gravity="center"
+                            android:includeFontPadding="false"
+                            android:background="?attr/selectableItemBackgroundBorderless" />
+                    </FrameLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_qr"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:backgroundTint="@android:color/transparent"
-                    android:contentDescription="QR Tarama"
-                    android:insetLeft="0dp"
-                    android:insetTop="0dp"
-                    android:insetRight="0dp"
-                    android:insetBottom="0dp"
-                    app:cornerRadius="28dp"
-                    app:elevation="0dp"
-                    app:icon="@drawable/ic_qr_code_modern"
-                    app:iconGravity="textStart"
-                    app:iconPadding="0dp"
-                    app:iconSize="28dp"
-                    app:iconTint="@null" />
-            </LinearLayout>
-        </HorizontalScrollView>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_scope_out"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:layout_marginEnd="8dp"
+                        android:backgroundTint="@android:color/transparent"
+                        android:contentDescription="Kapsam Dışı"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
+                        android:text="K"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="#4CAF50"
+                        app:cornerRadius="28dp"
+                        app:elevation="0dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_right_top"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:layout_marginEnd="8dp"
+                        android:backgroundTint="@android:color/transparent"
+                        android:contentDescription="Cihaz Ekle"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
+                        app:cornerRadius="28dp"
+                        app:elevation="0dp"
+                        app:icon="@drawable/ic_add_device_modern"
+                        app:iconGravity="textStart"
+                        app:iconPadding="0dp"
+                        app:iconSize="28dp"
+                        app:iconTint="@null" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_qr"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:backgroundTint="@android:color/transparent"
+                        android:contentDescription="QR Tarama"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
+                        app:cornerRadius="28dp"
+                        app:elevation="0dp"
+                        app:icon="@drawable/ic_qr_code_modern"
+                        app:iconGravity="textStart"
+                        app:iconPadding="0dp"
+                        app:iconSize="28dp"
+                        app:iconTint="@null" />
+                </LinearLayout>
+            </HorizontalScrollView>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

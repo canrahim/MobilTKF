@@ -239,6 +239,7 @@ class MainActivity : AppCompatActivity() {
         setupTabRecyclerView()
         setupUrlInput()
         setupNavigationButtons()
+        setupFloatingMenuButtons()
         setupActionButtons()
         
         // Direkt olarak WebView'a yazmak için test fonksiyonu ekle
@@ -2020,6 +2021,96 @@ class MainActivity : AppCompatActivity() {
     /**
      * Aksiyon butonlarını ayarla (Ekipman Listesi ve Kontrol Listesi butonları)
      */
+    /**
+     * Açılır kapanır menü butonlarını ayarla
+     */
+    private fun setupFloatingMenuButtons() {
+        // Menü açma/kapama butonu
+        binding.btnToggleButtons.setOnClickListener {
+            toggleFloatingMenu()
+        }
+        
+        // Uygulama ilk açıldığında menü görünürlüğünü ayarla
+        binding.buttonsScrollView.visibility = View.GONE
+    }
+    
+    /**
+     * Açılır kapanır menüyü aç/kapat
+     */
+    private fun toggleFloatingMenu() {
+        // Menü görünürlüğünü değiştir
+        val isVisible = binding.buttonsScrollView.visibility == View.VISIBLE
+        
+        // Interpolator'ları tanımla (daha yumuşak animasyonlar için)
+        val overshootInterpolator = android.view.animation.OvershootInterpolator(0.5f)
+        val accelerateDecelerateInterpolator = android.view.animation.AccelerateDecelerateInterpolator()
+        
+        if (isVisible) {
+            // Menü açıksa kapat
+            binding.buttonsScrollView.animate()
+                .alpha(0f)
+                .translationX(-50f)
+                .setDuration(350)
+                .setInterpolator(accelerateDecelerateInterpolator)
+                .withEndAction {
+                    binding.buttonsScrollView.visibility = View.GONE
+                    binding.buttonsScrollView.translationX = 0f
+                }
+                .start()
+            
+            // Açma/kapama butonunu zarif animasyonla döndür
+            binding.btnToggleButtons.animate()
+                .rotation(0f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(350)
+                .setInterpolator(overshootInterpolator)
+                .start()
+                
+            // Buton renk değişimi
+            val colorAnimation = android.animation.ValueAnimator.ofArgb(
+                binding.btnToggleButtons.backgroundTintList?.defaultColor ?: ContextCompat.getColor(this, R.color.primary),
+                ContextCompat.getColor(this, R.color.primary)
+            )
+            colorAnimation.duration = 350
+            colorAnimation.addUpdateListener { animator ->
+                binding.btnToggleButtons.backgroundTintList = android.content.res.ColorStateList.valueOf(animator.animatedValue as Int)
+            }
+            colorAnimation.start()
+        } else {
+            // Menü kapalıysa aç
+            binding.buttonsScrollView.alpha = 0f
+            binding.buttonsScrollView.translationX = -50f
+            binding.buttonsScrollView.visibility = View.VISIBLE
+            binding.buttonsScrollView.animate()
+                .alpha(1f)
+                .translationX(0f)
+                .setDuration(350)
+                .setInterpolator(overshootInterpolator)
+                .start()
+            
+            // Açma/kapama butonunu zarif animasyonla döndür
+            binding.btnToggleButtons.animate()
+                .rotation(90f)
+                .scaleX(0.9f)
+                .scaleY(0.9f)
+                .setDuration(350)
+                .setInterpolator(overshootInterpolator)
+                .start()
+                
+            // Buton renk değişimi (açıkken daha koyu ton)
+            val colorAnimation = android.animation.ValueAnimator.ofArgb(
+                binding.btnToggleButtons.backgroundTintList?.defaultColor ?: ContextCompat.getColor(this, R.color.primary),
+                android.graphics.Color.parseColor("#005e9e") // Daha koyu mavi ton
+            )
+            colorAnimation.duration = 350
+            colorAnimation.addUpdateListener { animator ->
+                binding.btnToggleButtons.backgroundTintList = android.content.res.ColorStateList.valueOf(animator.animatedValue as Int)
+            }
+            colorAnimation.start()
+        }
+    }
+    
     private fun setupActionButtons() {
         // Ekipman Listesi butonu - btn_left_1
         binding.btnLeft1.setOnClickListener {
