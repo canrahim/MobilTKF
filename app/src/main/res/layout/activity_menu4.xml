@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="16dp">
 
         <!-- Başlık ve Menü -->
         <LinearLayout
@@ -21,15 +21,15 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="8dp">
 
             <ImageButton
                 android:id="@+id/backButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:src="@drawable/ic_back"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="12dp"
+                android:padding="8dp"
                 android:contentDescription="Back to Main Activity"/>
 
             <TextView
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="AS TERMAL KAMERA"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
                 android:gravity="start"
@@ -53,246 +53,278 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             android:background="#2D2B40"
             android:elevation="4dp">
 
             <ImageButton
                 android:id="@+id/menu1Option1"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="40dp"
                 android:src="@drawable/ic_menu"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="12dp"
                 android:contentDescription="Kaçak Akım"
                 app:tint="#FFFFFF"/>
 
             <ImageButton
                 android:id="@+id/menu1Option2"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="40dp"
                 android:src="@drawable/ic_menu"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="12dp"
                 android:contentDescription="Pano Fonksiyon"
                 app:tint="#FFFFFF"/>
-                
+
             <ImageButton
                 android:id="@+id/menu1Option3"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="40dp"
                 android:src="@drawable/ic_menu"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="12dp"
                 android:contentDescription="Topraklama"
                 app:tint="#FFFFFF"/>
-                
+
             <ImageButton
                 android:id="@+id/menu1Option4"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="40dp"
                 android:src="@drawable/ic_menu"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="12dp"
                 android:contentDescription="Web Sayfası"
                 app:tint="#FFFFFF"/>
         </LinearLayout>
 
-        <!-- Arama alanı -->
+        <!-- Form and RecyclerView Container -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
-
-            <EditText
-                android:id="@+id/etSearch"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:hint="Ara..."
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:textSize="16sp"
-                android:textColor="#FFFFFF"
-                android:inputType="text"
-                android:imeOptions="actionSearch"
-                android:textColorHint="#80FFFFFF"
-                android:backgroundTint="#383451"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnClearFields"
-                android:layout_width="wrap_content"
-                android:layout_height="56dp"
-                android:minWidth="48dp"
-                android:text="Temizle"
-                android:layout_marginStart="8dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                app:cornerRadius="8dp"
-                android:backgroundTint="#FF5722"
-                android:textColor="#fff"
-                android:textAllCaps="false"
-                app:rippleColor="#4dffffff"/>
-        </LinearLayout>
-
-        <!-- Kontrol ID alanı -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
-
-            <EditText
-                android:id="@+id/etValue1"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:hint="Kontrol ID"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:textSize="16sp"
-                android:textColor="#FFFFFF"
-                android:inputType="text"
-                android:imeOptions="actionSearch"
-                android:textColorHint="#80FFFFFF"
-                android:backgroundTint="#383451"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnFetchData"
-                android:layout_width="wrap_content"
-                android:layout_height="56dp"
-                android:minWidth="48dp"
-                android:text="Listele"
-                android:layout_marginStart="8dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                app:cornerRadius="8dp"
-                android:backgroundTint="#00796B"
-                android:textColor="#fff"
-                android:textAllCaps="false"
-                app:rippleColor="#4dffffff"/>
-        </LinearLayout>
-
-        <!-- Termal No alanı -->
-        <EditText
-            android:id="@+id/etValue2"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:hint="Termal No"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:textSize="16sp"
-            android:textColor="#FFFFFF"
-            android:imeOptions="actionDone"
-            android:inputType="text"
-            android:textCursorDrawable="@null"
-            android:layout_marginBottom="16dp"
-            android:textColorHint="#80FFFFFF"
-            android:backgroundTint="#383451"/>
-
-        <!-- Pano Adı alanı -->
-        <EditText
-            android:id="@+id/etValue3"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:hint="Pano Adı"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:textSize="16sp"
-            android:textColor="#FFFFFF"
-            android:imeOptions="actionDone"
-            android:inputType="text"
-            android:textCursorDrawable="@null"
-            android:layout_marginBottom="16dp"
-            android:textColorHint="#80FFFFFF"
-            android:backgroundTint="#383451"/>
-
-        <!-- Ekle ve Güncelle Butonları -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginBottom="16dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAdd"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:text="Ekle"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                app:cornerRadius="8dp"
-                android:backgroundTint="#288905"
-                android:textColor="#fff"
-                android:layout_marginEnd="4dp"
-                android:textAllCaps="false"
-                app:rippleColor="#4dffffff"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnUpdate"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:text="Güncelle"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                app:cornerRadius="8dp"
-                android:backgroundTint="#0066FF"
-                android:textColor="#fff"
-                android:layout_marginStart="4dp"
-                android:textAllCaps="false"
-                app:rippleColor="#4dffffff"/>
-        </LinearLayout>
-
-        <!-- Tümünü Seç ve Sil Butonları -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginBottom="16dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSelectAll"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:text="Tümünü Seç"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                app:cornerRadius="8dp"
-                android:backgroundTint="#6F4004"
-                android:textColor="#fff"
-                android:layout_marginEnd="4dp"
-                android:textAllCaps="false"
-                app:rippleColor="#4dffffff"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDeleteSelected"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:text="Sil"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                app:cornerRadius="8dp"
-                android:backgroundTint="#FF0000"
-                android:textColor="#fff"
-                android:layout_marginStart="4dp"
-                android:textAllCaps="false"
-                app:rippleColor="#4dffffff"/>
-        </LinearLayout>
-
-        <!-- RecyclerView -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvItems"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:padding="8dp"/>
+            android:orientation="horizontal">
+
+            <!-- Form Fields Container -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingEnd="8dp">
+
+                <!-- Arama alanı -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <EditText
+                        android:id="@+id/etSearch"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:hint="Ara..."
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:textSize="14sp"
+                        android:textColor="#FFFFFF"
+                        android:inputType="text"
+                        android:imeOptions="actionSearch"
+                        android:textColorHint="#80FFFFFF"
+                        android:backgroundTint="#383451"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnClearFields"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:minWidth="40dp"
+                        android:text="Temizle"
+                        android:layout_marginStart="4dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        app:cornerRadius="8dp"
+                        android:backgroundTint="#FF5722"
+                        android:textColor="#fff"
+                        android:textAllCaps="false"
+                        android:textSize="12sp"
+                        app:rippleColor="#4dffffff"/>
+                </LinearLayout>
+
+                <!-- Kontrol ID alanı -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <EditText
+                        android:id="@+id/etValue1"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:hint="Kontrol ID"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:textSize="14sp"
+                        android:textColor="#FFFFFF"
+                        android:inputType="text"
+                        android:imeOptions="actionSearch"
+                        android:textColorHint="#80FFFFFF"
+                        android:backgroundTint="#383451"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFetchData"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:minWidth="40dp"
+                        android:text="Listele"
+                        android:layout_marginStart="4dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        app:cornerRadius="8dp"
+                        android:backgroundTint="#00796B"
+                        android:textColor="#fff"
+                        android:textAllCaps="false"
+                        android:textSize="12sp"
+                        app:rippleColor="#4dffffff"/>
+                </LinearLayout>
+
+                <!-- Termal No alanı -->
+                <EditText
+                    android:id="@+id/etValue2"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="Termal No"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:textSize="14sp"
+                    android:textColor="#FFFFFF"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:textCursorDrawable="@null"
+                    android:layout_marginBottom="8dp"
+                    android:textColorHint="#80FFFFFF"
+                    android:backgroundTint="#383451"/>
+
+                <!-- Pano Adı alanı -->
+                <EditText
+                    android:id="@+id/etValue3"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="Pano Adı"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:textSize="14sp"
+                    android:textColor="#FFFFFF"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:textCursorDrawable="@null"
+                    android:layout_marginBottom="8dp"
+                    android:textColorHint="#80FFFFFF"
+                    android:backgroundTint="#383451"/>
+
+                <!-- Ekle ve Güncelle Butonları -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="8dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAdd"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="Ekle"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        app:cornerRadius="8dp"
+                        android:backgroundTint="#288905"
+                        android:textColor="#fff"
+                        android:layout_marginEnd="2dp"
+                        android:textAllCaps="false"
+                        android:textSize="12sp"
+                        app:rippleColor="#4dffffff"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnUpdate"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="Güncelle"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        app:cornerRadius="8dp"
+                        android:backgroundTint="#0066FF"
+                        android:textColor="#fff"
+                        android:layout_marginStart="2dp"
+                        android:textAllCaps="false"
+                        android:textSize="12sp"
+                        app:rippleColor="#4dffffff"/>
+                </LinearLayout>
+
+                <!-- Tümünü Seç ve Sil Butonları -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="8dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSelectAll"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="Tümünü Seç"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        app:cornerRadius="8dp"
+                        android:backgroundTint="#6F4004"
+                        android:textColor="#fff"
+                        android:layout_marginEnd="2dp"
+                        android:textAllCaps="false"
+                        android:textSize="12sp"
+                        app:rippleColor="#4dffffff"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDeleteSelected"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="Sil"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        app:cornerRadius="8dp"
+                        android:backgroundTint="#FF0000"
+                        android:textColor="#fff"
+                        android:layout_marginStart="2dp"
+                        android:textAllCaps="false"
+                        android:textSize="12sp"
+                        app:rippleColor="#4dffffff"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- RecyclerView Container - Now Takes Up 2/3 of the Width -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:orientation="vertical">
+
+                <!-- RecyclerView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvItems"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="8dp"
+                    android:background="#292741"
+                    android:clipToPadding="false"/>
+            </LinearLayout>
+        </LinearLayout>
 
         <!-- WebView -->
         <WebView
@@ -302,4 +334,4 @@
             android:visibility="gone"/>
 
     </LinearLayout>
-</RelativeLayout> 
+</RelativeLayout>
