@@ -905,7 +905,8 @@ class TabWebView @JvmOverloads constructor(
     }
 
     /**
-     * Load a URL in this WebView - Ultra hızlı yükleme optimizasyonu
+     * Load a URL in this WebView - Ultra hızlı yükleme optimizasyonu v2.1
+     * Daha kapsamlı önbellek stratejisi ve bellek optimize edici "eager loading" eklenmiştir
      */
     // Sayfa yükleme zaman aşımı değişkenleri
     private var loadTimeoutHandler: Handler? = null
