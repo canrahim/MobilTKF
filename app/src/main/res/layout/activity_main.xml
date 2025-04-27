@@ -366,32 +366,31 @@
                     android:insetTop="0dp"
                     android:insetRight="0dp"
                     android:insetBottom="0dp"
+                    android:text="E"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="#2196F3"
                     app:cornerRadius="28dp"
-                    app:elevation="0dp"
-                    app:icon="@drawable/ic_equipment_modern"
-                    app:iconGravity="textStart"
-                    app:iconPadding="0dp"
-                    app:iconSize="28dp"
-                    app:iconTint="@null" />
+                    app:elevation="0dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_left_2"
-                    android:layout_width="56dp"
+                <!-- Second Button - PE with horizontal text -->
+                <FrameLayout
+                    android:layout_width="62dp"
                     android:layout_height="56dp"
-                    android:layout_marginEnd="8dp"
-                    android:backgroundTint="@android:color/transparent"
-                    android:contentDescription="Kontrol Listesi"
-                    android:insetLeft="0dp"
-                    android:insetTop="0dp"
-                    android:insetRight="0dp"
-                    android:insetBottom="0dp"
-                    app:cornerRadius="28dp"
-                    app:elevation="0dp"
-                    app:icon="@drawable/ic_control_modern"
-                    app:iconGravity="textStart"
-                    app:iconPadding="0dp"
-                    app:iconSize="28dp"
-                    app:iconTint="@null" />
+                    android:layout_marginEnd="8dp">
+
+                    <TextView
+                        android:id="@+id/btnLeft2"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="PE"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF5722"
+                        android:gravity="center"
+                        android:includeFontPadding="false"
+                        android:background="?attr/selectableItemBackgroundBorderless" />
+                </FrameLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_scope_out"
@@ -404,13 +403,12 @@
                     android:insetTop="0dp"
                     android:insetRight="0dp"
                     android:insetBottom="0dp"
+                    android:text="K"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="#4CAF50"
                     app:cornerRadius="28dp"
-                    app:elevation="0dp"
-                    app:icon="@drawable/ic_close_circle"
-                    app:iconGravity="textStart"
-                    app:iconPadding="0dp"
-                    app:iconSize="28dp"
-                    app:iconTint="@color/primary" />
+                    app:elevation="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_right_top"
