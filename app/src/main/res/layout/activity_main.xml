@@ -389,7 +389,26 @@
                     app:iconGravity="textStart"
                     app:iconPadding="0dp"
                     app:iconSize="32dp"
-                    app:iconTint="@null" />
+                    app:iconTint="@null"
+                    android:layout_marginBottom="8dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_scope_out"
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:backgroundTint="@android:color/transparent"
+                    android:contentDescription="Kapsam Dışı"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    app:cornerRadius="31dp"
+                    app:elevation="0dp"
+                    app:icon="@drawable/ic_close_circle"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconSize="32dp"
+                    app:iconTint="@color/primary" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

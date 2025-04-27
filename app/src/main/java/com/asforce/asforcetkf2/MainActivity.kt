@@ -28,6 +28,7 @@ import android.widget.EditText
 import android.widget.Toast
 import com.asforce.asforcetkf2.suggestion.SuggestionManager
 import com.asforce.asforcetkf2.util.DeviceManager
+import com.asforce.asforcetkf2.util.OutOfScopeModule
 import com.asforce.asforcetkf2.ui.leakage.LeakageControlActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -1025,6 +1026,192 @@ class MainActivity : AppCompatActivity() {
     }
     
     /**
+     * Kapsam Dışı ana menüsünü gösterir
+     */
+    private fun showScopeOutMenu() {
+        // Ana menü kategorileri
+        val mainCategories = arrayOf(
+            "Aydınlatma Cihazları",
+            "Elektrik Malzemeleri",
+            "Tesisat Malzemeleri",
+            "Ölçüm Aletleri"
+        )
+        
+        // PopupMenu ile ana kategorileri göster
+        val menuBtn = binding.btnScopeOut
+        val popup = android.widget.PopupMenu(this, menuBtn)
+        
+        // Menü öğelerini ekle
+        for (i in mainCategories.indices) {
+            popup.menu.add(android.view.Menu.NONE, i, i, mainCategories[i])
+        }
+        
+        // Tıklama olaylarını yönet
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                0 -> showAydinlatmaSubMenu()
+                1 -> showElektrikSubMenu()
+                2 -> showTesisatSubMenu()
+                3 -> showOlcumSubMenu()
+            }
+            true
+        }
+        
+        // Menüyü göster
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            popup.setForceShowIcon(true)
+        }
+        
+        popup.show()
+    }
+    
+    /**
+     * Aydınlatma alt menüsünü gösterir
+     */
+    private fun showAydinlatmaSubMenu() {
+        // Aydınlatma alt menü öğeleri
+        val subItems = arrayOf(
+            "24V Aydınlatma",
+            "220V Aydınlatma",
+            "Acil Durum Aydınlatma",
+            "Sensörlü Aydınlatma"
+        )
+        
+        showSubMenu("Aydınlatma Cihazları", subItems) { position ->
+            val currentTab = viewModel.activeTab.value
+            val webView = currentTab?.let { activeWebViews[it.id] }
+            
+            if (webView != null) {
+                when (position) {
+                    0 -> OutOfScopeModule.set24VAydinlatmaOutOfScope(webView)
+                    1 -> OutOfScopeModule.set220VAydinlatmaOutOfScope(webView)
+                    2 -> OutOfScopeModule.setAcilDurumAydinlatmaOutOfScope(webView)
+                    3 -> OutOfScopeModule.setSensorluAydinlatmaOutOfScope(webView)
+                }
+                showScopeOutSuccessMessage(subItems[position])
+            } else {
+                Toast.makeText(this, "Aktif sekme bulunamadı", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    /**
+     * Elektrik Malzemeleri alt menüsünü gösterir
+     */
+    private fun showElektrikSubMenu() {
+        // Elektrik alt menü öğeleri
+        val subItems = arrayOf(
+            "Priz Grubu",
+            "Sigorta Grubu",
+            "Şalter Grubu",
+            "Pano Aksesuarları"
+        )
+        
+        showSubMenu("Elektrik Malzemeleri", subItems) { position ->
+            val currentTab = viewModel.activeTab.value
+            val webView = currentTab?.let { activeWebViews[it.id] }
+            
+            if (webView != null) {
+                when (position) {
+                    0 -> OutOfScopeModule.setPrizGrubuOutOfScope(webView)
+                    1 -> OutOfScopeModule.setSigortaGrubuOutOfScope(webView)
+                    2 -> OutOfScopeModule.setSalterGrubuOutOfScope(webView)
+                    3 -> OutOfScopeModule.setPanoAksesuarlariOutOfScope(webView)
+                }
+                showScopeOutSuccessMessage(subItems[position])
+            } else {
+                Toast.makeText(this, "Aktif sekme bulunamadı", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    /**
+     * Tesisat Malzemeleri alt menüsünü gösterir
+     */
+    private fun showTesisatSubMenu() {
+        // Tesisat alt menü öğeleri
+        val subItems = arrayOf(
+            "Kablo Grubu",
+            "Buat Grubu",
+            "Kablo Kanalları"
+        )
+        
+        showSubMenu("Tesisat Malzemeleri", subItems) { position ->
+            val currentTab = viewModel.activeTab.value
+            val webView = currentTab?.let { activeWebViews[it.id] }
+            
+            if (webView != null) {
+                when (position) {
+                    0 -> OutOfScopeModule.setKabloGrubuOutOfScope(webView)
+                    1 -> OutOfScopeModule.setBuatGrubuOutOfScope(webView)
+                    2 -> OutOfScopeModule.setKabloKanallariOutOfScope(webView)
+                }
+                showScopeOutSuccessMessage(subItems[position])
+            } else {
+                Toast.makeText(this, "Aktif sekme bulunamadı", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    /**
+     * Ölçüm Aletleri alt menüsünü gösterir
+     */
+    private fun showOlcumSubMenu() {
+        // Ölçüm alt menü öğeleri
+        val subItems = arrayOf(
+            "Multimetre",
+            "Topraklama Ölçüm",
+            "İzolasyon Ölçüm",
+            "Termal Kamera"
+        )
+        
+        showSubMenu("Ölçüm Aletleri", subItems) { position ->
+            val currentTab = viewModel.activeTab.value
+            val webView = currentTab?.let { activeWebViews[it.id] }
+            
+            if (webView != null) {
+                when (position) {
+                    0 -> OutOfScopeModule.setMultimetreOutOfScope(webView)
+                    1 -> OutOfScopeModule.setTopraklamaOlcumOutOfScope(webView)
+                    2 -> OutOfScopeModule.setIzolasyonOlcumOutOfScope(webView)
+                    3 -> OutOfScopeModule.setTermalKameraOutOfScope(webView)
+                }
+                showScopeOutSuccessMessage(subItems[position])
+            } else {
+                Toast.makeText(this, "Aktif sekme bulunamadı", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    /**
+     * Alt kategori menüsünü gösterir ve seçilen öğeyi işler
+     * @param title Menü başlığı
+     * @param items Menü öğeleri
+     * @param onItemSelected Öğe seçildiğinde çalışacak fonksiyon
+     */
+    private fun showSubMenu(title: String, items: Array<String>, onItemSelected: (Int) -> Unit) {
+        // Alt menü diyaloğunu göster
+        MaterialAlertDialogBuilder(this)
+            .setTitle(title)
+            .setItems(items) { _, which ->
+                onItemSelected(which)
+            }
+            .show()
+    }
+    
+    /**
+     * Kapsam dışı ayarlaması başarılı olduğunda bilgi mesajı gösterir
+     * @param itemName Kapsam dışı yapılan öğenin adı
+     */
+    private fun showScopeOutSuccessMessage(itemName: String) {
+        Snackbar.make(
+            binding.root,
+            "$itemName kapsam dışı olarak ayarlandı",
+            Snackbar.LENGTH_SHORT
+        ).show()
+    }
+    
+    /**
      * URL'deki sayısal kodu ayıklayıp DataHolder'a kaydeder
      */
     private fun extractDigitsFromUrl(url: String) {
@@ -1885,6 +2072,11 @@ class MainActivity : AppCompatActivity() {
         binding.btnLeft2.setOnClickListener {
             // Sadece URL'yi yükle, özel form desteği yok
             loadUrl("https://app.szutest.com.tr/EXT/PKControl/EKControlList")
+        }
+        
+        // Kapsam Dışı butonu - btn_scope_out
+        binding.btnScopeOut.setOnClickListener {
+            showScopeOutMenu()
         }
         
         // QR arama fonksiyonu için IME_ACTION_SEARCH işleyicisi ekle
