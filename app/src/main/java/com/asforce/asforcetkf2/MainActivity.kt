@@ -242,7 +242,7 @@ class MainActivity : AppCompatActivity() {
         setupFloatingMenuButtons()
         setupActionButtons()
 
-        // Direkt olarak WebView'a yazmak için test fonksiyonu ekle
+        // Direkt olarak WebView'a yazmak için test fonksiyonu ekles
         binding.btnLeft2.setOnLongClickListener {
             testSuggestionInsertion()
             return@setOnLongClickListener true
