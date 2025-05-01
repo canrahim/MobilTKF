@@ -380,7 +380,7 @@ class TabWebView @JvmOverloads constructor(
      * Form alanları için JavaScript enjeksiyonu - Geliştirilmiş ve güçlendirilmiş versiyon
      */
     fun injectFormHandlers() {
-        // Form giriş, tıklama ve gönderim olaylarını yönetmek için optimize edilmiş script
+        // Form giriş, tıklama ve gönderim olaylarını yönetmek için optimize edilmiş script 
         val script = """
         (function() {
         // Zaten enjekte edilmişse tekrar yapmayalım
@@ -389,6 +389,162 @@ class TabWebView @JvmOverloads constructor(
         
         // Input alanına odaklandığında önceki odaklanmış elemanı kaydet
         var lastFocusedInput = null;
+        
+        // Form verileri yönetimi için özel fonksiyonlar
+        window.TKF_FORM_DATA = window.TKF_FORM_DATA || {
+            // Bellek içi form verilerini tutacak obje
+            formStorage: {},
+            
+            // Form verilerini kaydet - hem bellekte hem de localStorage'da
+            saveFormData: function(formId, data) {
+                try {
+                    // Bellek içi depolamaya kaydet
+                    this.formStorage[formId] = data;
+                    
+                    // localStorage'a kaydet (kalıcı depolama)
+                    localStorage.setItem('TKF_FORM_' + formId, JSON.stringify(data));
+                    
+                    // Form verisinin sayfalar arası geçişte korunması için
+                    sessionStorage.setItem('TKF_FORM_' + formId, JSON.stringify(data));
+                    
+                    // Özel bir çerez ekleyerek form verilerinin varlığını işaretle
+                    // Bu, sayfalar arası geçişlerde ve geri butonuyla gezinmede kritiktir
+                    document.cookie = 'TKF_FORM_SAVED_' + formId + '=1; path=/; max-age=3600';
+                    
+                    console.log('TKF Browser: Form data saved for: ' + formId);
+                    return true;
+                } catch(e) {
+                    console.error('TKF Browser: Error saving form data', e);
+                    return false;
+                }
+            },
+            
+            // Form verilerini yükle - önce bellekten, yoksa localStorage'dan
+            loadFormData: function(formId) {
+                try {
+                    // Önce bellekteki veriyi kontrol et
+                    if (this.formStorage[formId]) {
+                        return this.formStorage[formId];
+                    }
+                    
+                    // Bellekte yoksa localStorage'a bak
+                    var savedData = localStorage.getItem('TKF_FORM_' + formId);
+                    if (!savedData) {
+                        // localStorage'da yoksa sessionStorage'a bak (sayfa geçişleri için)
+                        savedData = sessionStorage.getItem('TKF_FORM_' + formId);
+                    }
+                    
+                    if (savedData) {
+                        var data = JSON.parse(savedData);
+                        // Belleğe de yükle
+                        this.formStorage[formId] = data;
+                        return data;
+                    }
+                    
+                    // Veri bulunamadı
+                    return null;
+                } catch(e) {
+                    console.error('TKF Browser: Error loading form data', e);
+                    return null;
+                }
+            },
+            
+            // Bir formu verilerle doldur
+            fillForm: function(form, data) {
+                if (!form || !data) return false;
+                
+                var inputs = form.querySelectorAll('input, textarea, select');
+                for (var i = 0; i < inputs.length; i++) {
+                    var input = inputs[i];
+                    
+                    // Şifre alanlarını atla
+                    if (input.type === 'password') continue;
+                    
+                    // Input'un name veya id'sine göre veri eşleştir
+                    var fieldName = input.name || input.id;
+                    if (fieldName && data[fieldName] !== undefined) {
+                        // Değer ata
+                        if (input.type === 'checkbox' || input.type === 'radio') {
+                            input.checked = (input.value === data[fieldName]);
+                        } else {
+                            input.value = data[fieldName];
+                            
+                            // Input ve change olaylarını tetikleyerek değişikliği bildirme
+                            try {
+                                // Modern tarayıcılar için
+                                input.dispatchEvent(new Event('input', {bubbles: true}));
+                                input.dispatchEvent(new Event('change', {bubbles: true}));
+                            } catch(e) {
+                                // Eski tarayıcılar için
+                                var inputEvent = document.createEvent('HTMLEvents');
+                                inputEvent.initEvent('input', true, true);
+                                input.dispatchEvent(inputEvent);
+                                
+                                var changeEvent = document.createEvent('HTMLEvents');
+                                changeEvent.initEvent('change', true, true);
+                                input.dispatchEvent(changeEvent);
+                            }
+                        }
+                    }
+                }
+                
+                return true;
+            },
+            
+            // Form verilerini topla
+            collectFormData: function(form) {
+                var data = {};
+                var inputs = form.querySelectorAll('input, textarea, select');
+                
+                for (var i = 0; i < inputs.length; i++) {
+                    var input = inputs[i];
+                    
+                    // Sadece name veya id'si olan ve şifre olmayan alanları topla
+                    var fieldName = input.name || input.id;
+                    if (fieldName && input.type !== 'password' && input.type !== 'file') {
+                        if (input.type === 'checkbox' || input.type === 'radio') {
+                            if (input.checked) {
+                                data[fieldName] = input.value;
+                            }
+                        } else {
+                            data[fieldName] = input.value;
+                        }
+                    }
+                }
+                
+                return data;
+            },
+            
+            // Benzersiz form ID'si oluştur
+            getFormId: function(form) {
+                // Form ID belirleme önceliği: id > name > action > konum
+                var id = form.id || form.name || '';
+                
+                if (!id) {
+                    // Form action URL'inden ID oluştur
+                    var action = form.action || '';
+                    if (action) {
+                        id = action.split('?')[0]; // Query parametrelerini kaldır
+                        id = id.split('/').pop(); // Son path segmentini al
+                    }
+                }
+                
+                if (!id) {
+                    // Sayfa URL'inden ID oluştur
+                    id = window.location.pathname.split('/').pop() || 'form';
+                }
+                
+                // Belirleyici olması için form içindeki ilk birkaç alan adını ekle
+                var inputs = form.querySelectorAll('input[name]');
+                if (inputs.length > 0) {
+                    var firstFieldName = inputs[0].name;
+                    id += '_' + firstFieldName;
+                }
+                
+                // ID'yi temizle ve döndür
+                return id.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
+            }
+        };
         
         // Input odaklanma yönetimi - klavyeyi korumaya çalışan versiyon
         var focusHandler = function(e) {
@@ -455,62 +611,112 @@ class TabWebView @JvmOverloads constructor(
         document.addEventListener('touchstart', focusHandler, {passive: true});
         document.addEventListener('click', focusHandler, {passive: true});
         
-        // Sadece login formlarını arayalım
-        var loginForm = document.querySelector('form[action*="login"], form[action*="Login"], form[action*="account"], form[id*="login"], form[class*="login"]');
-        
-        if (loginForm) {
-        console.log('TKF-DEBUG: Login form found');
-        
-        // Form gönderim olayını yönetme - basitleştirilmiş
-        loginForm.addEventListener('submit', function(e) {
-        var formData = {};
-        var inputs = this.querySelectorAll('input[type="text"], input[type="password"], input[type="email"]');
-          for (var j = 0; j < inputs.length; j++) {
-              var input = inputs[j];
-              if (input.name) {
-                formData[input.name] = input.value;
+        // Sayfadaki tüm formları işle ve iyileştir
+        var enhanceForms = function() {
+            var forms = document.querySelectorAll('form');
+            console.log('TKF-DEBUG: Found ' + forms.length + ' forms on page');
+            
+            for (var i = 0; i < forms.length; i++) {
+                var form = forms[i];
+                
+                // Daha önce işlenmiş formu atla
+                if (form.hasAttribute('data-tkf-enhanced')) continue;
+                
+                // Form'u işaretleme
+                form.setAttribute('data-tkf-enhanced', 'true');
+                
+                // Form için benzersiz ID oluştur ve işaretle
+                var formId = window.TKF_FORM_DATA.getFormId(form);
+                form.setAttribute('data-tkf-id', formId);
+                
+                console.log('TKF-DEBUG: Processing form:', formId);
+                
+                // Form gönderim olayını yönetme
+                form.addEventListener('submit', function(e) {
+                    var thisForm = this;
+                    var formId = thisForm.getAttribute('data-tkf-id');
+                    
+                    // Form verilerini topla
+                    var formData = window.TKF_FORM_DATA.collectFormData(thisForm);
+                    
+                    // Form verilerini kaydet
+                    window.TKF_FORM_DATA.saveFormData(formId, formData);
+                    
+                    console.log('TKF-DEBUG: Form submitted:', formId);
+                    return true; // Formu normal gönder
+                });
+                
+                // Form input alanlarındaki değişiklikleri takip et
+                var inputs = form.querySelectorAll('input, textarea, select');
+                for (var j = 0; j < inputs.length; j++) {
+                    var input = inputs[j];
+                    
+                    // Değişiklik olayını dinle
+                    input.addEventListener('change', function() {
+                        var thisInput = this;
+                        var thisForm = thisInput.form;
+                        
+                        if (thisForm) {
+                            var formId = thisForm.getAttribute('data-tkf-id');
+                            if (formId) {
+                                // Güncel form verilerini topla
+                                var formData = window.TKF_FORM_DATA.collectFormData(thisForm);
+                                
+                                // Form verilerini kaydet
+                                window.TKF_FORM_DATA.saveFormData(formId, formData);
+                                console.log('TKF-DEBUG: Form data updated on change:', formId);
+                            }
+                        }
+                    });
                 }
-              }
-              
-              // Oturum verilerini lokalda sakla - minimal versiyon
-              try {
-                localStorage.setItem('_tkf_login_data', JSON.stringify(formData));
-                document.cookie = 'TKF_LOGIN_SUBMIT=1; path=/; max-age=300';
-              } catch(err) {}
-              
-              return true; // Formu normal gönder
+                
+                // Kaydedilmiş form verilerini yükle ve doldur
+                var savedData = window.TKF_FORM_DATA.loadFormData(formId);
+                if (savedData) {
+                    window.TKF_FORM_DATA.fillForm(form, savedData);
+                    console.log('TKF-DEBUG: Loaded saved data for form:', formId);
+                }
+            }
+        };
+        
+        // Sayfa tam yüklendiğinde formları iyileştir
+        if (document.readyState === 'complete') {
+            enhanceForms();
+        } else {
+            window.addEventListener('load', enhanceForms);
+        }
+        
+        // DOM değişikliklerini izle (dinamik form eklemeleri için)
+        if (window.MutationObserver) {
+            var observer = new MutationObserver(function(mutations) {
+                // Değişiklik olduğunda formları tarayıp işle
+                enhanceForms();
             });
             
-            // Formdaki ilk submit butonunu bul
-            var submitButton = loginForm.querySelector('input[type="submit"], button[type="submit"]');
-            if (submitButton) {
-              submitButton.addEventListener('click', function() {
-                document.cookie = 'TKF_LOGIN_CLICK=1; path=/; max-age=300';
-              });
+            // Gözlemciyi başlat - tüm DOM'u izle
+            if (document.body) {
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
             }
-          }
-          
-          // Sayfa yükleme sonrası form doldurma kodu - basitleştirilmiş
-          try {
-            if (document.cookie.indexOf('TKF_LOGIN_SUBMIT=1') !== -1) {
-              var savedData = localStorage.getItem('_tkf_login_data');
-              if (savedData) {
-                var formData = JSON.parse(savedData);
-                var form = document.querySelector('form');
-                if (form) {
-                  var inputs = form.querySelectorAll('input[type="text"], input[type="password"], input[type="email"]');
-                  for (var i = 0; i < inputs.length; i++) {
-                    var input = inputs[i];
-                    if (input.name && formData[input.name]) {
-                      input.value = formData[input.name];
-                    }
-                  }
-                }
-              }
-            }
-          } catch(e) {}
-          
-          return 'Enhanced form handlers injected with smooth keyboard transition';
+        }
+        
+        // Sayfa geçişleri için popstate olayını dinle (geri butonu)
+        window.addEventListener('popstate', function(e) {
+            // Sayfa geçişi olduğunda kısa bir süre bekle ve formları doldur
+            setTimeout(enhanceForms, 300);
+            console.log('TKF-DEBUG: Page navigation detected (popstate)');
+        });
+        
+        // Hashchange olayı (tek sayfa uygulamaları için)
+        window.addEventListener('hashchange', function() {
+            // Hash değiştiğinde formları yeniden işle
+            setTimeout(enhanceForms, 300);
+            console.log('TKF-DEBUG: Page hash changed');
+        });
+        
+        return 'Enhanced form handlers injected with improved data persistence';
         })();
         """
 
@@ -817,6 +1023,49 @@ class TabWebView @JvmOverloads constructor(
                                 enhanceInputFocusDetection()
                                 // Fix toast message visibility issues
                                 fixToastVisibility()
+                                
+                                // Sayfa geçişi kontrol et ve form verilerini geri yükle
+                                if (isAttachedToWindow && !isDestroyed()) {
+                                    // Özellikle geri butonuyla gezinme durumlarında form verilerinin korunması için
+                                    evaluateJavascript("""
+                                        (function() {
+                                            // Form verilerini sayfa geçişlerinde yeniden yükleme kontrolü
+                                            if (window.TKF_IS_BACK_NAVIGATION || localStorage.getItem('TKF_BACK_NAV_URL') === window.location.href) {
+                                                console.log('TKF Browser: Checking for form data to restore after navigation');
+                                                
+                                                // Sayfa geçişi sonrası form verilerini yeniden yükle
+                                                if (window.TKF_FORM_DATA) {
+                                                    // Formları ara ve işle
+                                                    var forms = document.querySelectorAll('form');
+                                                    console.log('TKF Browser: Found ' + forms.length + ' forms to check for data restoration');
+                                                    
+                                                    var formsProcessed = 0;
+                                                    for (var i = 0; i < forms.length; i++) {
+                                                        // Her form için benzersiz ID oluştur ve veri arama
+                                                        var formId = window.TKF_FORM_DATA.getFormId(forms[i]);
+                                                        forms[i].setAttribute('data-tkf-id', formId);
+                                                        
+                                                        // Kaydedilmiş verileri yükle
+                                                        var savedData = window.TKF_FORM_DATA.loadFormData(formId);
+                                                        if (savedData) {
+                                                            // Form verileriyle doldur
+                                                            window.TKF_FORM_DATA.fillForm(forms[i], savedData);
+                                                            formsProcessed++;
+                                                            console.log('TKF Browser: Restored data for form: ' + formId);
+                                                        }
+                                                    }
+                                                    
+                                                    return 'TKF_FORMS_RESTORED: ' + formsProcessed + ' of ' + forms.length;
+                                                }
+                                            }
+                                            return 'TKF_NO_NAVIGATION_DETECTED';
+                                        })();
+                                    """.trimIndent()) { result ->
+                                        // Form veri restorasyonu sonucunu logla
+                                        // Form data restoration result: $result
+                                    }
+                                }
+                                
                                 // Yükleme sonrası performans optimizasyonu yap
                                 optimizer.optimizeAfterPageLoad(this@TabWebView)
                                 // Çerezleri kalıcı hale getir
@@ -903,15 +1152,37 @@ class TabWebView @JvmOverloads constructor(
                url.contains("account", ignoreCase = true) ||
                url.contains("szutest.com.tr", ignoreCase = true)
     }
+    
+    /**
+     * Verilen URL'nin bilinen bir form URL'si olup olmadığını kontrol et
+     */
+    private fun isKnownFormUrl(url: String): Boolean {
+        return url.contains("login", ignoreCase = true) ||
+               url.contains("signup", ignoreCase = true) ||
+               url.contains("register", ignoreCase = true) ||
+               url.contains("account", ignoreCase = true) ||
+               url.contains("contact", ignoreCase = true) ||
+               url.contains("checkout", ignoreCase = true) ||
+               url.contains("szutest.com.tr", ignoreCase = true)
+    }
+    
+    /**
+     * Verilen URL'ye geri buton navigasyonu mu yapıldığını kontrol et
+     */
+    private fun isBackNavigation(url: String): Boolean {
+        // Son ziyaret edilen URL ve mevcut URL kontrolü
+        return lastVisitedUrl != null && url == lastVisitedUrl
+    }
 
     /**
-     * Load a URL in this WebView - Ultra hızlı yükleme optimizasyonu v2.1
-     * Daha kapsamlı önbellek stratejisi ve bellek optimize edici "eager loading" eklenmiştir
+     * Load a URL in this WebView - Ultra hızlı yükleme optimizasyonu v2.2
+     * Form verilerinin korunması için geliştirilmiş önbellek stratejisi ve bellek yönetimi
      */
     // Sayfa yükleme zaman aşımı değişkenleri
     private var loadTimeoutHandler: Handler? = null
     private var currentLoadingUrl: String? = null
     private val LOAD_TIMEOUT_MS = 20000L // 20 saniye zaman aşımı
+    private var lastVisitedUrl: String? = null // Son ziyaret edilen URL'yi takip etmek için
     
     override fun loadUrl(url: String) {
         // Ensure URL has schema
@@ -921,19 +1192,59 @@ class TabWebView @JvmOverloads constructor(
             url
         }
         
+        // Eğer aynı sayfanın yenilenmesi değilse, son URL'yi kaydet
+        if (lastVisitedUrl != formattedUrl && this.url != formattedUrl) {
+            lastVisitedUrl = this.url
+        }
+        
         // Mevcut zaman aşımı varsa iptal et
         loadTimeoutHandler?.removeCallbacksAndMessages(null)
         
         // Şu anki yüklenen URL'i takip et
         currentLoadingUrl = formattedUrl
         
+        // GERİ BUTONUYLA GEÇİŞLERİ İŞARETLE - Form verileri için çok önemli
+        val isBackNavigation = isBackNavigation(formattedUrl)
+        
+        // Sayfa geçişini işaretle (form verilerinin korunması için JavaScript'e bildirilecek)
+        if (isBackNavigation) {
+            // Geri dönüşlerde form verilerinin korunması için sayfa geçiş bilgisini ekleyelim
+            evaluateJavascript("""
+                (function() {
+                    // Geri navigasyon bilgisini kaydet
+                    window.TKF_IS_BACK_NAVIGATION = true;
+                    window.TKF_PREVIOUS_URL = '$lastVisitedUrl';
+                    window.TKF_CURRENT_URL = '$formattedUrl';
+                    console.log('TKF Browser: Back navigation detected to ' + '$formattedUrl');
+                    
+                    // Geri navigasyon durumunu localStorage'a da kaydet (sayfa yenilenirse kullanmak için)
+                    try {
+                        localStorage.setItem('TKF_BACK_NAV_URL', '$formattedUrl');
+                        localStorage.setItem('TKF_PREVIOUS_URL', '$lastVisitedUrl');
+                        localStorage.setItem('TKF_BACK_NAV_TIME', Date.now().toString());
+                    } catch(e) {}
+                    
+                    return 'BACK_NAV_SET';
+                })();
+            """.trimIndent(), null)
+        }
+        
         // Hızlı yükleme için görüntüleri engelle
         settings.blockNetworkImage = true
         
-        // Hızlı önbellek için optimum strateji
-        settings.cacheMode = if (isNetworkAvailable(context)) {
+        // GELİŞTİRİLMİŞ ÖNBELLEK STRATEJİSİ - Form verileri için kritik
+        val isFormUrl = formattedUrl.contains("form", ignoreCase = true) || 
+                        isKnownFormUrl(formattedUrl)
+        
+        // Form sayfaları için önbellek modunu ayarla
+        settings.cacheMode = if (isFormUrl || isBackNavigation) {
+            // Form sayfaları ve geri dönüşler için önbelleği daha agresif kullan
             WebSettings.LOAD_CACHE_ELSE_NETWORK
+        } else if (isNetworkAvailable(context)) {
+            // Normal sayfalar için standart önbellek stratejisi
+            WebSettings.LOAD_DEFAULT
         } else {
+            // Ağ yoksa sadece önbellekten yükle
             WebSettings.LOAD_CACHE_ONLY
         }
         
@@ -941,6 +1252,16 @@ class TabWebView @JvmOverloads constructor(
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.databaseEnabled = true
+        settings.saveFormData = true // Form verilerinin kaydedilmesini etkinleştir
+        
+        // Form sayfaları için form verilerinin korunmasını sağla
+        if (isFormUrl || isBackNavigation) {
+            // Çerez yönetimi ve oturum verilerinin korunması
+            val cookieManager = android.webkit.CookieManager.getInstance()
+            cookieManager.setAcceptCookie(true)
+            cookieManager.setAcceptThirdPartyCookies(this, true)
+            cookieManager.flush() // Çerezleri kaydet
+        }
         
         // URL'i yükle
         // Yüksek performans modunda yükleniyor: $formattedUrl
