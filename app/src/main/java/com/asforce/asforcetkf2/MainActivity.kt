@@ -46,7 +46,6 @@ import com.asforce.asforcetkf2.model.Tab
 import com.asforce.asforcetkf2.qrscanner.QRScannerFragment
 import com.asforce.asforcetkf2.util.DataHolder
 import com.asforce.asforcetkf2.util.TabResourceMonitor
-import com.asforce.asforcetkf2.util.TKFDownloadManager
 import com.asforce.asforcetkf2.viewmodel.TabViewModel
 import com.asforce.asforcetkf2.webview.TabWebView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -56,6 +55,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import android.os.Handler
 import android.os.Looper
+import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
 
@@ -114,7 +114,6 @@ class MainActivity : AppCompatActivity() {
         currentPhotoUri = null
     }
 
-    private val downloadManager by lazy { TKFDownloadManager(this) }
     private val resourceMonitor by lazy { TabResourceMonitor() }
     private val activeWebViews = mutableMapOf<String, TabWebView>()
 
@@ -877,29 +876,6 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        webView.onDownloadRequested = { url, userAgent, contentDisposition, mimeType, contentLength ->
-            val fileName = URLUtil.guessFileName(url, contentDisposition, mimeType)
-
-            // Start download
-            val downloadId = downloadManager.downloadFile(
-                url, userAgent, contentDisposition, mimeType, contentLength
-            )
-
-            if (downloadId > 0) {
-                Snackbar.make(
-                    binding.root,
-                    "${getString(R.string.download_started)}: $fileName",
-                    Snackbar.LENGTH_LONG
-                ).show()
-            } else {
-                Snackbar.make(
-                    binding.root,
-                    R.string.download_failed,
-                    Snackbar.LENGTH_LONG
-                ).show()
-            }
-        }
-
         // Uzun basma için callback'i ayarla
         webView.onLongPress = { tabId, url ->
             showLongPressMenu(url)
@@ -1535,22 +1511,18 @@ class MainActivity : AppCompatActivity() {
      * Uzun basma menüsünü gösterir - link için seçenekler
      */
     private fun showLongPressMenu(url: String) {
-        // Menü seçenekleri
-        val options = arrayOf(
+        val items = arrayOf(
             "Yeni sekmede aç",
-            "Linki kopyala",
-            "Dosyayı indir"
+            "Linki kopyala"
         )
 
-        // Dialog menüsünü göster
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Link seçenekleri")
-            .setItems(options) { _, which ->
+        AlertDialog.Builder(this)
+            .setTitle(url)
+            .setItems(items) { _, which ->
                 when (which) {
                     0 -> {
-                        // Yeni sekmede aç
+                        // Yeni bir sekme aç
                         addNewTab(url)
-                        Toast.makeText(this, "Link yeni sekmede açılıyor", Toast.LENGTH_SHORT).show()
                     }
                     1 -> {
                         // Linki kopyala
@@ -1558,18 +1530,6 @@ class MainActivity : AppCompatActivity() {
                         val clip = android.content.ClipData.newPlainText("URL", url)
                         clipboard.setPrimaryClip(clip)
                         Toast.makeText(this, "Link kopyalandı", Toast.LENGTH_SHORT).show()
-                    }
-                    2 -> {
-                        // Linkteki dosyayı indir
-                        val downloadId = downloadManager.downloadFile(
-                            url, "Mozilla/5.0", "", "*/*", 0
-                        )
-
-                        if (downloadId > 0) {
-                            Toast.makeText(this, "İndirme başlatıldı", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(this, "İndirme başlatılamadı", Toast.LENGTH_SHORT).show()
-                        }
                     }
                 }
             }
