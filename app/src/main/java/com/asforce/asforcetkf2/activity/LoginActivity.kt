@@ -1,6 +1,8 @@
 package com.asforce.asforcetkf2.activity
 
 import android.content.Intent
+import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -22,6 +24,10 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private lateinit var authRepository: AuthRepository
     private lateinit var tokenManager: TokenManager
+    private lateinit var sharedPreferences: SharedPreferences
+    private val PREF_NAME = "AsforceLoginPrefs"
+    private val PREF_EMAIL = "rememberedEmail"
+    private val PREF_REMEMBER_ME = "rememberMe"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +37,7 @@ class LoginActivity : AppCompatActivity() {
         // Initialize dependencies
         tokenManager = TokenManager(this)
         authRepository = AuthRepository(tokenManager)
+        sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
 
         // Check if user is already logged in
         if (tokenManager.getAccessToken() != null) {
@@ -38,27 +45,59 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
+        // Load remembered email if available
+        loadRememberedCredentials()
+        
         setupClickListeners()
+    }
+
+    private fun loadRememberedCredentials() {
+        val rememberMe = sharedPreferences.getBoolean(PREF_REMEMBER_ME, false)
+        if (rememberMe) {
+            val rememberedEmail = sharedPreferences.getString(PREF_EMAIL, "")
+            binding.emailEditText.setText(rememberedEmail)
+            binding.rememberMeCheckbox.isChecked = true
+        }
+    }
+
+    private fun saveRememberedCredentials() {
+        if (binding.rememberMeCheckbox.isChecked) {
+            val email = binding.emailEditText.text.toString().trim()
+            sharedPreferences.edit().apply {
+                putString(PREF_EMAIL, email)
+                putBoolean(PREF_REMEMBER_ME, true)
+                apply()
+            }
+        } else {
+            // Clear remembered credentials if checkbox is unchecked
+            sharedPreferences.edit().apply {
+                remove(PREF_EMAIL)
+                putBoolean(PREF_REMEMBER_ME, false)
+                apply()
+            }
+        }
     }
 
     private fun setupClickListeners() {
         // Login button click
         binding.loginButton.setOnClickListener {
             if (validateInputs()) {
+                saveRememberedCredentials()
                 performLogin()
             }
         }
 
         // Forgot password click
         binding.forgotPasswordTextView.setOnClickListener {
-            // TODO: Implement "Forgot Password" functionality
-            Toast.makeText(this, "Şifremi Unuttum özelliği henüz uygulanmadı", Toast.LENGTH_SHORT).show()
+            // Launch the ForgotPasswordActivity
+            val intent = Intent(this, ForgotPasswordActivity::class.java)
+            startActivity(intent)
         }
 
-        // Register click
+        // Register click - Open https://asforce.net/
         binding.registerTextView.setOnClickListener {
-            // TODO: Implement "Register" functionality
-            Toast.makeText(this, "Kayıt Ol özelliği henüz uygulanmadı", Toast.LENGTH_SHORT).show()
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://asforce.net/"))
+            startActivity(intent)
         }
     }
 
@@ -152,6 +191,7 @@ class LoginActivity : AppCompatActivity() {
         binding.loginButton.isEnabled = !isLoading
         binding.emailEditText.isEnabled = !isLoading
         binding.passwordEditText.isEnabled = !isLoading
+        binding.rememberMeCheckbox.isEnabled = !isLoading
         binding.forgotPasswordTextView.isEnabled = !isLoading
         binding.registerTextView.isEnabled = !isLoading
     }

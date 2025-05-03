@@ -48,3 +48,18 @@ data class ErrorResponse(
     val error: String? = null,
     val statusCode: Int? = null
 )
+
+/**
+ * Forgot password request model
+ */
+data class ForgotPasswordRequest(
+    val email: String
+)
+
+/**
+ * Reset password request model
+ */
+data class ResetPasswordRequest(
+    val token: String,
+    val password: String
+)

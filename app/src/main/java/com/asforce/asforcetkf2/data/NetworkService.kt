@@ -2,6 +2,8 @@ package com.asforce.asforcetkf2.data
 
 import com.asforce.asforcetkf2.model.LoginRequest
 import com.asforce.asforcetkf2.model.LoginResponse
+import com.asforce.asforcetkf2.model.ForgotPasswordRequest
+import com.asforce.asforcetkf2.model.ResetPasswordRequest
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -24,6 +26,12 @@ interface ApiService {
     
     @POST("auth/logout")
     suspend fun logout(): Response<Map<String, String>>
+    
+    @POST("auth/forgot-password")
+    suspend fun forgotPassword(@Body forgotPasswordRequest: ForgotPasswordRequest): Response<Map<String, String>>
+    
+    @POST("auth/reset-password")
+    suspend fun resetPassword(@Body resetPasswordRequest: ResetPasswordRequest): Response<Map<String, String>>
 }
 
 /**

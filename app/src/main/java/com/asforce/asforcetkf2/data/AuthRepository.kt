@@ -4,6 +4,8 @@ import android.util.Log
 import com.asforce.asforcetkf2.model.AuthResult
 import com.asforce.asforcetkf2.model.ErrorResponse
 import com.asforce.asforcetkf2.model.LoginRequest
+import com.asforce.asforcetkf2.model.ForgotPasswordRequest
+import com.asforce.asforcetkf2.model.ResetPasswordRequest
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -164,6 +166,39 @@ class AuthRepository(private val tokenManager: TokenManager) {
                 NetworkService.authInterceptor.clearAccessToken()
                 
                 return@withContext false
+            }
+        }
+    }
+    
+    /**
+     * Send a password reset link to the specified email
+     */
+    suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.forgotPassword(forgotPasswordRequest)
+                
+                // For security reasons, the API always returns a success message
+                // even if the email does not exist in the database
+                return@withContext response.isSuccessful
+            } catch (e: Exception) {
+                Log.e("AuthRepository", "Password reset error: ${e.message}")
+                throw e
+            }
+        }
+    }
+    
+    /**
+     * Reset password with token
+     */
+    suspend fun resetPassword(resetPasswordRequest: ResetPasswordRequest): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.resetPassword(resetPasswordRequest)
+                return@withContext response.isSuccessful
+            } catch (e: Exception) {
+                Log.e("AuthRepository", "Reset password error: ${e.message}")
+                throw e
             }
         }
     }
