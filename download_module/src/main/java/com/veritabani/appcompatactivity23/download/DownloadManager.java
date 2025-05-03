@@ -180,7 +180,9 @@ public class DownloadManager {
                         // Handle file opening on UI thread
                         final String finalMimeType = mimeType;
                         new Handler(Looper.getMainLooper()).post(() -> {
-                            offerToOpenFile(uriString, finalMimeType);
+                            // Show toast only, no dialog here to avoid duplicates
+                            // The dialog will be shown by the BroadcastReceiver instead
+                            showToast(applicationContext.getString(R.string.download_completed, fileName));
                         });
                     } else {
                         Log.e(TAG, "Downloaded file URI is null");
