@@ -164,6 +164,18 @@ class LoginActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     showLoading(false)
                     if (loginResult.isSuccess) {
+                        // Kullanıcı bilgilerini kaydet
+                        val email = binding.emailEditText.text.toString().trim()
+                        val username = email.substringBefore("@") // E-postadan kullanıcı adı çıkar
+                        
+                        // TokenManager'a kullanıcı bilgilerini kaydet
+                        tokenManager.saveUserInfo(
+                            userId = "user_${System.currentTimeMillis()}", // Örnek ID
+                            username = username,
+                            email = email,
+                            role = "Standart Kullanıcı" // Varsayılan rol
+                        )
+                        
                         navigateToMainActivity()
                     } else {
                         Toast.makeText(

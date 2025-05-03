@@ -150,7 +150,7 @@ class AuthRepository(private val tokenManager: TokenManager) {
                 val response = apiService.logout()
                 
                 // Regardless of the response, clear tokens from local storage
-                tokenManager.clearAll()
+                tokenManager.clearTokens()
                 
                 // Clear token from interceptor
                 NetworkService.authInterceptor.clearAccessToken()
@@ -160,7 +160,7 @@ class AuthRepository(private val tokenManager: TokenManager) {
                 Log.e("AuthRepository", "Logout error: ${e.message}")
                 
                 // Still clear tokens if the network request fails
-                tokenManager.clearAll()
+                tokenManager.clearTokens()
                 
                 // Clear token from interceptor
                 NetworkService.authInterceptor.clearAccessToken()

@@ -27,11 +27,12 @@ class TokenManager(context: Context) {
     /**
      * Save user info
      */
-    fun saveUserInfo(userId: String, username: String, email: String) {
+    fun saveUserInfo(userId: String, username: String, email: String, role: String = "Kullanıcı") {
         prefs.edit()
             .putString(KEY_USER_ID, userId)
             .putString(KEY_USERNAME, username)
             .putString(KEY_EMAIL, email)
+            .putString(KEY_USER_ROLE, role)
             .apply()
     }
     
@@ -52,14 +53,21 @@ class TokenManager(context: Context) {
     /**
      * Get email
      */
-    fun getEmail(): String? {
+    fun getUserEmail(): String? {
         return prefs.getString(KEY_EMAIL, null)
+    }
+    
+    /**
+     * Get user role
+     */
+    fun getUserRole(): String? {
+        return prefs.getString(KEY_USER_ROLE, "Kullanıcı")
     }
     
     /**
      * Clear all stored tokens and user info
      */
-    fun clearAll() {
+    fun clearTokens() {
         prefs.edit().clear().apply()
     }
     
@@ -69,5 +77,6 @@ class TokenManager(context: Context) {
         private const val KEY_USER_ID = "user_id"
         private const val KEY_USERNAME = "username"
         private const val KEY_EMAIL = "email"
+        private const val KEY_USER_ROLE = "user_role"
     }
 }

@@ -945,14 +945,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showMainMenu() {
-        // Ana menü öğeleri
+        // Ana menü öğeleri - kullanıcı bilgisi ve çıkış seçeneği ekledik
         val items = arrayOf(
             "Ana Sayfa",
             "Favoriler",
             "Geçmiş",
             "İndirilenler",
             "Öneri Önbelleğini Temizle",
-            "Ayarlar"
+            "Ayarlar",
+            "Profil Bilgileri",
+            "Çıkış Yap"
         )
 
         // PopupMenu kullanarak menüyü butonun altında göster
@@ -964,6 +966,10 @@ class MainActivity : AppCompatActivity() {
             popup.menu.add(android.view.Menu.NONE, i, i, items[i])
         }
 
+        // Profil bilgileri ve çıkış için kullanıcı adını al
+        val tokenManager = com.asforce.asforcetkf2.data.TokenManager(this)
+        val username = tokenManager.getUsername() ?: "Kullanıcı"
+
         // Tıklama olaylarını yönet
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
@@ -973,6 +979,8 @@ class MainActivity : AppCompatActivity() {
                 3 -> downloadManager.showDownloadsManager(this) // İndirilenler klasörünü aç
                 4 -> clearSuggestionCache()
                 5 -> showMenu() // Standart ayarlar menüsünü göster
+                6 -> showProfileInfo(username) // Profil bilgilerini göster
+                7 -> performLogout() // Çıkış yap
             }
             true
         }
@@ -998,6 +1006,55 @@ class MainActivity : AppCompatActivity() {
             "Öneri önbelleği temizlendi",
             Snackbar.LENGTH_SHORT
         ).show()
+    }
+    
+    /**
+     * Kullanıcı profil bilgilerini gösteren dialog
+     */
+    private fun showProfileInfo(username: String) {
+        // TokenManager'dan kullanıcı bilgilerini al
+        val tokenManager = com.asforce.asforcetkf2.data.TokenManager(this)
+        val email = tokenManager.getUserEmail() ?: "E-posta bilgisi yok"
+        val role = tokenManager.getUserRole() ?: "Rol bilgisi yok"
+        
+        // MaterialAlertDialogBuilder ile profil dialogu oluştur
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Profil Bilgileri")
+            .setIcon(R.drawable.ic_person) // Varsayılan kişi ikonu, icon oluşturmanız gerekebilir
+            .setMessage("\nKullanıcı Adı: $username\n\nE-posta: $email\n\nRol: $role")
+            .setPositiveButton("Tamam", null)
+            .show()
+    }
+    
+    /**
+     * Çıkış işlemini gerçekleştirir
+     */
+    private fun performLogout() {
+        // Çıkış onay dialogu göster
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Çıkış Yap")
+            .setMessage("Hesabınızdan çıkış yapmak istediğinize emin misiniz?")
+            .setPositiveButton("Evet") { _, _ ->
+                // TokenManager'dan çıkış yap
+                val tokenManager = com.asforce.asforcetkf2.data.TokenManager(this)
+                tokenManager.clearTokens()
+                
+                // Tüm sekmeleri kapat ve temizle
+                val tabs = viewModel.allTabs.value ?: emptyList()
+                tabs.forEach { tab -> closeTab(tab) }
+                
+                // WebView önbelleğini temizle
+                android.webkit.CookieManager.getInstance().removeAllCookies(null)
+                android.webkit.CookieManager.getInstance().flush()
+                
+                // LoginActivity'ye yönlendir
+                val intent = Intent(this, com.asforce.asforcetkf2.activity.LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+            .setNegativeButton("Hayır", null)
+            .show()
     }
 
     private fun showMenu() {
