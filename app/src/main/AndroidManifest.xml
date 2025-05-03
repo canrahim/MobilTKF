@@ -43,17 +43,25 @@
         <meta-data android:name="android.webkit.WebView.MetricsOptOut"
                    android:value="true" />
         <activity
+            android:name=".activity.LoginActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.AsforceTKF2">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.AsforceTKF2.Translucent">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
             
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

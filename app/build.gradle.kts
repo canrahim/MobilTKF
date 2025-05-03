@@ -77,7 +77,7 @@ dependencies {
     // CameraX bileşenleri
     implementation("androidx.camera:camera-camera2:1.3.1")
     implementation("androidx.camera:camera-lifecycle:1.3.1")
-    implementation("androidx.camera:camera-view:1.3.1")
+    implementation("androidx.camera:camera-view:1.3.1")//
     
     // ML Kit QR kod tarama
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
@@ -85,4 +85,13 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.android.volley:volley:1.2.1")
+    
+    // Retrofit for API calls
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    
+    // Gson for JSON parsing
+    implementation("com.google.code.gson:gson:2.10.1")
 }
