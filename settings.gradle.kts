@@ -21,4 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "AsforceTKF2"
 include(":app")
+include(":download_module")
  

@@ -63,4 +63,8 @@
     <string name="qr_code_found">QR kodu bulundu: %1$s</string>
     <string name="search_error">Arama sırasında hata oluştu: %1$s</string>
     <string name="loading_equipment_list">Ekipman listesi yükleniyor...</string>
+    
+    <!-- Storage permissions -->
+    <string name="storage_permission_required">Depolama izinleri gerekli. İndirme ve diğer özellikler için izin vermeniz gerekiyor.</string>
+    <string name="camera_permission_denied">Kamera iznine erişim reddedildi</string>
 </resources>

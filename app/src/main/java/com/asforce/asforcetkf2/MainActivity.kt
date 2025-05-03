@@ -27,6 +27,8 @@ import android.webkit.WebSettings
 import android.widget.EditText
 import android.widget.Toast
 import com.asforce.asforcetkf2.suggestion.SuggestionManager
+import com.veritabani.appcompatactivity23.download.WebViewDownloadHelper
+import com.veritabani.appcompatactivity23.download.DownloadManager as DownloadManagerModule
 import com.asforce.asforcetkf2.util.DeviceManager
 import com.asforce.asforcetkf2.util.OutOfScopeModule
 import com.asforce.asforcetkf2.ui.leakage.LeakageControlActivity
@@ -122,6 +124,10 @@ class MainActivity : AppCompatActivity() {
 
     // Device manager
     private lateinit var deviceManager: DeviceManager
+    
+    // Download helper
+    private lateinit var webViewDownloadHelper: WebViewDownloadHelper
+    private lateinit var downloadManager: DownloadManagerModule
 
     // Topraklama kontrolünden dönüş için
     private val topraklamaActivityResultLauncher = registerForActivityResult(
@@ -217,10 +223,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Storage permission request code
+    private val STORAGE_PERMISSION_REQUEST_CODE = 1002
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Initialize download manager first
+        setupDownloadManager()
+        
+        // Then check and request necessary permissions
+        checkAndRequestPermissions()
 
         // Tam ekran modu ve şeffaf gezinme çubuğu - klavye içerik kaymasını optimize eden versiyon
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
@@ -283,6 +298,9 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize suggestion manager
         initializeSuggestionManager()
+
+        // Initialize download manager
+        initializeDownloadManager()
     }
 
     private fun initializeTabComponents() {
@@ -714,6 +732,30 @@ class MainActivity : AppCompatActivity() {
 
         // Set suggestion manager on WebView
         webView.setSuggestionManager(suggestionManager)
+
+        // Setup download functionality for the WebView
+        webViewDownloadHelper.setupWebViewDownloads(webView)
+    }
+
+    /**
+     * Initializes the download manager and helper components
+     */
+    private fun initializeDownloadManager() {
+        // Initialize download manager with activity context for proper handling
+        downloadManager = DownloadManagerModule.getInstance(this)
+        
+        // Make sure to update context every time
+        downloadManager.updateContext(this)
+        
+        // Initialize WebView download helper
+        webViewDownloadHelper = WebViewDownloadHelper(this)
+    }
+    
+    /**
+     * Setup download manager (alias for initializeDownloadManager)
+     */
+    private fun setupDownloadManager() {
+        initializeDownloadManager()
     }
 
     private fun setupWebViewEvents(webView: TabWebView) {
@@ -928,7 +970,7 @@ class MainActivity : AppCompatActivity() {
                 0 -> loadUrl("https://www.google.com")
                 1 -> Toast.makeText(this, "Favoriler henüz uygulanmadı", Toast.LENGTH_SHORT).show()
                 2 -> Toast.makeText(this, "Geçmiş henüz uygulanmadı", Toast.LENGTH_SHORT).show()
-                3 -> Toast.makeText(this, "İndirilenler henüz uygulanmadı", Toast.LENGTH_SHORT).show()
+                3 -> downloadManager.showDownloadsManager(this) // İndirilenler klasörünü aç
                 4 -> clearSuggestionCache()
                 5 -> showMenu() // Standart ayarlar menüsünü göster
             }
@@ -964,7 +1006,8 @@ class MainActivity : AppCompatActivity() {
             "Kaçak Akım",
             "Pano Fonksiyon",
             "Topraklama",
-            "Termal Kamera"
+            "Termal Kamera",
+            "Dosya İndir (Test)"
         )
 
         // PopupMenu kullanarak menüyü butonun altında göster
@@ -983,6 +1026,7 @@ class MainActivity : AppCompatActivity() {
                 1 -> handlePanoFonksiyon()
                 2 -> handleTopraklama()
                 3 -> handleTermalKamera()
+                4 -> testDownloadFeature()
             }
             true
         }
@@ -1271,6 +1315,54 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, com.asforce.asforcetkf2.ui.termal.kotlin.Menu4Activity::class.java)
         startActivity(intent)
     }
+    
+    /**
+     * Test the download feature with sample files
+     */
+    private fun testDownloadFeature() {
+        // Show a dialog with different file types to download
+        val fileTypes = arrayOf(
+            "PDF - Document",
+            "JPG - Image",
+            "ZIP - Archive"
+        )
+        
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Test Download")
+            .setItems(fileTypes) { _, which ->
+                when (which) {
+                    0 -> {
+                        // Example PDF file
+                        val pdfUrl = "https://www.africau.edu/images/default/sample.pdf"
+                        downloadManager.downloadFile(
+                            pdfUrl,
+                            "sample-document.pdf", 
+                            "application/pdf", 
+                            "Mozilla/5.0", 
+                            null
+                        )
+                    }
+                    1 -> {
+                        // Example JPG file
+                        val jpgUrl = "https://download.samplelib.com/jpeg/sample-1280x853.jpg"
+                        val imageDownloader = com.veritabani.appcompatactivity23.download.ImageDownloader(this)
+                        imageDownloader.downloadImage(jpgUrl, null)
+                    }
+                    2 -> {
+                        // Example ZIP file
+                        val zipUrl = "https://download.samplelib.com/zip/sample-1.zip"
+                        downloadManager.downloadFile(
+                            zipUrl,
+                            "sample-archive.zip", 
+                            "application/zip", 
+                            "Mozilla/5.0", 
+                            null
+                        )
+                    }
+                }
+            }
+            .show()
+    }
 
     private fun toggleResourceMonitoring() {
         val isEnabled = viewModel.resourceMonitoringEnabled.value ?: true
@@ -1502,6 +1594,13 @@ class MainActivity : AppCompatActivity() {
             suggestionManager.cleanup()
         } catch (e: Exception) {
             // Suggestion manager temizleme hatası
+        }
+        
+        // Clean up download manager resources
+        try {
+            webViewDownloadHelper.cleanup()
+        } catch (e: Exception) {
+            // Download manager temizleme hatası
         }
 
         super.onDestroy()
@@ -1856,6 +1955,55 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Check for storage and other necessary permissions and request if not granted
+     */
+    private fun checkAndRequestPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+        
+        // Check for appropriate storage permissions based on Android version
+        if (android.os.Build.VERSION.SDK_INT >= 33) { // Android 13+
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_MEDIA_IMAGES) != 
+                    PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(android.Manifest.permission.READ_MEDIA_IMAGES)
+            }
+            
+            // Add READ_MEDIA_VIDEO and READ_MEDIA_AUDIO for complete media access
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_MEDIA_VIDEO) != 
+                    PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(android.Manifest.permission.READ_MEDIA_VIDEO)
+            }
+            
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_MEDIA_AUDIO) != 
+                    PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(android.Manifest.permission.READ_MEDIA_AUDIO)
+            }
+        } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) { // Android 6.0-12
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != 
+                    PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+            
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != 
+                    PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
+        }
+        
+        // Request permissions if needed
+        if (permissionsToRequest.isNotEmpty()) {
+            ActivityCompat.requestPermissions(
+                this,
+                permissionsToRequest.toTypedArray(),
+                STORAGE_PERMISSION_REQUEST_CODE
+            )
+        } else {
+            // Permissions already granted, make sure DownloadManager has the latest context
+            downloadManager.updateContext(this)
+        }
+    }
+    
+    // Handle permission results for storage and camera
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
@@ -1870,10 +2018,47 @@ class MainActivity : AppCompatActivity() {
                     filePathCallback?.onReceiveValue(null)
                     filePathCallback = null
                 }
-                return
+            }
+            STORAGE_PERMISSION_REQUEST_CODE -> {
+                var allGranted = true
+                if (grantResults.isNotEmpty()) {
+                    for (result in grantResults) {
+                        if (result != PackageManager.PERMISSION_GRANTED) {
+                            allGranted = false
+                            break
+                        }
+                    }
+                } else {
+                    allGranted = false
+                }
+                
+                if (!allGranted) {
+                    // Show message about importance of storage permissions
+                    Toast.makeText(
+                        this,
+                        R.string.storage_permission_required,
+                        Toast.LENGTH_LONG
+                    ).show()
+                    
+                    // Try to use alternative methods even if permissions are denied
+                    if (android.os.Build.VERSION.SDK_INT >= 33) {
+                        // On Android 13+, we can still use app-specific directories
+                        Toast.makeText(
+                            this,
+                            "İndirilen dosyalar uygulama dizininde saklanacak",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                } 
+                
+                // Always update download manager context, even if permissions weren't fully granted
+                // It will fallback to app-specific storage
+                downloadManager.updateContext(this)
             }
         }
     }
+    
+
 
     /**
      * Initialize suggestion manager and track input fields
@@ -3153,6 +3338,9 @@ class MainActivity : AppCompatActivity() {
     // Activity yaşam döngüsü yönetimi
     override fun onResume() {
         super.onResume()
+        
+        // Update download manager context
+        downloadManager.updateContext(this)
 
         // Topraklama sorunu varsa form güncelleme
         if (DataHolder.hasTopraklamaSorunu) {
