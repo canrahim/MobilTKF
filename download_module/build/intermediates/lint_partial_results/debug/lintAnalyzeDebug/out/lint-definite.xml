@@ -1,0 +1,1611 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.5.0" type="incidents">
+
+    <incident
+        id="StaticFieldLeak"
+        severity="warning"
+        message="Do not place Android context classes in static fields (static reference to `DownloadManager` which has field `currentActivityContext` pointing to `Context`); this is a memory leak">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="64"
+            column="13"
+            startOffset="1909"
+            endLine="64"
+            endColumn="19"
+            endOffset="1915"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="167"
+            column="59"
+            startOffset="6428"
+            endLine="167"
+            endColumn="70"
+            endOffset="6439"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="167"
+            column="102"
+            startOffset="6471"
+            endLine="167"
+            endColumn="113"
+            endOffset="6482"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="276"
+            column="49"
+            startOffset="12130"
+            endLine="276"
+            endColumn="60"
+            endOffset="12141"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="280"
+            column="50"
+            startOffset="12490"
+            endLine="280"
+            endColumn="61"
+            endOffset="12501"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="280"
+            column="103"
+            startOffset="12543"
+            endLine="280"
+            endColumn="114"
+            endOffset="12554"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="287"
+            column="49"
+            startOffset="13004"
+            endLine="287"
+            endColumn="60"
+            endOffset="13015"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="307"
+            column="40"
+            startOffset="14108"
+            endLine="307"
+            endColumn="51"
+            endOffset="14119"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="309"
+            column="47"
+            startOffset="14243"
+            endLine="309"
+            endColumn="58"
+            endOffset="14254"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="309"
+            column="100"
+            startOffset="14296"
+            endLine="309"
+            endColumn="111"
+            endOffset="14307"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="311"
+            column="47"
+            startOffset="14427"
+            endLine="311"
+            endColumn="58"
+            endOffset="14438"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="492"
+            column="83"
+            startOffset="22156"
+            endLine="492"
+            endColumn="94"
+            endOffset="22167"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="507"
+            column="17"
+            startOffset="22643"
+            endLine="507"
+            endColumn="28"
+            endOffset="22654"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="508"
+            column="47"
+            startOffset="22723"
+            endLine="508"
+            endColumn="58"
+            endOffset="22734"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="510"
+            column="24"
+            startOffset="22819"
+            endLine="510"
+            endColumn="35"
+            endOffset="22830"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="511"
+            column="47"
+            startOffset="22899"
+            endLine="511"
+            endColumn="58"
+            endOffset="22910"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="513"
+            column="24"
+            startOffset="22998"
+            endLine="513"
+            endColumn="35"
+            endOffset="23009"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="514"
+            column="47"
+            startOffset="23079"
+            endLine="514"
+            endColumn="58"
+            endOffset="23090"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="516"
+            column="24"
+            startOffset="23232"
+            endLine="516"
+            endColumn="35"
+            endOffset="23243"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="517"
+            column="47"
+            startOffset="23312"
+            endLine="517"
+            endColumn="58"
+            endOffset="23323"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="519"
+            column="24"
+            startOffset="23417"
+            endLine="519"
+            endColumn="35"
+            endOffset="23428"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="520"
+            column="47"
+            startOffset="23498"
+            endLine="520"
+            endColumn="58"
+            endOffset="23509"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="522"
+            column="24"
+            startOffset="23645"
+            endLine="522"
+            endColumn="35"
+            endOffset="23656"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="523"
+            column="47"
+            startOffset="23725"
+            endLine="523"
+            endColumn="58"
+            endOffset="23736"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="560"
+            column="45"
+            startOffset="24946"
+            endLine="560"
+            endColumn="56"
+            endOffset="24957"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="576"
+            column="45"
+            startOffset="25634"
+            endLine="576"
+            endColumn="56"
+            endOffset="25645"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="648"
+            column="26"
+            startOffset="28905"
+            endLine="648"
+            endColumn="37"
+            endOffset="28916"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="684"
+            column="31"
+            startOffset="30543"
+            endLine="684"
+            endColumn="42"
+            endOffset="30554"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="882"
+            column="44"
+            startOffset="39524"
+            endLine="882"
+            endColumn="55"
+            endOffset="39535"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="882"
+            column="97"
+            startOffset="39577"
+            endLine="882"
+            endColumn="108"
+            endOffset="39588"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="906"
+            column="30"
+            startOffset="41188"
+            endLine="906"
+            endColumn="41"
+            endOffset="41199"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="953"
+            column="41"
+            startOffset="43788"
+            endLine="953"
+            endColumn="52"
+            endOffset="43799"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="954"
+            column="41"
+            startOffset="43863"
+            endLine="954"
+            endColumn="52"
+            endOffset="43874"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="955"
+            column="41"
+            startOffset="43939"
+            endLine="955"
+            endColumn="52"
+            endOffset="43950"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="956"
+            column="41"
+            startOffset="44014"
+            endLine="956"
+            endColumn="52"
+            endOffset="44025"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1089"
+            column="35"
+            startOffset="51451"
+            endLine="1089"
+            endColumn="46"
+            endOffset="51462"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1090"
+            column="35"
+            startOffset="51519"
+            endLine="1090"
+            endColumn="46"
+            endOffset="51530"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1093"
+            column="43"
+            startOffset="51697"
+            endLine="1093"
+            endColumn="54"
+            endOffset="51708"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1098"
+            column="42"
+            startOffset="52030"
+            endLine="1098"
+            endColumn="53"
+            endOffset="52041"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1100"
+            column="42"
+            startOffset="52154"
+            endLine="1100"
+            endColumn="53"
+            endOffset="52165"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1102"
+            column="42"
+            startOffset="52278"
+            endLine="1102"
+            endColumn="53"
+            endOffset="52289"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1110"
+            column="45"
+            startOffset="52755"
+            endLine="1110"
+            endColumn="56"
+            endOffset="52766"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1111"
+            column="45"
+            startOffset="52834"
+            endLine="1111"
+            endColumn="56"
+            endOffset="52845"/>
+    </incident>
+
+    <incident
+        id="ObsoleteSdkInt"
+        severity="warning"
+        message="Unnecessary; SDK_INT is always >= 28">
+        <fix-data conditional="true"/>
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1225"
+            column="17"
+            startOffset="58256"
+            endLine="1225"
+            endColumn="85"
+            endOffset="58324"/>
+    </incident>
+
+    <incident
+        id="ObsoleteSdkInt"
+        severity="warning"
+        message="Unnecessary; SDK_INT is always >= 28">
+        <fix-data conditional="true"/>
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1236"
+            column="17"
+            startOffset="58836"
+            endLine="1236"
+            endColumn="85"
+            endOffset="58904"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1300"
+            column="22"
+            startOffset="61671"
+            endLine="1300"
+            endColumn="33"
+            endOffset="61682"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1307"
+            column="17"
+            startOffset="61995"
+            endLine="1307"
+            endColumn="28"
+            endOffset="62006"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1314"
+            column="21"
+            startOffset="62306"
+            endLine="1314"
+            endColumn="32"
+            endOffset="62317"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1314"
+            column="59"
+            startOffset="62344"
+            endLine="1314"
+            endColumn="70"
+            endOffset="62355"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1316"
+            column="28"
+            startOffset="62448"
+            endLine="1316"
+            endColumn="39"
+            endOffset="62459"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1318"
+            column="28"
+            startOffset="62551"
+            endLine="1318"
+            endColumn="39"
+            endOffset="62562"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1344"
+            column="22"
+            startOffset="63674"
+            endLine="1344"
+            endColumn="33"
+            endOffset="63685"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1359"
+            column="41"
+            startOffset="64067"
+            endLine="1359"
+            endColumn="52"
+            endOffset="64078"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1428"
+            column="101"
+            startOffset="67209"
+            endLine="1428"
+            endColumn="112"
+            endOffset="67220"/>
+    </incident>
+
+    <incident
+        id="ObsoleteSdkInt"
+        severity="warning"
+        message="Unnecessary; SDK_INT is always >= 28">
+        <fix-data conditional="true"/>
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1568"
+            column="18"
+            startOffset="73098"
+            endLine="1568"
+            endColumn="86"
+            endOffset="73166"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="110"
+            column="17"
+            startOffset="3732"
+            endLine="110"
+            endColumn="28"
+            endOffset="3743"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="112"
+            column="24"
+            startOffset="3827"
+            endLine="112"
+            endColumn="35"
+            endOffset="3838"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="114"
+            column="24"
+            startOffset="3925"
+            endLine="114"
+            endColumn="35"
+            endOffset="3936"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="116"
+            column="24"
+            startOffset="4077"
+            endLine="116"
+            endColumn="35"
+            endOffset="4088"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="118"
+            column="24"
+            startOffset="4181"
+            endLine="118"
+            endColumn="35"
+            endOffset="4192"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="120"
+            column="24"
+            startOffset="4327"
+            endLine="120"
+            endColumn="35"
+            endOffset="4338"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="122"
+            column="24"
+            startOffset="4436"
+            endLine="122"
+            endColumn="35"
+            endOffset="4447"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="124"
+            column="24"
+            startOffset="4590"
+            endLine="124"
+            endColumn="35"
+            endOffset="4601"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="126"
+            column="24"
+            startOffset="4685"
+            endLine="126"
+            endColumn="35"
+            endOffset="4696"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="128"
+            column="24"
+            startOffset="4793"
+            endLine="128"
+            endColumn="35"
+            endOffset="4804"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="130"
+            column="24"
+            startOffset="4899"
+            endLine="130"
+            endColumn="35"
+            endOffset="4910"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="132"
+            column="24"
+            startOffset="4989"
+            endLine="132"
+            endColumn="35"
+            endOffset="5000"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="134"
+            column="24"
+            startOffset="5077"
+            endLine="134"
+            endColumn="35"
+            endOffset="5088"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="134"
+            column="62"
+            startOffset="5115"
+            endLine="134"
+            endColumn="73"
+            endOffset="5126"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="136"
+            column="24"
+            startOffset="5206"
+            endLine="136"
+            endColumn="35"
+            endOffset="5217"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="138"
+            column="24"
+            startOffset="5295"
+            endLine="138"
+            endColumn="35"
+            endOffset="5306"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="140"
+            column="24"
+            startOffset="5384"
+            endLine="140"
+            endColumn="35"
+            endOffset="5395"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="142"
+            column="24"
+            startOffset="5474"
+            endLine="142"
+            endColumn="35"
+            endOffset="5485"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadUrlHelper.java"
+            line="144"
+            column="24"
+            startOffset="5563"
+            endLine="144"
+            endColumn="35"
+            endOffset="5574"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/ImageDownloader.java"
+            line="126"
+            column="60"
+            startOffset="4706"
+            endLine="126"
+            endColumn="71"
+            endOffset="4717"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/ImageDownloader.java"
+            line="165"
+            column="26"
+            startOffset="6507"
+            endLine="165"
+            endColumn="37"
+            endOffset="6518"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/ImageDownloader.java"
+            line="165"
+            column="69"
+            startOffset="6550"
+            endLine="165"
+            endColumn="80"
+            endOffset="6561"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/ImageDownloader.java"
+            line="167"
+            column="33"
+            startOffset="6658"
+            endLine="167"
+            endColumn="44"
+            endOffset="6669"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/ImageDownloader.java"
+            line="169"
+            column="33"
+            startOffset="6764"
+            endLine="169"
+            endColumn="44"
+            endOffset="6775"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/ImageDownloader.java"
+            line="171"
+            column="33"
+            startOffset="6870"
+            endLine="171"
+            endColumn="44"
+            endOffset="6881"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/ImageDownloader.java"
+            line="173"
+            column="33"
+            startOffset="6976"
+            endLine="173"
+            endColumn="44"
+            endOffset="6987"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="57"
+            column="25"
+            startOffset="2359"
+            endLine="57"
+            endColumn="36"
+            endOffset="2370"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="59"
+            column="35"
+            startOffset="2477"
+            endLine="59"
+            endColumn="46"
+            endOffset="2488"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="71"
+            column="30"
+            startOffset="3057"
+            endLine="71"
+            endColumn="41"
+            endOffset="3068"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="71"
+            column="68"
+            startOffset="3095"
+            endLine="71"
+            endColumn="79"
+            endOffset="3106"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="74"
+            column="35"
+            startOffset="3270"
+            endLine="74"
+            endColumn="46"
+            endOffset="3281"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="74"
+            column="79"
+            startOffset="3314"
+            endLine="74"
+            endColumn="90"
+            endOffset="3325"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="85"
+            column="30"
+            startOffset="3829"
+            endLine="85"
+            endColumn="41"
+            endOffset="3840"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="88"
+            column="35"
+            startOffset="3981"
+            endLine="88"
+            endColumn="46"
+            endOffset="3992"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="118"
+            column="32"
+            startOffset="5324"
+            endLine="118"
+            endColumn="64"
+            endOffset="5356"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="121"
+            column="32"
+            startOffset="5472"
+            endLine="121"
+            endColumn="64"
+            endOffset="5504"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="253"
+            column="21"
+            startOffset="11371"
+            endLine="253"
+            endColumn="32"
+            endOffset="11382"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="254"
+            column="21"
+            startOffset="11426"
+            endLine="254"
+            endColumn="32"
+            endOffset="11437"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="255"
+            column="43"
+            startOffset="11506"
+            endLine="255"
+            endColumn="54"
+            endOffset="11517"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="258"
+            column="28"
+            startOffset="11641"
+            endLine="258"
+            endColumn="39"
+            endOffset="11652"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="259"
+            column="28"
+            startOffset="11703"
+            endLine="259"
+            endColumn="39"
+            endOffset="11714"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="260"
+            column="51"
+            startOffset="11788"
+            endLine="260"
+            endColumn="62"
+            endOffset="11799"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="260"
+            column="89"
+            startOffset="11826"
+            endLine="260"
+            endColumn="100"
+            endOffset="11837"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="263"
+            column="28"
+            startOffset="11960"
+            endLine="263"
+            endColumn="39"
+            endOffset="11971"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="264"
+            column="50"
+            startOffset="12043"
+            endLine="264"
+            endColumn="61"
+            endOffset="12054"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="277"
+            column="34"
+            startOffset="12750"
+            endLine="277"
+            endColumn="45"
+            endOffset="12761"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="277"
+            column="77"
+            startOffset="12793"
+            endLine="277"
+            endColumn="88"
+            endOffset="12804"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="280"
+            column="41"
+            startOffset="12957"
+            endLine="280"
+            endColumn="52"
+            endOffset="12968"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="283"
+            column="41"
+            startOffset="13119"
+            endLine="283"
+            endColumn="52"
+            endOffset="13130"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="314"
+            column="31"
+            startOffset="14609"
+            endLine="314"
+            endColumn="42"
+            endOffset="14620"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="320"
+            column="35"
+            startOffset="14931"
+            endLine="320"
+            endColumn="46"
+            endOffset="14942"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="320"
+            column="79"
+            startOffset="14975"
+            endLine="320"
+            endColumn="90"
+            endOffset="14986"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="327"
+            column="35"
+            startOffset="15441"
+            endLine="327"
+            endColumn="46"
+            endOffset="15452"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="332"
+            column="35"
+            startOffset="15698"
+            endLine="332"
+            endColumn="46"
+            endOffset="15709"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="332"
+            column="79"
+            startOffset="15742"
+            endLine="332"
+            endColumn="90"
+            endOffset="15753"/>
+    </incident>
+
+    <incident
+        id="DefaultLocale"
+        severity="warning"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`.">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/WebViewDownloadHelper.java"
+            line="346"
+            column="66"
+            startOffset="16363"
+            endLine="346"
+            endColumn="77"
+            endOffset="16374"/>
+    </incident>
+
+    <incident
+        id="UseTomlInstead"
+        severity="warning"
+        message="Use version catalog instead">
+        <fix-composite
+            description="Replace with new library catalog declaration for com-github-bumptech-glide-glide16"
+            robot="true">
+            <fix-replace
+                description="Replace with comGithubBumptechGlideGlide14 = &quot;4.16.0&quot;..."
+                robot="true"
+                oldString="_lint_insert_begin_"
+                replacement="comGithubBumptechGlideGlide14 = &quot;4.16.0&quot;&#xA;"
+                priority="0">
+                <range
+                    file="$HOME/AndroidStudioProjects/AsforceTKF2/gradle/libs.versions.toml"
+                    startOffset="25"
+                    endOffset="25"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with com-github-bumptech-glide-glide16 = { module = &quot;com.github.bumptech.glide:glide&quot;, version.ref = &quot;comGithubBumptechGlideGlide14&quot; }..."
+                robot="true"
+                oldString="_lint_insert_begin_"
+                replacement="com-github-bumptech-glide-glide16 = { module = &quot;com.github.bumptech.glide:glide&quot;, version.ref = &quot;comGithubBumptechGlideGlide14&quot; }&#xA;"
+                priority="0">
+                <range
+                    file="$HOME/AndroidStudioProjects/AsforceTKF2/gradle/libs.versions.toml"
+                    startOffset="317"
+                    endOffset="317"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with libs.com.github.bumptech.glide.glide16"
+                robot="true"
+                replacement="libs.com.github.bumptech.glide.glide16"
+                priority="0">
+                <range
+                    file="${:download_module*projectDir}/build.gradle.kts"
+                    startOffset="933"
+                    endOffset="973"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:download_module*projectDir}/build.gradle.kts"
+            line="39"
+            column="20"
+            startOffset="933"
+            endLine="39"
+            endColumn="60"
+            endOffset="973"/>
+    </incident>
+
+</incidents>

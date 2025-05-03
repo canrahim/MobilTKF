@@ -1,0 +1,18 @@
+com.veritabani.appcompatactivity23.download
+color download_color_on_surface
+color download_color_primary
+color download_color_surface
+string download_cancel
+string download_completed
+string download_completed_generic
+string download_completed_title
+string download_failed
+string download_file
+string download_image
+string download_no_app_to_open
+string download_open
+string download_open_error
+string download_open_prompt
+string download_started
+string downloading_file
+style AlertDialogTheme

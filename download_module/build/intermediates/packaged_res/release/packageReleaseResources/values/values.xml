@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="download_color_on_surface">#212121</color>
+    <color name="download_color_primary">#2196F3</color>
+    <color name="download_color_surface">#FFFFFF</color>
+    <string name="download_cancel">İptal</string>
+    <string name="download_completed">%1$s başarıyla indirildi</string>
+    <string name="download_completed_generic">İndirme tamamlandı</string>
+    <string name="download_completed_title">İndirme Tamamlandı</string>
+    <string name="download_failed">İndirme başarısız oldu</string>
+    <string name="download_file">Dosyayı İndir</string>
+    <string name="download_image">Resmi İndir</string>
+    <string name="download_no_app_to_open">Bu dosya türünü açacak uygulama bulunamadı</string>
+    <string name="download_open">Aç</string>
+    <string name="download_open_error">Dosya açılırken hata oluştu</string>
+    <string name="download_open_prompt">%1$s dosyasını açmak istiyor musunuz?</string>
+    <string name="download_started">%1$s indirmeye başlandı</string>
+    <string name="downloading_file">Dosya indiriliyor</string>
+    <style name="AlertDialogTheme" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="colorPrimary">@color/download_color_primary</item>
+        <item name="colorSurface">@color/download_color_surface</item>
+        <item name="colorOnSurface">@color/download_color_on_surface</item>
+    </style>
+</resources>

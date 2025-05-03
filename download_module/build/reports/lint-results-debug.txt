@@ -1,0 +1,405 @@
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:167: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                        if (fileName != null && (fileName.toLowerCase().endsWith(".jpg") || fileName.toLowerCase().endsWith(".jpeg"))) {
+                                                          ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:167: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                        if (fileName != null && (fileName.toLowerCase().endsWith(".jpg") || fileName.toLowerCase().endsWith(".jpeg"))) {
+                                                                                                     ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:276: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                            !localFinalFileName.toLowerCase().endsWith(".pdf")) {
+                                                ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:280: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                            !(localFinalFileName.toLowerCase().endsWith(".jpg") || localFinalFileName.toLowerCase().endsWith(".jpeg"))) {
+                                                 ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:280: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                            !(localFinalFileName.toLowerCase().endsWith(".jpg") || localFinalFileName.toLowerCase().endsWith(".jpeg"))) {
+                                                                                                      ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:287: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                            !localFinalFileName.toLowerCase().endsWith(".png")) {
+                                                ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:307: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                if (localFinalFileName.toLowerCase().endsWith(".pdf")) {
+                                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:309: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                } else if (localFinalFileName.toLowerCase().endsWith(".jpg") || localFinalFileName.toLowerCase().endsWith(".jpeg")) {
+                                              ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:309: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                } else if (localFinalFileName.toLowerCase().endsWith(".jpg") || localFinalFileName.toLowerCase().endsWith(".jpeg")) {
+                                                                                                   ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:311: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                } else if (localFinalFileName.toLowerCase().endsWith(".png")) {
+                                              ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:492: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+                                                                                  ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:507: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        if (url.toLowerCase().contains(".pdf") ||
+                ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:508: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                (fileName != null && fileName.toLowerCase().endsWith(".pdf"))) {
+                                              ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:510: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().contains(".doc") ||
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:511: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                (fileName != null && fileName.toLowerCase().endsWith(".doc"))) {
+                                              ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:513: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().contains(".docx") ||
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:514: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                (fileName != null && fileName.toLowerCase().endsWith(".docx"))) {
+                                              ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:516: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().contains(".xls") ||
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:517: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                (fileName != null && fileName.toLowerCase().endsWith(".xls"))) {
+                                              ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:519: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().contains(".xlsx") ||
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:520: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                (fileName != null && fileName.toLowerCase().endsWith(".xlsx"))) {
+                                              ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:522: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().contains(".zip") ||
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:523: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                (fileName != null && fileName.toLowerCase().endsWith(".zip"))) {
+                                              ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:560: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            String lowerFileName = fileName.toLowerCase();
+                                            ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:576: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        String lowerUrl = url != null ? url.toLowerCase() : "";
+                                            ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:648: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        if (tempFileName.toLowerCase().endsWith(".bin")) {
+                         ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:684: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            if (!tempFileName.toLowerCase().endsWith(expectedExtension)) {
+                              ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:882: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (contentDisposition.toLowerCase().contains(".jpg") || contentDisposition.toLowerCase().contains(".jpeg")) {
+                                           ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:882: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (contentDisposition.toLowerCase().contains(".jpg") || contentDisposition.toLowerCase().contains(".jpeg")) {
+                                                                                                ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:906: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                         url.toLowerCase().contains(".pdf")) {
+                             ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:953: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    !(effectiveFileName.toLowerCase().endsWith(".jpg") || 
+                                        ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:954: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                      effectiveFileName.toLowerCase().endsWith(".jpeg") || 
+                                        ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:955: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                      effectiveFileName.toLowerCase().endsWith(".png") || 
+                                        ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:956: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                      effectiveFileName.toLowerCase().endsWith(".gif"))) {
+                                        ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1089: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                if (finalFileName.toLowerCase().endsWith(".jpg") ||
+                                  ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1090: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    finalFileName.toLowerCase().endsWith(".jpeg")) {
+                                  ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1093: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (effectiveFileName.toLowerCase().endsWith(".bin")) {
+                                          ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1098: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                } else if (finalFileName.toLowerCase().endsWith(".png")) {
+                                         ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1100: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                } else if (finalFileName.toLowerCase().endsWith(".gif")) {
+                                         ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1102: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                } else if (finalFileName.toLowerCase().endsWith(".pdf")) {
+                                         ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1110: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                        !(effectiveFileName.toLowerCase().endsWith(".jpg") || 
+                                            ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1111: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                          effectiveFileName.toLowerCase().endsWith(".jpeg"))) {
+                                            ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1300: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        if (fileName.toLowerCase().endsWith(".bin")) {
+                     ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1307: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            url.toLowerCase().contains(".pdf")) {
+                ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1314: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            if (url.toLowerCase().contains(".jpg") || url.toLowerCase().contains(".jpeg")) {
+                    ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1314: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            if (url.toLowerCase().contains(".jpg") || url.toLowerCase().contains(".jpeg")) {
+                                                          ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1316: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            } else if (url.toLowerCase().contains(".png")) {
+                           ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1318: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            } else if (url.toLowerCase().contains(".pdf")) {
+                           ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1344: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        if (fileName.toLowerCase().endsWith(".bin")) {
+                     ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1359: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        String lowerFileName = fileName.toLowerCase();
+                                        ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1428: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+                                                                                                    ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:110: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        if (url.toLowerCase().endsWith(".pdf")) {
+                ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:112: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".doc")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:114: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".docx")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:116: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".xls")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:118: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".xlsx")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:120: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".ppt")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:122: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".pptx")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:124: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".zip")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:126: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".rar")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:128: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".7z")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:130: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".txt")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:132: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".csv")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:134: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".jpg") || url.toLowerCase().endsWith(".jpeg")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:134: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".jpg") || url.toLowerCase().endsWith(".jpeg")) {
+                                                             ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:136: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".png")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:138: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".gif")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:140: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".mp3")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:142: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".mp4")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadUrlHelper.java:144: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+        } else if (url.toLowerCase().endsWith(".webm")) {
+                       ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\ImageDownloader.java:126: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            extension = fileName.substring(lastDotPos + 1).toLowerCase();
+                                                           ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\ImageDownloader.java:165: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            if (fileName.toLowerCase().endsWith(".jpg") || fileName.toLowerCase().endsWith(".jpeg")) {
+                         ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\ImageDownloader.java:165: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            if (fileName.toLowerCase().endsWith(".jpg") || fileName.toLowerCase().endsWith(".jpeg")) {
+                                                                    ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\ImageDownloader.java:167: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            } else if (fileName.toLowerCase().endsWith(".png")) {
+                                ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\ImageDownloader.java:169: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            } else if (fileName.toLowerCase().endsWith(".gif")) {
+                                ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\ImageDownloader.java:171: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            } else if (fileName.toLowerCase().endsWith(".bmp")) {
+                                ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\ImageDownloader.java:173: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            } else if (fileName.toLowerCase().endsWith(".webp")) {
+                                ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:57: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                if (url.toLowerCase().contains(".pdf")) {
+                        ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:59: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (!fileName.toLowerCase().endsWith(".pdf")) {
+                                  ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:71: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                else if (url.toLowerCase().contains(".jpg") || url.toLowerCase().contains(".jpeg")) {
+                             ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:71: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                else if (url.toLowerCase().contains(".jpg") || url.toLowerCase().contains(".jpeg")) {
+                                                                   ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:74: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (!fileName.toLowerCase().endsWith(".jpg") && !fileName.toLowerCase().endsWith(".jpeg")) {
+                                  ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:74: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (!fileName.toLowerCase().endsWith(".jpg") && !fileName.toLowerCase().endsWith(".jpeg")) {
+                                                                              ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:85: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                else if (url.toLowerCase().contains(".png")) {
+                             ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:88: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (!fileName.toLowerCase().endsWith(".png")) {
+                                  ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:118: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+                    sizeInfo = String.format("%.1f MB", sizeMB);
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:121: Warning: Implicitly using the default locale is a common source of bugs: Use String.format(Locale, ...) instead [DefaultLocale]
+                    sizeInfo = String.format("%.0f KB", sizeKB);
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:253: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            if (url.toLowerCase().contains(".pdf") || 
+                    ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:254: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                url.toLowerCase().contains("pdf=true") ||
+                    ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:255: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                (format != null && format.toLowerCase().equals("pdf"))) {
+                                          ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:258: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            } else if (url.toLowerCase().contains(".jpg") || 
+                           ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:259: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                       url.toLowerCase().contains(".jpeg") ||
+                           ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:260: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                       (format != null && (format.toLowerCase().equals("jpg") || format.toLowerCase().equals("jpeg")))) {
+                                                  ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:260: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                       (format != null && (format.toLowerCase().equals("jpg") || format.toLowerCase().equals("jpeg")))) {
+                                                                                        ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:263: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            } else if (url.toLowerCase().contains(".png") ||
+                           ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:264: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                       (format != null && format.toLowerCase().equals("png"))) {
+                                                 ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:277: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (fileName.toLowerCase().endsWith(".jpg") || fileName.toLowerCase().endsWith(".jpeg")) {
+                                 ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:277: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (fileName.toLowerCase().endsWith(".jpg") || fileName.toLowerCase().endsWith(".jpeg")) {
+                                                                            ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:280: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    } else if (fileName.toLowerCase().endsWith(".png")) {
+                                        ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:283: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    } else if (fileName.toLowerCase().endsWith(".pdf")) {
+                                        ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:314: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                if (!fileName.toLowerCase().endsWith(".pdf")) {
+                              ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:320: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (!fileName.toLowerCase().endsWith(".jpg") && !fileName.toLowerCase().endsWith(".jpeg")) {
+                                  ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:320: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (!fileName.toLowerCase().endsWith(".jpg") && !fileName.toLowerCase().endsWith(".jpeg")) {
+                                                                              ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:327: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (!fileName.toLowerCase().endsWith(".png")) {
+                                  ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:332: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (!fileName.toLowerCase().endsWith(".jpg") && !fileName.toLowerCase().endsWith(".jpeg")) {
+                                  ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:332: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+                    if (!fileName.toLowerCase().endsWith(".jpg") && !fileName.toLowerCase().endsWith(".jpeg")) {
+                                                                              ~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\WebViewDownloadHelper.java:346: Warning: Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead. For strings meant to be internal use Locale.ROOT, otherwise Locale.getDefault(). [DefaultLocale]
+            if (fileName.contains("SoilContinuity") && !fileName.toLowerCase().endsWith(".jpg")) {
+                                                                 ~~~~~~~~~~~
+
+   Explanation for issues of type "DefaultLocale":
+   Calling String#toLowerCase() or #toUpperCase() without specifying an
+   explicit locale is a common source of bugs. The reason for that is that
+   those methods will use the current locale on the user's device, and even
+   though the code appears to work correctly when you are developing the app,
+   it will fail in some locales. For example, in the Turkish locale, the
+   uppercase replacement for i is not I.
+
+   If you want the methods to just perform ASCII replacement, for example to
+   convert an enum name, call String#toUpperCase(Locale.ROOT) instead. If you
+   really want to use the current locale, call
+   String#toUpperCase(Locale.getDefault()) instead.
+
+   https://developer.android.com/reference/java/util/Locale.html#default_locale
+
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:124: Warning: downloadReceiver is missing RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED flag for unprotected broadcasts registered for android.intent.action.DOWNLOAD_COMPLETE [UnspecifiedRegisterReceiverFlag]
+        applicationContext.registerReceiver(downloadReceiver, filter);
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1213: Warning: downloadReceiver is missing RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED flag for unprotected broadcasts registered for android.intent.action.DOWNLOAD_COMPLETE [UnspecifiedRegisterReceiverFlag]
+        context.registerReceiver(downloadReceiver, filter);
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "UnspecifiedRegisterReceiverFlag":
+   In Android U, all receivers registering for non-system broadcasts are
+   required to include a flag indicating the receiver's exported state. Apps
+   registering for non-system broadcasts should use the
+   ContextCompat#registerReceiver APIs with flags set to either
+   RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED.
+
+   If you are not expecting broadcasts from other apps on the device, register
+   your receiver with RECEIVER_NOT_EXPORTED to protect your receiver on all
+   platform releases.
+
+   https://developer.android.com/reference/androidx/core/content/ContextCompat#registerReceiver(android.content.Context,android.content.BroadcastReceiver,android.content.IntentFilter,int)
+
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1225: Warning: Unnecessary; SDK_INT is always >= 28 [ObsoleteSdkInt]
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1236: Warning: Unnecessary; SDK_INT is always >= 28 [ObsoleteSdkInt]
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:1568: Warning: Unnecessary; SDK_INT is always >= 28 [ObsoleteSdkInt]
+        else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "ObsoleteSdkInt":
+   This check flags version checks that are not necessary, because the
+   minSdkVersion (or surrounding known API level) is already at least as high
+   as the version checked for.
+
+   Similarly, it also looks for resources in -vNN folders, such as values-v14
+   where the version qualifier is less than or equal to the minSdkVersion,
+   where the contents should be merged into the best folder.
+
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\src\main\java\com\veritabani\appcompatactivity23\download\DownloadManager.java:64: Warning: Do not place Android context classes in static fields (static reference to DownloadManager which has field currentActivityContext pointing to Context); this is a memory leak [StaticFieldLeak]
+    private static DownloadManager instance;
+            ~~~~~~
+
+   Explanation for issues of type "StaticFieldLeak":
+   A static field will leak contexts.
+
+   Non-static inner classes have an implicit reference to their outer class.
+   If that outer class is for example a Fragment or Activity, then this
+   reference means that the long-running handler/loader/task will hold a
+   reference to the activity which prevents it from getting garbage
+   collected.
+
+   Similarly, direct field references to activities and fragments from these
+   longer running instances can cause leaks.
+
+   ViewModel classes should never point to Views or non-application Contexts.
+
+C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module\build.gradle.kts:39: Warning: Use version catalog instead [UseTomlInstead]
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "UseTomlInstead":
+   If your project is using a libs.versions.toml file, you should place all
+   Gradle dependencies in the TOML file. This lint check looks for version
+   declarations outside of the TOML file and suggests moving them (and in the
+   IDE, provides a quickfix to performing the operation automatically).
+
+0 errors, 114 warnings

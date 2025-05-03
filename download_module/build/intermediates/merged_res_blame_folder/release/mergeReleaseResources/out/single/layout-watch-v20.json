@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.veritabani.appcompatactivity23.download.download_module-release-32:/layout-watch-v20/abc_alert_dialog_button_bar_material.xml",
+        "source": "com.veritabani.appcompatactivity23.download.download_module-appcompat-1.7.0-3:/layout-watch-v20/abc_alert_dialog_button_bar_material.xml"
+    },
+    {
+        "merged": "com.veritabani.appcompatactivity23.download.download_module-release-32:/layout-watch-v20/abc_alert_dialog_title_material.xml",
+        "source": "com.veritabani.appcompatactivity23.download.download_module-appcompat-1.7.0-3:/layout-watch-v20/abc_alert_dialog_title_material.xml"
+    }
+]

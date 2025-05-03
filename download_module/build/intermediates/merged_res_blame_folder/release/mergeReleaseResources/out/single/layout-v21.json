@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "com.veritabani.appcompatactivity23.download.download_module-release-32:/layout-v21/notification_template_custom_big.xml",
+        "source": "com.veritabani.appcompatactivity23.download.download_module-core-1.15.0-28:/layout-v21/notification_template_custom_big.xml"
+    },
+    {
+        "merged": "com.veritabani.appcompatactivity23.download.download_module-release-32:/layout-v21/notification_action.xml",
+        "source": "com.veritabani.appcompatactivity23.download.download_module-core-1.15.0-28:/layout-v21/notification_action.xml"
+    },
+    {
+        "merged": "com.veritabani.appcompatactivity23.download.download_module-release-32:/layout-v21/notification_template_icon_group.xml",
+        "source": "com.veritabani.appcompatactivity23.download.download_module-core-1.15.0-28:/layout-v21/notification_template_icon_group.xml"
+    },
+    {
+        "merged": "com.veritabani.appcompatactivity23.download.download_module-release-32:/layout-v21/notification_action_tombstone.xml",
+        "source": "com.veritabani.appcompatactivity23.download.download_module-core-1.15.0-28:/layout-v21/notification_action_tombstone.xml"
+    }
+]

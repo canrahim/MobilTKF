@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.veritabani.appcompatactivity23.download.download_module-release-32:/layout-v26/mtrl_calendar_month.xml",
+        "source": "com.veritabani.appcompatactivity23.download.download_module-material-1.12.0-13:/layout-v26/mtrl_calendar_month.xml"
+    },
+    {
+        "merged": "com.veritabani.appcompatactivity23.download.download_module-release-32:/layout-v26/abc_screen_toolbar.xml",
+        "source": "com.veritabani.appcompatactivity23.download.download_module-appcompat-1.7.0-3:/layout-v26/abc_screen_toolbar.xml"
+    }
+]

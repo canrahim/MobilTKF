@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.veritabani.appcompatactivity23.download.download_module-release-32:/animator-v21/design_appbar_state_list_animator.xml",
+        "source": "com.veritabani.appcompatactivity23.download.download_module-material-1.12.0-13:/animator-v21/design_appbar_state_list_animator.xml"
+    },
+    {
+        "merged": "com.veritabani.appcompatactivity23.download.download_module-release-32:/animator-v21/m3_appbar_state_list_animator.xml",
+        "source": "com.veritabani.appcompatactivity23.download.download_module-material-1.12.0-13:/animator-v21/m3_appbar_state_list_animator.xml"
+    }
+]

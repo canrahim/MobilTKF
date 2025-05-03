@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.5.0" type="conditional_incidents">
+
+    <incident
+        id="ScopedStorage"
+        severity="warning"
+        message="">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*manifest*0}"
+            line="6"
+            column="36"
+            startOffset="319"
+            endLine="6"
+            endColumn="77"
+            endOffset="360"/>
+        <map>
+            <entry
+                name="maxSdkVersion"
+                int="32"/>
+            <entry
+                name="read"
+                boolean="false"/>
+        </map>
+    </incident>
+
+    <incident
+        id="ScopedStorage"
+        severity="warning"
+        message="">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*manifest*0}"
+            line="8"
+            column="36"
+            startOffset="436"
+            endLine="8"
+            endColumn="76"
+            endOffset="476"/>
+        <map>
+            <entry
+                name="maxSdkVersion"
+                int="32"/>
+            <entry
+                name="read"
+                boolean="true"/>
+        </map>
+    </incident>
+
+    <incident
+        id="UnspecifiedRegisterReceiverFlag"
+        severity="error"
+        message="`downloadReceiver` is missing `RECEIVER_EXPORTED` or `RECEIVER_NOT_EXPORTED` flag for unprotected broadcasts registered for android.intent.action.DOWNLOAD_COMPLETE">
+        <fix-alternatives>
+            <fix-replace
+                description="Add RECEIVER_NOT_EXPORTED (preferred)"
+                oldString="_lint_insert_end_"
+                replacement=", android.content.Context.RECEIVER_NOT_EXPORTED"
+                shortenNames="true"
+                reformat="value"
+                priority="0">
+                <range
+                    file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+                    startOffset="4337"
+                    endOffset="4343"/>
+            </fix-replace>
+            <fix-replace
+                description="Add RECEIVER_EXPORTED"
+                oldString="_lint_insert_end_"
+                replacement=", android.content.Context.RECEIVER_EXPORTED"
+                shortenNames="true"
+                reformat="value"
+                priority="0">
+                <range
+                    file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+                    startOffset="4337"
+                    endOffset="4343"/>
+            </fix-replace>
+        </fix-alternatives>
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="124"
+            column="9"
+            startOffset="4283"
+            endLine="124"
+            endColumn="70"
+            endOffset="4344"/>
+        <map>
+            <entry
+                name="hasUnprotected"
+                boolean="true"/>
+        </map>
+    </incident>
+
+    <incident
+        id="UnspecifiedRegisterReceiverFlag"
+        severity="error"
+        message="`downloadReceiver` is missing `RECEIVER_EXPORTED` or `RECEIVER_NOT_EXPORTED` flag for unprotected broadcasts registered for android.intent.action.DOWNLOAD_COMPLETE">
+        <fix-alternatives>
+            <fix-replace
+                description="Add RECEIVER_NOT_EXPORTED (preferred)"
+                oldString="_lint_insert_end_"
+                replacement=", android.content.Context.RECEIVER_NOT_EXPORTED"
+                shortenNames="true"
+                reformat="value"
+                priority="0">
+                <range
+                    file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+                    startOffset="57864"
+                    endOffset="57870"/>
+            </fix-replace>
+            <fix-replace
+                description="Add RECEIVER_EXPORTED"
+                oldString="_lint_insert_end_"
+                replacement=", android.content.Context.RECEIVER_EXPORTED"
+                shortenNames="true"
+                reformat="value"
+                priority="0">
+                <range
+                    file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+                    startOffset="57864"
+                    endOffset="57870"/>
+            </fix-replace>
+        </fix-alternatives>
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1213"
+            column="9"
+            startOffset="57821"
+            endLine="1213"
+            endColumn="59"
+            endOffset="57871"/>
+        <map>
+            <entry
+                name="hasUnprotected"
+                boolean="true"/>
+        </map>
+    </incident>
+
+    <incident
+        id="NotificationPermission"
+        severity="error"
+        message="When targeting Android 13 or higher, posting a permission requires holding the `POST_NOTIFICATIONS` permission">
+        <fix-data missing="android.permission.POST_NOTIFICATIONS"/>
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1271"
+            column="13"
+            startOffset="60523"
+            endLine="1271"
+            endColumn="90"
+            endOffset="60600"/>
+    </incident>
+
+    <incident
+        id="QueryPermissionsNeeded"
+        severity="warning"
+        message="Consider adding a `&lt;queries>` declaration to your manifest when calling this method; see https://g.co/dev/packagevisibility for details">
+        <location
+            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+            line="1514"
+            column="24"
+            startOffset="70617"
+            endLine="1514"
+            endColumn="39"
+            endOffset="70632"/>
+        <map>
+            <entry
+                name="queryAll"
+                boolean="false"/>
+        </map>
+    </incident>
+
+</incidents>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- İndirme ile ilgili mesajlar -->
+    <string name="download_started">%1$s indirmeye başlandı</string>
+    <string name="download_completed">%1$s başarıyla indirildi</string>
+    <string name="download_failed">İndirme başarısız oldu</string>
+    <string name="downloading_file">Dosya indiriliyor</string>
+    <string name="download_image">Resmi İndir</string>
+    <string name="download_file">Dosyayı İndir</string>
+    <string name="download_cancel">İptal</string>
+    <string name="download_completed_generic">İndirme tamamlandı</string>
+    <string name="download_completed_title">İndirme Tamamlandı</string>
+    <string name="download_open_prompt">%1$s dosyasını açmak istiyor musunuz?</string>
+    <string name="download_open">Aç</string>
+    <string name="download_open_error">Dosya açılırken hata oluştu</string>
+    <string name="download_no_app_to_open">Bu dosya türünü açacak uygulama bulunamadı</string>
+</resources>

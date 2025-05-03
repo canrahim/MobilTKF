@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.veritabani.appcompatactivity23.download.download_module-release-32:/layout-sw600dp-v13/mtrl_layout_snackbar.xml",
+        "source": "com.veritabani.appcompatactivity23.download.download_module-material-1.12.0-13:/layout-sw600dp-v13/mtrl_layout_snackbar.xml"
+    },
+    {
+        "merged": "com.veritabani.appcompatactivity23.download.download_module-release-32:/layout-sw600dp-v13/design_layout_snackbar.xml",
+        "source": "com.veritabani.appcompatactivity23.download.download_module-material-1.12.0-13:/layout-sw600dp-v13/design_layout_snackbar.xml"
+    }
+]

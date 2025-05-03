@@ -1,0 +1,19 @@
+<lint-module
+    format="1"
+    dir="C:\Users\sonta\AndroidStudioProjects\AsforceTKF2\download_module"
+    name=":download_module"
+    type="LIBRARY"
+    maven="AsforceTKF2:download_module:unspecified"
+    agpVersion="8.5.0"
+    buildFolder="build"
+    bootClassPath="C:\Users\sonta\AppData\Local\Android\Sdk\platforms\android-35\android.jar;C:\Users\sonta\AppData\Local\Android\Sdk\build-tools\34.0.0\core-lambda-stubs.jar"
+    javaSourceLevel="17"
+    compileTarget="android-35"
+    neverShrinking="true">
+  <lintOptions
+      abortOnError="true"
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true"/>
+  <variant name="debug"/>
+</lint-module>

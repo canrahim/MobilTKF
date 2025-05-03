@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.5.0" type="partial_results">
+    <map id="UnsafeImplicitIntentLaunch">
+            <map id="actionsSent">
+                    <map id="android.intent.action.VIEW (used to start an activity)">
+                        <location id="0"
+                            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+                            line="1509"
+                            column="29"
+                            startOffset="70371"
+                            endLine="1509"
+                            endColumn="59"
+                            endOffset="70401"/>
+                    </map>
+                    <map id="android.intent.action.MEDIA_SCANNER_SCAN_FILE (used to send a broadcast)">
+                        <location id="0"
+                            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/ContentUriHelper.java"
+                            line="121"
+                            column="38"
+                            startOffset="4185"
+                            endLine="121"
+                            endColumn="87"
+                            endOffset="4234"/>
+                        <location id="1"
+                            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/ImageDownloader.java"
+                            line="336"
+                            column="38"
+                            startOffset="13901"
+                            endLine="336"
+                            endColumn="87"
+                            endOffset="13950"/>
+                    </map>
+                    <map id="android.intent.action.VIEW_DOWNLOADS (used to start an activity)">
+                        <location id="0"
+                            file="${:download_module*debug*MAIN*sourceProvider*0*javaDir*0}/com/veritabani/appcompatactivity23/download/DownloadManager.java"
+                            line="1590"
+                            column="29"
+                            startOffset="74029"
+                            endLine="1590"
+                            endColumn="90"
+                            endOffset="74090"/>
+                    </map>
+            </map>
+    </map>
+    <map id="NotificationPermission">
+        <entry
+            name="source"
+            boolean="true"/>
+    </map>
+    <map id="UnusedResources">
+        <location id="R.string.downloading_file"
+            file="${:download_module*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="7"
+            column="13"
+            startOffset="312"
+            endLine="7"
+            endColumn="36"
+            endOffset="335"/>
+        <location id="R.color.download_color_surface"
+            file="${:download_module*debug*MAIN*sourceProvider*0*resDir*0}/values/colors.xml"
+            line="4"
+            column="12"
+            startOffset="119"
+            endLine="4"
+            endColumn="41"
+            endOffset="148"/>
+        <location id="R.color.download_color_on_surface"
+            file="${:download_module*debug*MAIN*sourceProvider*0*resDir*0}/values/colors.xml"
+            line="5"
+            column="12"
+            startOffset="176"
+            endLine="5"
+            endColumn="44"
+            endOffset="208"/>
+        <entry
+            name="model"
+            string="color[download_color_primary(D),download_color_surface(D),download_color_on_surface(D)],string[download_started(U),download_completed(U),download_failed(U),downloading_file(D),download_image(U),download_file(U),download_cancel(U),download_completed_generic(U),download_completed_title(U),download_open_prompt(U),download_open(U),download_open_error(U),download_no_app_to_open(U)],style[AlertDialogTheme(D),ThemeOverlay_MaterialComponents_Dialog_Alert(E)];10^11^0^1^2;;;"/>
+        <location id="R.style.AlertDialogTheme"
+            file="${:download_module*debug*MAIN*sourceProvider*0*resDir*0}/values/styles.xml"
+            line="3"
+            column="12"
+            startOffset="62"
+            endLine="3"
+            endColumn="35"
+            endOffset="85"/>
+        <location id="R.color.download_color_primary"
+            file="${:download_module*debug*MAIN*sourceProvider*0*resDir*0}/values/colors.xml"
+            line="3"
+            column="12"
+            startOffset="62"
+            endLine="3"
+            endColumn="41"
+            endOffset="91"/>
+    </map>
+
+</incidents>
