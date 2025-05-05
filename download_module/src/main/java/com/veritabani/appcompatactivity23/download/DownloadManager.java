@@ -121,7 +121,12 @@ public class DownloadManager {
         };
 
         IntentFilter filter = new IntentFilter(android.app.DownloadManager.ACTION_DOWNLOAD_COMPLETE);
-        applicationContext.registerReceiver(downloadReceiver, filter);
+        // Specify RECEIVER_NOT_EXPORTED flag for Android 13+ (API 33+)
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            applicationContext.registerReceiver(downloadReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            applicationContext.registerReceiver(downloadReceiver, filter);
+        }
     }
 
     public void unregisterDownloadReceiver() {
@@ -1212,7 +1217,12 @@ public class DownloadManager {
         
         // İndirme tamamlandığında bildirimi almak için filtre
         IntentFilter filter = new IntentFilter(android.app.DownloadManager.ACTION_DOWNLOAD_COMPLETE);
-        context.registerReceiver(downloadReceiver, filter);
+        // Specify RECEIVER_NOT_EXPORTED flag for Android 13+ (API 33+)
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            context.registerReceiver(downloadReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            context.registerReceiver(downloadReceiver, filter);
+        }
     }
 
     /**

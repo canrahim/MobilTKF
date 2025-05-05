@@ -391,6 +391,74 @@ class TabWebView @JvmOverloads constructor(
         // Immediate injection for faster response
         injectFormHandlers()
         injectInputTracking()
+        
+        // Inject input tracking scripts immediately and when page loads
+        evaluateJavascript("""   
+        (function() {
+            // SuggestionHandler initialization status
+            window.TKF = window.TKF || {};
+            window.TKF.suggestionHandlerInitialized = true;
+            
+            // Track all existing inputs immediately
+            var inputs = document.querySelectorAll('input, textarea');
+            for (var i = 0; i < inputs.length; i++) {
+                var input = inputs[i];
+                if (!input.getAttribute('data-tkf-tracked')) {
+                    // Generate or get key for this input
+                    var key = input.getAttribute('data-tkf-key');
+                    if (!key) {
+                        key = (input.name || input.id || input.placeholder || 'input_' + Math.random().toString(36).substr(2, 9));
+                        key = key.replace(/[^a-zA-Z0-9_]/g, '_');
+                        input.setAttribute('data-tkf-key', key);
+                    }
+                    
+                    // Track focus events
+                    input.addEventListener('focus', function(e) {
+                        var key = this.getAttribute('data-tkf-key');
+                        if (key && window.SuggestionHandler) {
+                            window.SuggestionHandler.onInputFocused(key);
+                        }
+                    });
+                    
+                    // Track input changes
+                    input.addEventListener('input', function(e) {
+                        var key = this.getAttribute('data-tkf-key');
+                        if (key && window.SuggestionHandler) {
+                            window.SuggestionHandler.onInputChanged(key, this.value || '');
+                        }
+                    });
+                    
+                    // Mark as tracked
+                    input.setAttribute('data-tkf-tracked', 'true');
+                }
+            }
+            
+            return "Suggestion tracking initialized for " + inputs.length + " inputs";
+        })();
+        """, null)
+        
+        // Activate suggestion manager when interaction happens
+        evaluateJavascript("""   
+        (function() {
+            // Force enable suggestions for active input if any
+            var activeElement = document.activeElement;
+            if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+                var key = activeElement.getAttribute('data-tkf-key');
+                if (!key) {
+                    key = (activeElement.name || activeElement.id || activeElement.placeholder || 'input_' + Math.random().toString(36).substr(2, 9));
+                    key = key.replace(/[^a-zA-Z0-9_]/g, '_');
+                    activeElement.setAttribute('data-tkf-key', key);
+                }
+                
+                if (window.SuggestionHandler) {
+                    window.SuggestionHandler.onInputFocused(key);
+                    window.SuggestionHandler.onInputChanged(key, activeElement.value || '');
+                    return "Suggestions activated for current input: " + key;
+                }
+            }
+            return "No active input found";
+        })();
+        """, null)
     }
     
     /**

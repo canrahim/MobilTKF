@@ -256,9 +256,41 @@ class MainActivity : AppCompatActivity() {
         setupFloatingMenuButtons()
         setupActionButtons()
 
-        // Direkt olarak WebView'a yazmak için test fonksiyonu ekles
+        // Direkt olarak WebView'a yazmak için test fonksiyonu ekle
         binding.btnLeft2.setOnLongClickListener {
             testSuggestionInsertion()
+            return@setOnLongClickListener true
+        }
+        
+        // Test button for suggestion system debug - daha güçlü versiyon
+        binding.btnQr.setOnLongClickListener {
+            // Öneri sistemini debug etmek için dialog göster
+            suggestionManager.debugSuggestionState() 
+            
+            // Test önerileri ekle ve hemen göster
+            // Önce hiçbir öneri görünmüyorsa, test verileri ekle
+            executeTryTestSuggestions()
+            
+            // Son test olarak ana ekranda test önerilerini göstermeyi dene
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                val currentTab = viewModel.activeTab.value
+                val webView = currentTab?.let { activeWebViews[it.id] }
+                
+                if (webView != null) {
+                    // Direk WebView'a önerileri göstermeyi dene
+                    suggestionManager.showSuggestions(webView, "url_input", "")
+                } else {
+                    // WebView yoksa UrlInput'a göster
+                    suggestionManager.showSuggestions(binding.urlInput, "url_input", "")
+                }
+                
+                android.widget.Toast.makeText(
+                    this,
+                    "Öneri testi çalıştırılıyor... klavye açıksa öneriler görünmeli",
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
+            }, 500)
+            
             return@setOnLongClickListener true
         }
 
@@ -2119,12 +2151,16 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Initialize suggestion manager and track input fields
+     * Geliştirilmiş versiyon - başlatma ve görünürlük sorunlarını çözer
      */
     private fun initializeSuggestionManager() {
-        // Create suggestion manager
-        suggestionManager = SuggestionManager(this)
+        // En etkili yöntemle suggestion manager ı başlat
+        suggestionManager = SuggestionManager.createForActivity(this)
+        
+        // Test verileri ekle - ilk kullanımda öneri görünür olması için
+        executeTryTestSuggestions()
 
-        // Track keyboard visibility to show/hide suggestions at appropriate times
+        // Klavye görünürlüğünü izle - uygun zamanlarda önerileri göstermek/gizlemek için
         suggestionManager.trackKeyboardVisibility(binding.root)
 
         // Track URL input
@@ -2495,12 +2531,53 @@ class MainActivity : AppCompatActivity() {
     /**
      * Test suggestion insertion directly for debugging purposes
      */
+    /**
+     * Öneri sisteminin düzgün çalıştığından emin olmak için test verileri ekle
+     */
+    private fun executeTryTestSuggestions() {
+        // Asenkron olarak test önerilerini ekle
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            try {
+                // Bazı ortak input alanları için test önerileri ekle
+                suggestionManager.saveSuggestion("url_input", "https://app.szutest.com.tr")
+                suggestionManager.saveSuggestion("url_input", "https://www.google.com")
+                suggestionManager.saveSuggestion("url_input", "https://yandex.com.tr")
+                
+                suggestionManager.saveSuggestion("equipmentid", "TKF123456")
+                suggestionManager.saveSuggestion("equipmentid", "TEST987654")
+                
+                suggestionManager.saveSuggestion("search_terms", "elektrifikasyon")
+                suggestionManager.saveSuggestion("search_terms", "türkçe ara"
+                )
+                
+                suggestionManager.saveSuggestion("search_input", "Cihaz123")
+                suggestionManager.saveSuggestion("search_input", "Model456")
+                
+                suggestionManager.saveSuggestion("device_id", "48A97X")
+                suggestionManager.saveSuggestion("device_id", "39B82Z")
+                
+                // Önemli: Test verilerinin sorunsuz kaydedildiğinden emin ol
+                android.widget.Toast.makeText(
+                    this,
+                    "Test önerileri eklendi - şimdi form alanlarına odaklanın",
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(
+                    this,
+                    "Test önerileri eklenirken hata oluştu",
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
+            }
+        }, 1500) // Kısa bir gecikme ile ekle
+    }
+    
     private fun testSuggestionInsertion() {
         val currentTab = viewModel.activeTab.value
         val webView = currentTab?.let { activeWebViews[it.id] }
 
         if (webView != null) {
-            // 1. First try to identify the active input field
+            // Aktif form alanını belirlemek için ilk önce dene
             webView.evaluateJavascript("""
                 (function() {
                     // Find active element or first visible input

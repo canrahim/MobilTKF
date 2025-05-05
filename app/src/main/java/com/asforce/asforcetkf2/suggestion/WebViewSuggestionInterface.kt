@@ -24,12 +24,17 @@ class WebViewSuggestionInterface(
      */
     @JavascriptInterface
     fun onInputFocused(inputKey: String) {
+        // İnput key değerini daha güçlü şekilde işle ve önemini artır
         currentInputKey = sanitizeKey(inputKey)
         
-        // Show suggestions immediately on UI thread
+        Timber.d("[SUGGESTION_JS] Input focused with key: $currentInputKey - Önemli bir input alanına odaklanıldı!")
+        
+        // Show suggestions immediately on UI thread with retry mechanism
         mainHandler.post {
             // Check if webView is still active and visible
             if (webView.visibility == View.VISIBLE) {
+                // Görünürlüğü yazdır
+                Timber.d("[SUGGESTION_JS] WebView görünür durumda, önerileri göstermeye çalışıyoruz")
                 // Get active element info to ensure suggestions are relevant
                 webView.evaluateJavascript(
                     """
@@ -55,40 +60,58 @@ class WebViewSuggestionInterface(
                             val jsonStr = result.trim().removeSurrounding("\"").replace("\\\"", "\"").replace("\\\\", "\\")
                             val json = org.json.JSONObject(jsonStr)
                             
+                            Timber.d("[SUGGESTION_JS] Active element info: $jsonStr")
+                            
                             // Update current value from active element
                             if (json.has("value")) {
                                 currentInputValue = json.getString("value")
+                                Timber.d("[SUGGESTION_JS] Current input value: $currentInputValue")
                             }
                             
-                            // Güçlü öneri gösterimi
-                            // Önce boş filtreyle, tüm önerileri görüntüle
+                            // Öneri gösterme stratejisini iyileştir - 5 kez deneme yap
+                            // İlk deneme: Tüm önerileri almak için boş filtreyle göster
+                            Timber.d("[SUGGESTION_JS] Deneme 1/5: Tüm önerileri gösteriyoruz")
                             suggestionManager.showSuggestions(webView, currentInputKey, "")
                             
-                            // Sonra, eğer değer varsa, o filtreyi uygula
-                            if (currentInputValue.isNotBlank()) {
-                                // Kısa gecikme ile ikinci bir gösterme çağrısı yap
-                                // bu görüntüleme sorununu önler
+                            // İkinci deneme: Güncel değere göre filtrele
+                            mainHandler.postDelayed({
+                                Timber.d("[SUGGESTION_JS] Deneme 2/5: Filtrelenmiş önerileri gösteriyoruz")
+                                suggestionManager.showSuggestions(webView, currentInputKey, currentInputValue)
+                                
+                                // Üçüncü deneme: Daha uzun bir gecikmeyle tekrar dene
                                 mainHandler.postDelayed({
+                                    Timber.d("[SUGGESTION_JS] Deneme 3/5: Konum ayarlama için son çağrı")
                                     suggestionManager.showSuggestions(webView, currentInputKey, currentInputValue)
-                                }, 50) 
-                            } else {
-                                // Boş input için, henüz yüklenmemiş olabilecek tüm önerileri 
-                                // gösterebilmek için yine de ikinci bir defa dene
-                                mainHandler.postDelayed({
-                                    suggestionManager.showSuggestions(webView, currentInputKey, "")
-                                }, 100)
-                            }
+                                    
+                                    // Dördüncü deneme: Daha uzun bir gecikmeyle tekrar dene
+                                    mainHandler.postDelayed({
+                                        Timber.d("[SUGGESTION_JS] Deneme 4/5: Ek final çağrı")
+                                        suggestionManager.showSuggestions(webView, currentInputKey, currentInputValue)
+                                        
+                                        // Beşinci ve son deneme: En uzun gecikmeyle
+                                        mainHandler.postDelayed({
+                                            Timber.d("[SUGGESTION_JS] Deneme 5/5: Son şans deneme")
+                                            suggestionManager.saveSuggestion(currentInputKey, "Test Öneri") // Test verisi ekle
+                                            suggestionManager.showSuggestions(webView, currentInputKey, "")
+                                        }, 500)
+                                    }, 300)
+                                }, 200)
+                            }, 100)
                         } catch (e: Exception) {
+                            Timber.e(e, "[SUGGESTION_JS] Error processing element info")
+                            
                             // Still show suggestions with empty filter as fallback
                             suggestionManager.showSuggestions(webView, currentInputKey, "")
                             
-                            // Bozuk JSON durumunda da ikinci bir deneme yap
+                            // Try again after a delay
                             mainHandler.postDelayed({
                                 suggestionManager.showSuggestions(webView, currentInputKey, "")
                             }, 100)
                         }
                     }
                 )
+            } else {
+                Timber.d("[SUGGESTION_JS] WebView not visible, skipping suggestion display")
             }
         }
     }

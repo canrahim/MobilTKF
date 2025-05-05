@@ -1,5 +1,6 @@
 package com.asforce.asforcetkf2.suggestion
 
+import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Rect
@@ -309,7 +310,7 @@ class SuggestionManager(private val context: Context) {
             
             if (suggestionPopup?.isShowing == true && currentAdapter != null) {
                 // Update existing popup instead of recreating
-                // Updating existing popup with suggestions
+                Timber.d("[SUGGESTION] Updating existing popup with ${suggestions.size} suggestions")
                 currentAdapter.updateSuggestions(suggestions)
                 return
             }
@@ -321,22 +322,15 @@ class SuggestionManager(private val context: Context) {
             val inflater = LayoutInflater.from(context)
             val suggestionView = inflater.inflate(R.layout.layout_suggestion_bar, null)
             
-            // Style the suggestion view - MODIFY: Remove background, keep only chip backgrounds
-            // REMOVE THIS ENTIRE BLOCK - No background for the entire bar
-            /*
+            // Add a VERY VISIBLE background to make sure suggestions are visible
             val backgroundDrawable = android.graphics.drawable.GradientDrawable().apply {
-                setColor(android.graphics.Color.parseColor("#1d1b30")) // dark blue background
-                cornerRadius = 16f // yuvarlak köşeler
-                setStroke(2, android.graphics.Color.parseColor("#4285f4")) // mavi kenarlık
+                setColor(android.graphics.Color.parseColor("#2D3150")) // Daha koyu mavi arka plan
+                cornerRadius = 20f // Daha belirgin yuvarlak köşeler
+                setStroke(4, android.graphics.Color.parseColor("#5C95FF")) // Daha kalın ve parlak mavi kenarlık
             }
             suggestionView.background = backgroundDrawable 
-            suggestionView.elevation = 24f
-            */
+            suggestionView.elevation = 32f // Daha yüksek yükseltme
             
-            // Set background to transparent
-            suggestionView.background = android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
-            suggestionView.elevation = 0f // No elevation for the container
-        
             // Set up RecyclerView
             val recyclerView = suggestionView.findViewById<RecyclerView>(R.id.suggestion_recycler_view)
             recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
@@ -360,7 +354,7 @@ class SuggestionManager(private val context: Context) {
             recyclerView.adapter = suggestionAdapter
             
             // Create popup window - USING POPUP WINDOW APPROACH like in Menu5Activity
-            val popupHeight = (60 * context.resources.displayMetrics.density).toInt() // Daha alçak bir çubuk (75'ten 60'a)
+            val popupHeight = (100 * context.resources.displayMetrics.density).toInt() // Daha yüksek popup yüksekliği için ayarla
             
             val popup = PopupWindow(
                 suggestionView,
@@ -369,8 +363,8 @@ class SuggestionManager(private val context: Context) {
                 false // NOT focusable - this is important to not steal focus
             ).apply {
                 isOutsideTouchable = true
-                elevation = 0f // No elevation for transparent background
-                animationStyle = android.R.style.Animation_InputMethod // Klavye animasyonu gibi
+                elevation = 32f // Daha yüksek yükseltme
+                animationStyle = android.R.style.Animation_Dialog // Daha belirgin animasyon
                 setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
                 
                 // Ensure popup does not steal focus from the edittext
@@ -391,26 +385,39 @@ class SuggestionManager(private val context: Context) {
             var yPosition = 0
             
             // Klavyenin kendi otomatik öneri çubuğu için gereken yükseklik (dp cinsinden)
-            val keyboardSuggestionBarHeightDp = 45 // 60'tan 45'e düşürüldü - daha az boşluk bırakmak için
+            val keyboardSuggestionBarHeightDp = 60 // Increased for better visibility
             val keyboardSuggestionBarHeightPx = (keyboardSuggestionBarHeightDp * context.resources.displayMetrics.density).toInt()
             
             if (keyboardHeight > 100) { // Gerçek bir klavye yüksekliği
-                // Klavyenin otomatik öneri çubuğunun üzerine yerleştir - ek boşluk azaltıldı
-                yPosition = screenHeight - keyboardHeight - keyboardSuggestionBarHeightPx - 2 // popupHeight kaldırıldı
+                // Klavyenin otomatik öneri çubuğunun üzerine yerleştir
+                yPosition = screenHeight - keyboardHeight - keyboardSuggestionBarHeightPx
                 Timber.d("[SUGGESTION] Keyboard detected, positioning closer to keyboard at y=$yPosition")
             } else {
-                // Klavye yüksekliği algılanamadıysa ekranın alt kısmında %90 oranında göster (daha aşağı)
-                yPosition = (screenHeight * 0.90).toInt() - popupHeight
+                // Klavye yüksekliği algılanamadıysa ekranın alt kısmında %80 oranında göster
+                yPosition = (screenHeight * 0.80).toInt() - popupHeight
                 Timber.d("[SUGGESTION] No keyboard height, using lower fixed position y=$yPosition")
             }
             
-            // Show popup at calculated position
-            popup.showAtLocation(
-                anchorView,
-                android.view.Gravity.TOP,  // Position from TOP 
-                0,
-                yPosition
-            )
+            // Popup'ı daha görünür bir şekilde konumlandır - ekranın alt kısmında
+            if (keyboardHeight > 100) {
+                // Klavye görünürse, klavyenin üzerinde göster
+                popup.showAtLocation(
+                    anchorView,
+                    android.view.Gravity.BOTTOM,  // BOTTOM konumu - klavyenin üstünde
+                    0,
+                    keyboardHeight + 10 // Klavyenin hemen üzerinde az bir boşluk
+                )
+                Timber.d("[SUGGESTION] Showing popup above keyboard, keyboard height: $keyboardHeight")
+            } else {
+                // Klavye görünmüyorsa, ekranın alt kısmında göster
+                popup.showAtLocation(
+                    anchorView,
+                    android.view.Gravity.BOTTOM,  // Ekranın altında
+                    0,
+                    150 // Alt kenardan 150px yukarıda
+                )
+                Timber.d("[SUGGESTION] Showing popup at bottom of screen")
+            }
             
             // Save reference to popup
             suggestionPopup = popup
@@ -418,9 +425,9 @@ class SuggestionManager(private val context: Context) {
             // Save reference to view
             this.suggestionView = suggestionView
             
-            // Showing popup with suggestions
+            Timber.d("[SUGGESTION] Showing popup with ${suggestions.size} suggestions")
         } catch (e: Exception) {
-            // Error showing suggestions popup
+            Timber.e(e, "[SUGGESTION] Error showing suggestions popup")
         }
     }
     
@@ -442,6 +449,9 @@ class SuggestionManager(private val context: Context) {
         
         // Default minimum height
         val minimumKeyboardHeight = 200
+        
+        // Log keyboard height for debugging
+        Timber.d("[SUGGESTION] Keyboard height calculation: screenHeight=$screenHeight, rect.bottom=${rect.bottom}, keyboardHeight=$keyboardHeight")
         
         return if (keyboardHeight > minimumKeyboardHeight) {
             keyboardHeight
@@ -1185,6 +1195,84 @@ class SuggestionManager(private val context: Context) {
     }
     
     /**
+     * Debug method to display current suggestion state
+     * Shows a popup with information about the suggestion system state
+     */
+    fun debugSuggestionState() {
+        try {
+            // Get keyboard state
+            val keyboardHeight = getKeyboardHeight()
+            val isKeyboardVisible = this.isKeyboardVisible
+            
+            // Get suggestion data
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val allPrefs = prefs.all
+            val cacheSize = suggestionCache.size
+            
+            // Create debug message
+            val debugInfo = StringBuilder()
+            debugInfo.append("SUGGESTION DEBUG\n")
+            debugInfo.append("------------------\n")
+            debugInfo.append("Keyboard visible: $isKeyboardVisible\n")
+            debugInfo.append("Keyboard height: $keyboardHeight\n")
+            debugInfo.append("Popup showing: ${suggestionPopup?.isShowing}\n")
+            debugInfo.append("Cache entries: $cacheSize\n")
+            debugInfo.append("Saved preferences: ${allPrefs.size}\n")
+            debugInfo.append("Current EditText: ${currentEditText != null}\n")
+            debugInfo.append("Current WebView: ${activeWebView != null}\n")
+            debugInfo.append("Current input key: $currentInputKey\n")
+            debugInfo.append("\nSaved suggestions:\n")
+            
+            // List first 10 suggestion keys
+            allPrefs.keys.take(10).forEach { key ->
+                val values = prefs.getStringSet(key, emptySet()) ?: emptySet()
+                debugInfo.append("- $key: ${values.size} suggestions\n")
+            }
+            
+            // Show debug info in a dialog
+            android.app.AlertDialog.Builder(context)
+                .setTitle("Suggestion System Debug")
+                .setMessage(debugInfo.toString())
+                .setPositiveButton("Force Show") { _, _ ->
+                    // Force show suggestions for current input
+                    if (currentEditText != null && currentInputKey.isNotEmpty()) {
+                        showSuggestions(currentEditText!!, currentInputKey, "")
+                    } else if (activeWebView != null && currentInputKey.isNotEmpty()) {
+                        showSuggestions(activeWebView!!, currentInputKey, "")
+                    } else {
+                        // No active input, show empty suggestions on root view
+                        val contentView = rootViewRef ?: (context as? android.app.Activity)?.findViewById(android.R.id.content) ?: View(context)
+                        showSuggestionsWithLog(contentView, "debug_key", listOf("Test", "Debug", "Suggestion"))
+                    }
+                }
+                .setNegativeButton("Clear Cache") { _, _ ->
+                    // Clear all suggestions
+                    clearAllSuggestionCaches()
+                }
+                .setNeutralButton("OK", null)
+                .show()
+                
+            // Also log to console for more verbosity
+            Timber.d(debugInfo.toString())
+        } catch (e: Exception) {
+            Timber.e(e, "Error showing debug info")
+            android.widget.Toast.makeText(context, "Debug error: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    /**
+     * Show suggestions with additional logging
+     */
+    private fun showSuggestionsWithLog(anchorView: View, inputKey: String, suggestions: List<String>) {
+        Timber.d("[SUGGESTION_DEBUG] Showing suggestions for key: $inputKey with ${suggestions.size} items")
+        try {
+            showSuggestionsInPopup(anchorView, inputKey, suggestions)
+        } catch (e: Exception) {
+            Timber.e(e, "[SUGGESTION_DEBUG] Error showing suggestions")
+        }
+    }
+    
+    /**
      * Clear all suggestion caches
      * Güçlendirilmiş versiyon - veri tutarlılığı için tam bir sıfırlama sağlar
      */
@@ -1365,27 +1453,53 @@ class SuggestionManager(private val context: Context) {
             val contentView = decorView?.findViewById<ViewGroup>(android.R.id.content)
             val rootView = contentView?.getChildAt(0) as? ViewGroup
             
-            // Creating SuggestionManager
+            Timber.d("[SUGGESTION] Creating SuggestionManager for activity: ${activity.javaClass.simpleName}")
             
             // Create manager
             val manager = SuggestionManager(activity)
             
             // Initialize with the root view (try all possible containers)
             if (rootView != null) {
-                // Initializing with root view
+                Timber.d("[SUGGESTION] Initializing with root view: ${rootView.javaClass.simpleName}")
                 manager.initialize(rootView)
             } else if (contentView != null) {
-                // Initializing with content view
+                Timber.d("[SUGGESTION] Initializing with content view: ${contentView.javaClass.simpleName}")
                 manager.initialize(contentView)
             } else if (decorView != null) {
-                // Initializing with decor view
+                Timber.d("[SUGGESTION] Initializing with decor view: ${decorView.javaClass.simpleName}")
                 manager.initialize(decorView)
             } else {
-                // Could not find a suitable view container!
+                Timber.e("[SUGGESTION] Could not find a suitable view container!")
             }
             
             // Ensure keyboard visibility is monitored
             setupSpecialKeyboardHandling(activity, manager)
+            
+            // Force refresh keyboard visibility right away
+            val rect = android.graphics.Rect()
+            decorView?.getWindowVisibleDisplayFrame(rect)
+            
+            // Verify if keyboard is currently visible
+            val screenHeight = decorView?.height ?: 0
+            val keyboardHeight = screenHeight - rect.bottom
+            val keyboardVisible = keyboardHeight > screenHeight * 0.15
+            
+            Timber.d("[SUGGESTION] Initial keyboard state: visible=$keyboardVisible, height=$keyboardHeight")
+            
+            // Add debug button to MainActivity if we're in debug mode
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                try {
+                    val debugButton = activity.findViewById<android.widget.Button>(android.R.id.button1)
+                    if (debugButton != null) {
+                        debugButton.setOnLongClickListener {
+                            manager.debugSuggestionState()
+                            true
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Debug feature not important - ignore errors
+                }
+            }
             
             return manager
         }

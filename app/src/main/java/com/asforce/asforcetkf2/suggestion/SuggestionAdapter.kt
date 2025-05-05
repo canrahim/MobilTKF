@@ -38,9 +38,18 @@ class SuggestionAdapter(
         // Eğer öneriler boşsa, "hiçbir öneri yok" mesajını göster
         if (suggestions.isEmpty()) {
             Timber.d("[SUGGESTION] Showing no suggestions message")
-            holder.suggestionChip.text = context.getString(R.string.no_suggestions)
+            holder.suggestionChip.text = "Henüz öneri yok - İlk kullanımda görünecek"
             holder.suggestionChip.isCloseIconVisible = false
             holder.suggestionChip.setOnClickListener(null)
+            
+            // Boş mesajı OLDUKÇA görünür yap
+            holder.suggestionChip.setChipBackgroundColor(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#FF5722"))) // Turuncu arka plan
+            holder.suggestionChip.setTextColor(android.graphics.Color.WHITE)
+            holder.suggestionChip.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 18f)
+            holder.suggestionChip.elevation = 16f
+            holder.suggestionChip.chipStrokeWidth = 2f
+            holder.suggestionChip.setChipStrokeColorResource(android.R.color.white)
+            
             return
         }
         
@@ -49,6 +58,16 @@ class SuggestionAdapter(
         
         // Set text on chip
         holder.suggestionChip.text = suggestion
+        
+        // Chip görünürlüğünü OLDUKÇA artır
+        holder.suggestionChip.setChipBackgroundColor(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#3366CC"))) // Daha canlı mavi
+        holder.suggestionChip.setTextColor(android.graphics.Color.WHITE)
+        holder.suggestionChip.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 18f) // Daha büyük metin
+        holder.suggestionChip.elevation = 16f // Daha yüksek yükseltme
+        holder.suggestionChip.chipStrokeWidth = 2f // Belirgin kenarlık
+        holder.suggestionChip.setChipStrokeColorResource(android.R.color.white) // Beyaz kenarlık
+        holder.suggestionChip.isCloseIconVisible = true
+        holder.suggestionChip.closeIconTint = android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE)
         
         // Handle click on chip - select the suggestion
         holder.suggestionChip.setOnClickListener {
